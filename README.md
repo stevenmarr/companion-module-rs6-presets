@@ -1,12 +1,60 @@
 # companion-module-rs6-presets
 
-A Bitfocus **Companion 3.x** module for the **RS6 Presets** app, which adds Barco E2-style
+A Bitfocus **Companion** module (3.4 and later, including 4.x and 5.x) for the **RS6 Presets** app, which adds Barco E2-style
 destination presets to an Analog Way Aquilon RS6. Companion talks to the app over HTTP (default port
 8080), and the app talks to the RS6. The module never connects to the Aquilon directly.
 
 Built on `@companion-module/base` ~1.10 (node18 runtime) in plain JavaScript, with no TypeScript build.
 
 ![icon](companion/icon.png)
+
+## Install on a Mac (one line)
+
+```bash
+curl -fsSL https://github.com/stevenmarr/companion-module-rs6-presets/releases/latest/download/install-companion-module.sh | bash
+```
+
+The script ([install-companion-module.sh](install-companion-module.sh), also attached to every release):
+- downloads the release's module package `companion-module-rs6-presets.tgz` (built with
+  `companion-module-build`)
+- checks it and saves it as `~/companion-modules/rs6-presets/companion-module-rs6-presets-<version>.tgz`
+- lists the rs6-presets versions Companion already has
+- opens Companion's Modules page and shows the file in Finder
+
+It is safe to run again, never uses sudo, and doesn't touch Companion's own files. To pass options,
+use `| bash -s -- --dev`:
+
+| Option | Effect |
+|---|---|
+| `--version v0.3.1` | Install that release instead of the latest. |
+| `--file <.tgz or release .zip>` | Use a local file instead of downloading. |
+| `--dev` | Also unpack to `~/companion-modules/dev/rs6-presets` for the Developer modules path. Automatic on Companion 3.x. |
+| `--restart` | Quit and reopen Companion. |
+| `--no-open` | Don't open Companion or Finder. |
+
+Then, in Companion 4.x or 5.x (this is Companion's supported way to add a module that isn't in its
+store; see the Modules page in the Companion user guide):
+1. **Modules › Import module package**, then choose the `.tgz` the script printed. In the file
+   dialog, press Cmd+Shift+G and paste the path. Don't unpack the `.tgz`.
+2. **New connection:** Connections › **+ Add connection**, search **rs6-presets** (Analog Way),
+   pick the version you imported, then set **App host/IP** (`127.0.0.1` if the app runs on the same
+   Mac) and **App port** `8080`.
+   **Existing connection:** open it, click the **pencil** next to the module version, pick the new
+   version and **Save**. The connection restarts; Companion itself doesn't need a restart.
+3. Drag buttons from **Buttons › Presets › rs6-presets**. Buttons you dragged from an older version
+   keep their old text; drag them again to get the new text.
+
+## New in 0.3.1
+
+- **Preset buttons show the preset's name**, live from `$(rs6presets:preset_<N>_name)`. The number
+  is shown only for a preset without a name. Text is auto-sized, so a long name wraps on a 72×72
+  button. Master memory buttons show the memory name the same way (`master_mem_<N>_name`).
+- The variables in button text use your connection's label. If you renamed the connection from
+  `rs6presets`, newly generated buttons use the new label (the button list is rebuilt whenever presets or memories change, or when the connection restarts).
+- **TAKE and CUT buttons show their targets** on a second line (`$(rs6presets:selection)`, for
+  example `S1 S2`). With app 0.3.1 that is exactly the set TAKE and CUT will act on.
+- With app 0.3.1, PVW/PGM tally stays correct after a TAKE on the RS6. The fix is in the app; see
+  its README.
 
 ## New in 0.3.0: combined presets and imported memories
 
@@ -58,9 +106,9 @@ The module talks **only to the RS6 Presets app's HTTP API**. It never connects t
 The live features need RS6 Presets app **0.2.0 or later**, connected to the RS6 with live state on.
 Against an older app, the new feedbacks are simply false and the new variables are empty.
 
-## Sideload with Companion's developer modules folder
+## Alternative: the Developer modules path
 
-You need Companion 3.x (3.4 or newer recommended) and the RS6 Presets app running somewhere on the
+Use this on Companion 3.x, which has no package import, or for development. You need Companion 3.4 or newer and the RS6 Presets app running somewhere on the
 network.
 
 1. Make a folder for dev modules, for example `~/companion-dev-modules`.
@@ -73,7 +121,7 @@ network.
      npm install
      ```
 3. Open the **Companion launcher** window (the small window with the "Launch GUI" button), click the
-   **cog / Advanced settings**, and set **Developer modules path** to `~/companion-dev-modules`. Companion
+   **cog** (on Companion 4.1 and later this opens a Settings window), and set **Developer modules path** to `~/companion-dev-modules`. Companion
    restarts its module host and picks the module up. It also reloads when files there change.
 4. In the Companion web UI, go to **Connections › Add connection**, search for **"RS6 Presets"**
    (manufacturer Analog Way), and add it.
@@ -89,7 +137,7 @@ flag name has changed between releases.
 
 ```bash
 npm install
-npm test              # 18 unit + wiring tests (stubbed Companion host, fake app server with long-poll)
+npm test              # 19 unit + wiring tests (stubbed Companion host, fake app server with long-poll)
 npm run package       # companion-module-build -> pkg/ and pkg.tgz
 ```
 

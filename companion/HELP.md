@@ -50,9 +50,10 @@ New in 0.3.0:
 - `$(rs6presets:preset_N_summary)`, e.g. `M:3 S4:30 MV1:2`
 - `$(rs6presets:memories_imported)`
 
-**Presets:** one button per app preset, which recalls it and shows PVW/PGM tally, plus destination
-toggles, TAKE, CUT and Auto take. Also: Input tally and Input freeze buttons for each input,
-Backup buttons, an Audio mute button for each channel, and (0.3.0) Master memory buttons, Refresh memories and a logo button. They regenerate when presets are added
+**Presets:** one button per app preset, which recalls it, shows its name (from
+`$(rs6presets:preset_N_name)`; the number if it has no name) and shows PVW/PGM tally, plus destination
+toggles, TAKE and CUT (with their target screens on a second line), and Auto take. Also: Input tally and Input freeze buttons for each input,
+Backup buttons, an Audio mute button for each channel, and (0.3.0) Master memory buttons (showing the memory name), Refresh memories and a logo button. They regenerate when presets are added
 or renamed in the app.
 
 With RS6 Presets app 0.2.0 or later, tally and status come from the device itself (AWJ
@@ -62,3 +63,6 @@ because the AWJ guide documents only a read of it.
 Memory import and combined presets need RS6 Presets app 0.3.0 or later. Memory names are documented
 (AWJ §3.7); memory validity and multiviewer memory names are inferred and only read when the app's
 memory probe is enabled.
+
+**Install** (macOS): `curl -fsSL https://github.com/stevenmarr/companion-module-rs6-presets/releases/latest/download/install-companion-module.sh | bash`,
+then **Modules › Import module package** and choose the `.tgz` it prints.

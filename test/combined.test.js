@@ -97,3 +97,18 @@ test('instance: preset recall/feedback dropdowns list combined presets; memory a
     ]);
   } finally { await inst.destroy(); await new Promise((r) => { srv.closeAllConnections(); srv.close(r); }); }
 });
+
+test('0.3.1 buttons: preset name (live variable, number as fallback), Master name, TAKE shows its targets, connection label', () => {
+  const s = fixture();
+  s.presets.push({ number: 12, name: '  ', destinations: ['S1'], memories: { S1: 1 }, master: null, mvMemories: {}, tally: { pvw: 'none', pgm: 'none' } });
+  s.transitionTargets = ['S1', 'A1'];
+  const p = L.buttonPresets(s);
+  assert.equal(p.preset_10.style.text, '$(rs6presets:preset_10_name)'); assert.equal(p.preset_10.style.size, 'auto');
+  const v = L.variableValues(s);
+  assert.equal(v.preset_10_name, 'Panel Master + MV'); assert.equal(v.preset_12_name, '12');
+  assert.equal(p.master_mem_4.style.text, '$(rs6presets:master_mem_4_name)');
+  assert.equal(v.selection, 'S1,A1'); assert.equal(p.take.style.text, 'TAKE\\n$(rs6presets:selection)');
+  const r = L.buttonPresets(s, 'rs6_show');
+  assert.equal(r.preset_10.style.text, '$(rs6_show:preset_10_name)'); assert.equal(r.take.style.text, 'TAKE\\n$(rs6_show:selection)');
+  assert.ok(!JSON.stringify(r).includes('$(rs6presets:'));
+});

@@ -81,11 +81,11 @@ class RS6PresetsInstance extends InstanceBase {
 
   applyState(st, force = false) {
     this.state = st;
-    const sig = L.presetSignature(st);
+    const sig = `${L.presetSignature(st)}|${this.label || ''}`; // the label is in the preset button texts
     if (force || sig !== this.sig) {
       this.sig = sig;
       this.setVariableDefinitions(L.variableDefinitions(st));
-      this.setPresetDefinitions(L.buttonPresets(st));
+      this.setPresetDefinitions(L.buttonPresets(st, this.label));
       this.setActionDefinitions(this.actions()); // refresh destination dropdowns
       this.setFeedbackDefinitions(this.feedbacks());
     }

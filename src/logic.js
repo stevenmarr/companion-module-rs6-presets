@@ -138,11 +138,13 @@ function variableValues(state) {
     last_preset_number: state && state.lastRecalled ? state.lastRecalled.number : '',
     last_preset_name: state && state.lastRecalled ? state.lastRecalled.name : '',
     program_presets: state && state.programPresets ? state.programPresets.join(',') : '',
-    selection: state && state.selection ? state.selection.join(',') : '',
+    // what TAKE / CUT will act on (app 0.3.1 transitionTargets; the plain selection on older apps)
+    selection: state && (state.transitionTargets || state.selection) ? (state.transitionTargets || state.selection).join(',') : '',
     auto_take: state && state.autoTake ? 'ON' : 'OFF',
     device_connected: state ? String(!!state.connected) : 'false',
   };
-  for (const p of (state && state.presets) || []) v[`preset_${p.number}_name`] = p.name;
+  // The preset's name, or its number when it has none (the recall buttons show this variable).
+  for (const p of (state && state.presets) || []) v[`preset_${p.number}_name`] = String(p.name || '').trim() || String(p.number);
   const lv = live(state);
   v.live_mode = lv ? lv.mode || 'off' : 'off';
   const lm = (lv && lv.lastMaster) || {};
@@ -174,12 +176,23 @@ function presetSignature(state) {
   }, (k, val) => (k === 'mute' ? undefined : val)); // structure only, not mute values
 }
 
-function buttonPresets(state) {
+// `label` is this connection's label in Companion (variables are $(<label>:name)); the default label is
+// the manifest shortname, rs6presets, but users can rename the connection.
+function buttonPresets(state, label = 'rs6presets') {
+  const out = buildPresets(state);
+  if (label && label !== 'rs6presets') {
+    for (const b of Object.values(out)) if (b.style && typeof b.style.text === 'string') b.style.text = b.style.text.split('$(rs6presets:').join(`$(${label}:`);
+  }
+  return out;
+}
+
+function buildPresets(state) {
   const out = {};
   for (const p of (state && state.presets) || []) {
     out[`preset_${p.number}`] = {
       type: 'button', category: 'Presets', name: `${p.number} ${p.name}`,
-      style: { text: `${p.number}\\n$(rs6presets:preset_${p.number}_name)`, size: 'auto', color: COLORS.white, bgcolor: COLORS.grey },
+      // Name only (live through the variable; it falls back to the number). size auto wraps on spaces.
+      style: { text: `$(rs6presets:preset_${p.number}_name)`, size: 'auto', color: COLORS.white, bgcolor: COLORS.grey },
       steps: [{ down: [{ actionId: 'recall_preset', options: { preset: p.number } }], up: [] }],
       feedbacks: [
         { feedbackId: 'preset_pvw', options: { preset: p.number, partial: false }, style: { bgcolor: COLORS.green, color: COLORS.white } },
@@ -190,7 +203,7 @@ function buttonPresets(state) {
   for (const i of memItems(state, 'master')) {
     out[`master_mem_${i.slot}`] = {
       type: 'button', category: 'Master memories', name: `Load Master ${i.slot} ${i.label || ''} to PVW`,
-      style: { text: `MASTER ${i.slot}\n${i.label ? `$(rs6presets:master_mem_${i.slot}_name)` : ''}`, size: 'auto', color: COLORS.white, bgcolor: COLORS.grey },
+      style: { text: i.label ? `$(rs6presets:master_mem_${i.slot}_name)` : `MASTER ${i.slot}`, size: 'auto', color: COLORS.white, bgcolor: COLORS.grey },
       steps: [{ down: [{ actionId: 'load_master_memory', options: { memory: i.slot, target: 'preview' } }], up: [] }],
       feedbacks: [
         { feedbackId: 'master_memory', options: { side: 'pvw', memory: i.slot }, style: { bgcolor: COLORS.green, color: COLORS.white } },
@@ -208,8 +221,8 @@ function buttonPresets(state) {
       feedbacks: [{ feedbackId: 'dest_selected', options: { dest: d.key }, style: { bgcolor: COLORS.amber, color: COLORS.black } }],
     };
   }
-  out.take = { type: 'button', category: 'Transitions', name: 'TAKE', style: { text: 'TAKE', size: '24', color: COLORS.white, bgcolor: COLORS.red }, steps: [{ down: [{ actionId: 'take', options: {} }], up: [] }], feedbacks: [] };
-  out.cut = { type: 'button', category: 'Transitions', name: 'CUT', style: { text: 'CUT', size: '24', color: COLORS.white, bgcolor: COLORS.darkred }, steps: [{ down: [{ actionId: 'cut', options: {} }], up: [] }], feedbacks: [] };
+  out.take = { type: 'button', category: 'Transitions', name: 'TAKE', style: { text: 'TAKE\\n$(rs6presets:selection)', size: 'auto', color: COLORS.white, bgcolor: COLORS.red }, steps: [{ down: [{ actionId: 'take', options: {} }], up: [] }], feedbacks: [] };
+  out.cut = { type: 'button', category: 'Transitions', name: 'CUT', style: { text: 'CUT\\n$(rs6presets:selection)', size: 'auto', color: COLORS.white, bgcolor: COLORS.darkred }, steps: [{ down: [{ actionId: 'cut', options: {} }], up: [] }], feedbacks: [] };
   out.auto_take = {
     type: 'button', category: 'Transitions', name: 'Auto take toggle',
     style: { text: 'AUTO\\nTAKE\\n$(rs6presets:auto_take)', size: '14', color: COLORS.white, bgcolor: COLORS.grey },
