@@ -1,6 +1,6 @@
 {
   "name": "companion-module-rs6-presets",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Bitfocus Companion 3.x module for the RS6 Presets app (E2-style presets for Analog Way Aquilon RS6).",
   "main": "src/main.js",
   "license": "MIT",

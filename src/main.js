@@ -6,6 +6,7 @@ const UpgradeScripts = require('./upgrades');
 
 const FEEDBACK_IDS = ['preset_pvw', 'preset_pgm', 'dest_selected', 'auto_take_on', 'device_connected', 'input_pgm', 'input_pvw', 'dest_memory', 'master_memory', 'input_frozen', 'input_problem', 'backup_active', 'audio_muted'];
 const TRI = { type: 'dropdown', id: 'mode', label: 'Mode', default: 'toggle', choices: [{ id: 'toggle', label: 'Toggle' }, { id: 'on', label: 'On' }, { id: 'off', label: 'Off' }] };
+const SIDE_TARGET = { type: 'dropdown', id: 'target', label: 'To', default: 'preview', choices: [{ id: 'preview', label: 'Preview' }, { id: 'program', label: 'Program (no transition)' }] };
 const tri = (m) => (m === 'toggle' || m === undefined ? undefined : m === 'on');
 const BACKUP_TARGET = [
   { type: 'dropdown', id: 'kind', label: 'Backup of', default: 'input', choices: [{ id: 'input', label: 'Input' }, { id: 'bg', label: 'Background set' }, { id: 'group', label: 'Backup group' }] },
@@ -103,6 +104,9 @@ class RS6PresetsInstance extends InstanceBase {
   destChoicesAny() { return [{ id: 'any', label: 'Any destination' }, ...this.destChoices()]; }
   inputOpt() { const c = this.inputChoices(); return { type: 'dropdown', id: 'input', label: 'Input', default: c[0].id, choices: c, allowCustom: true, regex: '/^\\d+$/' }; }
 
+  // Preset dropdown built from the app's combined presets; custom numbers still allowed.
+  presetOpt() { const c = L.presetChoices(this.state); return { type: 'dropdown', id: 'preset', label: 'Preset', default: c[0].id, choices: c, allowCustom: true, regex: '/^\\d+$/' }; }
+
   destChoices() {
     const ds = (this.state && this.state.destinations) || [];
     return ds.length ? ds.map((d) => ({ id: d.key, label: `${d.key} ${d.label}` })) : [{ id: 'S1', label: 'S1' }];
@@ -112,10 +116,36 @@ class RS6PresetsInstance extends InstanceBase {
   actions() {
     return {
       recall_preset: {
-        name: 'Recall preset to Preview',
-        options: [{ type: 'number', id: 'preset', label: 'Preset number', default: 1, min: 1, max: 9999 }],
+        name: 'Recall preset to Preview (combined: Master + per-screen memories + Multiviewer)',
+        options: [this.presetOpt()],
         callback: (a) => this.run('Recall', () => this.api.recall(a.options.preset)),
       },
+      load_screen_memory: {
+        name: 'Load a Screen memory to ONE destination',
+        options: [
+          { type: 'dropdown', id: 'dest', label: 'Destination', default: this.destChoices()[0].id, choices: this.destChoices(), allowCustom: true, regex: '/^[SAsa]\\d+$/' },
+          { type: 'dropdown', id: 'memory', label: 'Screen memory (imported from the RS6)', default: L.memoryChoices(this.state, 'screen')[0].id, choices: L.memoryChoices(this.state, 'screen'), allowCustom: true, regex: '/^\\d+$/' },
+          SIDE_TARGET,
+        ],
+        callback: (a) => this.run('Load Screen memory', () => this.api.loadMemory('screen', a.options.memory, String(a.options.dest).toUpperCase(), a.options.target)),
+      },
+      load_master_memory: {
+        name: 'Load a Master memory',
+        options: [
+          { type: 'dropdown', id: 'memory', label: 'Master memory (imported from the RS6)', default: L.memoryChoices(this.state, 'master')[0].id, choices: L.memoryChoices(this.state, 'master'), allowCustom: true, regex: '/^\\d+$/' },
+          SIDE_TARGET,
+        ],
+        callback: (a) => this.run('Load Master memory', () => this.api.loadMemory('master', a.options.memory, undefined, a.options.target)),
+      },
+      load_mv_memory: {
+        name: 'Load a Multiviewer memory',
+        options: [
+          { type: 'dropdown', id: 'mv', label: 'Multiviewer output', default: L.mvChoices(this.state)[0].id, choices: L.mvChoices(this.state), allowCustom: true, regex: '/^[Mm]\\d+$/' },
+          { type: 'number', id: 'memory', label: 'Multiviewer memory (1-50)', default: 1, min: 1, max: 50 },
+        ],
+        callback: (a) => this.run('Load Multiviewer memory', () => this.api.loadMemory('multiviewer', a.options.memory, String(a.options.mv).toUpperCase())),
+      },
+      refresh_memories: { name: 'Re-import memories from the RS6', options: [], callback: () => this.run('Refresh memories', () => this.api.refreshMemories()) },
       take: { name: 'TAKE (selected destinations)', options: [], callback: () => this.run('Take', () => this.api.take()) },
       cut: { name: 'CUT (selected destinations)', options: [], callback: () => this.run('Cut', () => this.api.cut()) },
       toggle_destination: {
@@ -154,7 +184,7 @@ class RS6PresetsInstance extends InstanceBase {
   // ---------- feedbacks ----------
   feedbacks() {
     const presetOpts = [
-      { type: 'number', id: 'preset', label: 'Preset number', default: 1, min: 1, max: 9999 },
+      this.presetOpt(),
       { type: 'checkbox', id: 'partial', label: 'Also light when only some of its destinations match', default: false },
     ];
     return {
@@ -194,7 +224,7 @@ class RS6PresetsInstance extends InstanceBase {
         options: [
           { type: 'dropdown', id: 'dest', label: 'Destination', default: this.destChoices()[0].id, choices: this.destChoices(), allowCustom: true },
           { type: 'dropdown', id: 'side', label: 'Side', default: 'pgm', choices: [{ id: 'pgm', label: 'Program' }, { id: 'pvw', label: 'Preview' }] },
-          { type: 'number', id: 'memory', label: 'Screen memory number', default: 1, min: 1, max: 1000 },
+          { type: 'dropdown', id: 'memory', label: 'Screen memory', default: L.memoryChoices(this.state, 'screen')[0].id, choices: L.memoryChoices(this.state, 'screen'), allowCustom: true, regex: '/^\\d+$/' },
         ],
         callback: (f) => L.destMemoryIs(this.state, f.options.dest, f.options.side, f.options.memory),
       },
@@ -202,7 +232,7 @@ class RS6PresetsInstance extends InstanceBase {
         type: 'boolean', name: 'Last Master memory is X', defaultStyle: { bgcolor: L.COLORS.amber, color: L.COLORS.black },
         options: [
           { type: 'dropdown', id: 'side', label: 'Side', default: 'pgm', choices: [{ id: 'pgm', label: 'Program' }, { id: 'pvw', label: 'Preview' }] },
-          { type: 'number', id: 'memory', label: 'Master memory number', default: 1, min: 1, max: 500 },
+          { type: 'dropdown', id: 'memory', label: 'Master memory', default: L.memoryChoices(this.state, 'master')[0].id, choices: L.memoryChoices(this.state, 'master'), allowCustom: true, regex: '/^\\d+$/' },
         ],
         callback: (f) => L.masterIs(this.state, f.options.side, f.options.memory),
       },

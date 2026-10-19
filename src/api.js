@@ -27,6 +27,10 @@ class AppApi {
   toggleDestination(key) { return this._req('POST', `/api/destinations/${encodeURIComponent(key)}/toggle`); }
   setSelection(keys) { return this._req('POST', '/api/selection', { destinations: keys }); }
   autoTake(value) { return this._req('POST', '/api/autotake', value === undefined ? {} : { value }); }
+  // ---- imported device memories (app >= 0.3.0) ----
+  loadMemory(type, slot, dest, target) { return this._req('POST', '/api/memories/load', { type, slot: Number(slot), dest, target }); }
+  refreshMemories() { return this._req('POST', '/api/memories/refresh', undefined, { timeoutMs: 15000 }); }
+  stageLoad(target) { return this._req('POST', '/api/stage/load', { target }); }
   // ---- live device controls (app >= 0.2.0) ----
   freeze(n, value) { return this._req('POST', `/api/inputs/${Number(n)}/freeze`, value === undefined ? {} : { value }); }
   backupPath(kind, id) {

@@ -1,5 +1,6 @@
 'use strict';
 // Pure helpers (no Companion imports) so they can be unit tested.
+const { LOGO_PNG64 } = require('./logo');
 const rgb = (r, g, b) => ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff); // same as base combineRgb
 const COLORS = { white: rgb(255, 255, 255), black: rgb(0, 0, 0), red: rgb(200, 0, 0), green: rgb(0, 160, 60), amber: rgb(230, 150, 0), grey: rgb(40, 40, 40), darkred: rgb(70, 0, 0), blue: rgb(30, 90, 200), yellow: rgb(255, 200, 0) };
 
@@ -69,6 +70,34 @@ function audioMuted(state, dir, n, ch) {
   const c = row.channels.find((x) => x.channel === Number(ch));
   return !!(c && c.mute);
 }
+// ---------- combined presets + imported memories (app >= 0.3.0) ----------
+const TYPE_SHORT = { screen: 'Screen', master: 'Master', multiviewer: 'MV' };
+function memItems(state, type) { return (state && state.memories && state.memories.items && state.memories.items[type]) || []; }
+function memLabel(state, type, slot) { const i = memItems(state, type).find((x) => x.slot === Number(slot)); return i ? i.label || '' : ''; }
+
+// "S1:10 S2:32 M:3 MV1:2" summary of what a preset loads
+function presetSummary(p) {
+  const parts = [];
+  if (p.master) parts.push(`M:${p.master.slot}`);
+  for (const d of p.destinations || []) parts.push(`${d}:${(p.memories && p.memories[d]) || 'src'}`);
+  for (const [k, v] of Object.entries(p.mvMemories || {})) parts.push(`MV${String(k).slice(1)}:${v}`);
+  return parts.join(' ');
+}
+function presetChoices(state) {
+  const ps = (state && state.presets) || [];
+  return ps.length ? ps.map((p) => ({ id: p.number, label: `${p.number} ${p.name}${presetSummary(p) ? ' (' + presetSummary(p) + ')' : ''}` })) : [{ id: 1, label: '1' }];
+}
+// Memory dropdown for a type. Unnamed slots are listed as just the number.
+function memoryChoices(state, type) {
+  const items = memItems(state, type).filter((i) => type !== 'multiviewer' || i.label || i.status === 'valid');
+  const list = items.map((i) => ({ id: i.slot, label: `${i.slot}${i.label ? ' ' + i.label : ''}` }));
+  return list.length ? list : [{ id: 1, label: '1' }];
+}
+function mvChoices(state) {
+  const m = (state && state.multiviewers) || [];
+  return m.length ? m.map((x) => ({ id: x.key, label: `${x.key} ${x.label}` })) : [{ id: 'M1', label: 'M1' }];
+}
+
 const memNum = (m) => (m ? m.id : '');
 const memName = (m) => (m ? m.label || '' : '');
 
@@ -95,6 +124,12 @@ function variableDefinitions(state) {
     defs.push({ variableId: `${d.key}_pgm_layer1`, name: `${d.key} Program layer 1 source (label)` });
   }
   for (const i of liveInputs(state)) defs.push({ variableId: `input_${i.number}_label`, name: `Input ${i.number} label` });
+  // 0.3.0: names of the memories imported from the device (named slots only) and preset contents
+  for (const type of ['screen', 'master', 'multiviewer']) {
+    for (const i of memItems(state, type)) if (i.label) defs.push({ variableId: `${type === 'multiviewer' ? 'mv' : type}_mem_${i.slot}_name`, name: `${TYPE_SHORT[type]} memory ${i.slot} name` });
+  }
+  for (const p of (state && state.presets) || []) defs.push({ variableId: `preset_${p.number}_summary`, name: `Preset ${p.number} contents (e.g. S1:10 M:3)` });
+  defs.push({ variableId: 'memories_imported', name: 'Time the app last imported the device memories (ISO)' });
   return defs;
 }
 
@@ -119,12 +154,19 @@ function variableValues(state) {
     v[`${d.key}_pgm_layer1`] = d.programLayer1 || '';
   }
   for (const i of liveInputs(state)) v[`input_${i.number}_label`] = i.label || '';
+  for (const type of ['screen', 'master', 'multiviewer']) {
+    for (const i of memItems(state, type)) if (i.label) v[`${type === 'multiviewer' ? 'mv' : type}_mem_${i.slot}_name`] = i.label;
+  }
+  for (const p of (state && state.presets) || []) v[`preset_${p.number}_summary`] = presetSummary(p);
+  v.memories_imported = (state && state.memories && state.memories.import && state.memories.import.at) || '';
   return v;
 }
 
 function presetSignature(state) {
   return JSON.stringify({
-    p: ((state && state.presets) || []).map((p) => [p.number, p.name]),
+    p: ((state && state.presets) || []).map((p) => [p.number, p.name, presetSummary(p)]),
+    m: ['screen', 'master', 'multiviewer'].map((t) => memItems(state, t).map((i) => [i.slot, i.label])),
+    v: ((state && state.multiviewers) || []).map((x) => [x.key, x.label]),
     d: ((state && state.destinations) || []).map((d) => [d.key, d.label]),
     i: liveInputs(state).map((i) => [i.number, i.label]),
     a: ((live(state) && live(state).audio) || { inputs: [], outputs: [] }),
@@ -145,6 +187,19 @@ function buttonPresets(state) {
       ],
     };
   }
+  for (const i of memItems(state, 'master')) {
+    out[`master_mem_${i.slot}`] = {
+      type: 'button', category: 'Master memories', name: `Load Master ${i.slot} ${i.label || ''} to PVW`,
+      style: { text: `MASTER ${i.slot}\n${i.label ? `$(rs6presets:master_mem_${i.slot}_name)` : ''}`, size: 'auto', color: COLORS.white, bgcolor: COLORS.grey },
+      steps: [{ down: [{ actionId: 'load_master_memory', options: { memory: i.slot, target: 'preview' } }], up: [] }],
+      feedbacks: [
+        { feedbackId: 'master_memory', options: { side: 'pvw', memory: i.slot }, style: { bgcolor: COLORS.green, color: COLORS.white } },
+        { feedbackId: 'master_memory', options: { side: 'pgm', memory: i.slot }, style: { bgcolor: COLORS.red, color: COLORS.white } },
+      ],
+    };
+  }
+  out.refresh_memories = { type: 'button', category: 'Status', name: 'Re-import memories from the RS6', style: { text: 'REFRESH\nMEMORIES', size: '14', color: COLORS.white, bgcolor: COLORS.grey }, steps: [{ down: [{ actionId: 'refresh_memories', options: {} }], up: [] }], feedbacks: [] };
+  out.logo = { type: 'button', category: 'Status', name: 'Performance Video logo', style: { text: '', size: 'auto', color: COLORS.white, bgcolor: COLORS.black, png64: LOGO_PNG64 }, steps: [{ down: [], up: [] }], feedbacks: [] };
   for (const d of (state && state.destinations) || []) {
     out[`dest_${d.key}`] = {
       type: 'button', category: 'Destinations', name: `Toggle ${d.key} ${d.label}`,
@@ -212,5 +267,6 @@ function buttonPresets(state) {
 
 module.exports = {
   rgb, COLORS, findPreset, presetTally, destSelected, variableDefinitions, variableValues, presetSignature, buttonPresets,
+  presetSummary, presetChoices, memoryChoices, mvChoices, memLabel, memItems, LOGO_PNG64,
   inputChoices, inputTally, destMemoryIs, masterIs, inputFrozen, inputProblem, backupEntry, backupActive, audioMuted, findInput,
 };

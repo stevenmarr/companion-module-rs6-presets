@@ -149,7 +149,7 @@ function fakeApp({ longPoll = true } = {}) {
       if (longPoll && since != null && state.rev <= Number(since)) {
         const done = () => { waiters.delete(done); clearTimeout(t); send(res); };
         const t = setTimeout(done, Number(u.searchParams.get('timeout')) || 1000);
-        waiters.add(done); req.on('close', () => { waiters.delete(done); clearTimeout(t); });
+        waiters.add(done); res.on('close', () => { waiters.delete(done); clearTimeout(t); }); // res, not req: req 'close' fires as soon as the body is read (Node 16+)
         return;
       }
       send(res);

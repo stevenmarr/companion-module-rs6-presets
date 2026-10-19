@@ -1,12 +1,16 @@
 ## RS6 Presets
 
+![Performance Video](icon.png)
+
 Controls the **RS6 Presets** web app, which gives an Analog Way Aquilon RS6 Barco E2-style
 destination presets. Companion talks to the app (default port 8080), and the app talks to the RS6.
 
 **Config:** the app's host/IP and port, the update mode (long-poll by default, poll only as an option) and the poll interval.
 
 **Actions:**
-- Recall preset to Preview
+- Recall preset to Preview (dropdown of the app's presets, including combined presets, e.g. `10 Panel Master + MV (M:3 S4:30 MV1:2)`)
+- Load Screen memory to a destination, Load Master memory, Load Multiviewer memory (dropdowns of the memories the app imported from the RS6, with names)
+- Refresh memories from the RS6
 - TAKE and CUT
 - Toggle destination
 - Auto take (toggle, on or off)
@@ -40,11 +44,21 @@ New in 0.2.0:
 - `$(rs6presets:S1_pgm_layer1)`
 - `$(rs6presets:live_mode)`
 
+New in 0.3.0:
+- `$(rs6presets:screen_mem_N_name)` and `$(rs6presets:master_mem_N_name)` for each named memory
+- `$(rs6presets:mv_mem_N_name)` (only with the app's memory probe on)
+- `$(rs6presets:preset_N_summary)`, e.g. `M:3 S4:30 MV1:2`
+- `$(rs6presets:memories_imported)`
+
 **Presets:** one button per app preset, which recalls it and shows PVW/PGM tally, plus destination
 toggles, TAKE, CUT and Auto take. Also: Input tally and Input freeze buttons for each input,
-Backup buttons, and an Audio mute button for each channel. They regenerate when presets are added
+Backup buttons, an Audio mute button for each channel, and (0.3.0) Master memory buttons, Refresh memories and a logo button. They regenerate when presets are added
 or renamed in the app.
 
 With RS6 Presets app 0.2.0 or later, tally and status come from the device itself (AWJ
 subscriptions), so changes made on the RC400T or the Web RCS show up. The freeze write is inferred,
 because the AWJ guide documents only a read of it.
+
+Memory import and combined presets need RS6 Presets app 0.3.0 or later. Memory names are documented
+(AWJ §3.7); memory validity and multiviewer memory names are inferred and only read when the app's
+memory probe is enabled.

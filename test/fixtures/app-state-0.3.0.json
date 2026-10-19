@@ -1,0 +1,3096 @@
+{
+ "app": "rs6-presets",
+ "version": 3,
+ "appVersion": "0.3.0",
+ "rev": 27,
+ "mock": true,
+ "connected": true,
+ "lastError": null,
+ "system": {
+  "type": "AQL RS6",
+  "label": "MOCK-RS6",
+  "isLinked": false,
+  "linkName": "",
+  "version": {
+   "major": 6,
+   "minor": 2,
+   "patch": 79,
+   "beta": false
+  }
+ },
+ "autoTake": false,
+ "destinations": [
+  {
+   "key": "S1",
+   "kind": "screen",
+   "id": 1,
+   "label": "Center LED",
+   "selected": true,
+   "pvwPreset": 9,
+   "pgmPreset": null,
+   "programMemory": {
+    "id": 31,
+    "label": "Sponsor C"
+   },
+   "previewMemory": {
+    "id": 10,
+    "label": "Keynote"
+   },
+   "programLayer1": "Walk-in Loop",
+   "transition": "AT_UP"
+  },
+  {
+   "key": "S2",
+   "kind": "screen",
+   "id": 2,
+   "label": "Left IMAG",
+   "selected": true,
+   "pvwPreset": 9,
+   "pgmPreset": 9,
+   "programMemory": {
+    "id": 32,
+    "label": "Sponsor L"
+   },
+   "previewMemory": {
+    "id": 32,
+    "label": "Sponsor L"
+   },
+   "programLayer1": "Spare",
+   "transition": "AT_UP"
+  },
+  {
+   "key": "S3",
+   "kind": "screen",
+   "id": 3,
+   "label": "Right IMAG",
+   "selected": true,
+   "pvwPreset": 9,
+   "pgmPreset": 9,
+   "programMemory": {
+    "id": 33,
+    "label": "Sponsor R"
+   },
+   "previewMemory": {
+    "id": 33,
+    "label": "Sponsor R"
+   },
+   "programLayer1": "PPT Main Bkp",
+   "transition": "AT_UP"
+  },
+  {
+   "key": "S4",
+   "kind": "screen",
+   "id": 4,
+   "label": "Stage Floor",
+   "selected": false,
+   "pvwPreset": 10,
+   "pgmPreset": 10,
+   "programMemory": {
+    "id": 30,
+    "label": "Floor Logo"
+   },
+   "previewMemory": {
+    "id": 30,
+    "label": "Floor Logo"
+   },
+   "programLayer1": "Playback",
+   "transition": "AT_UP"
+  },
+  {
+   "key": "A1",
+   "kind": "aux",
+   "id": 1,
+   "label": "Confidence",
+   "selected": false,
+   "pvwPreset": null,
+   "pgmPreset": null,
+   "programMemory": null,
+   "previewMemory": null,
+   "programLayer1": "",
+   "transition": "AT_UP"
+  },
+  {
+   "key": "A2",
+   "kind": "aux",
+   "id": 2,
+   "label": "Record",
+   "selected": false,
+   "pvwPreset": null,
+   "pgmPreset": null,
+   "programMemory": null,
+   "previewMemory": null,
+   "programLayer1": "",
+   "transition": "AT_UP"
+  }
+ ],
+ "multiviewers": [
+  {
+   "key": "M1",
+   "kind": "multiviewer",
+   "id": 1,
+   "label": "MVW1"
+  },
+  {
+   "key": "M2",
+   "kind": "multiviewer",
+   "id": 2,
+   "label": "MVW2"
+  }
+ ],
+ "selection": [
+  "S1",
+  "S2",
+  "S3"
+ ],
+ "staging": {
+  "memories": {
+   "S1": 13,
+   "S2": 11,
+   "S3": 12,
+   "A1": 42
+  },
+  "master": null,
+  "mvMemories": {
+   "M1": 1
+  },
+  "editing": null,
+  "targets": [
+   "S1",
+   "S2",
+   "S3",
+   "A1"
+  ]
+ },
+ "memories": {
+  "types": [
+   {
+    "type": "screen",
+    "name": "Screen / Aux",
+    "slots": 1000,
+    "targets": "screen,aux",
+    "labels": "documented (AWJ \u00a73.7)",
+    "recall": "per destination: AWJ \u00a73.3, REST \u00a73.2 / \u00a74.2",
+    "supported": true,
+    "note": "One bank for Screens and Aux Screens (User Manual \u00a715). Recall to one destination affects only that destination."
+   },
+   {
+    "type": "master",
+    "name": "Master",
+    "slots": 500,
+    "targets": "master",
+    "labels": "documented (AWJ \u00a73.7)",
+    "recall": "AWJ \u00a73.4, REST \u00a73.4",
+    "supported": true,
+    "note": "Loads the Screen memories it was saved with on the screens it includes. Which screens those are is not readable over AWJ/REST."
+   },
+   {
+    "type": "multiviewer",
+    "name": "Multiviewer",
+    "slots": 50,
+    "targets": "multiviewer",
+    "labels": "not documented (INFERRED path, needs memoryProbe)",
+    "recall": "per output: AWJ \u00a74.2, REST \u00a75.2",
+    "supported": true,
+    "note": "Loads straight to the Multiviewer output; there is no Preview/Program and no last-loaded readback."
+   },
+   {
+    "type": "layer",
+    "name": "Layer",
+    "slots": 50,
+    "targets": "",
+    "labels": "not documented",
+    "recall": "not documented",
+    "supported": false,
+    "note": "Layer memories (User Manual \u00a715.4) have no AWJ or REST command, so they cannot be imported or recalled."
+   }
+  ],
+  "items": {
+   "screen": [
+    {
+     "type": "screen",
+     "slot": 1,
+     "label": "Walk-in L",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 2,
+     "label": "Walk-in R",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 10,
+     "label": "Keynote",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [
+      "S1"
+     ],
+     "onProgram": [],
+     "onPreview": [
+      "S1"
+     ]
+    },
+    {
+     "type": "screen",
+     "slot": 11,
+     "label": "IMAG L",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 12,
+     "label": "IMAG R",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 13,
+     "label": "IMAG Wide",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 20,
+     "label": "Panel C",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 21,
+     "label": "Panel LR",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 22,
+     "label": "Panel Floor",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 23,
+     "label": "Panel Conf",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 30,
+     "label": "Floor Logo",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [
+      "S4"
+     ],
+     "onProgram": [
+      "S4"
+     ],
+     "onPreview": [
+      "S4"
+     ]
+    },
+    {
+     "type": "screen",
+     "slot": 31,
+     "label": "Sponsor C",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [
+      "S1"
+     ],
+     "onProgram": [
+      "S1"
+     ],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 32,
+     "label": "Sponsor L",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [
+      "S2"
+     ],
+     "onProgram": [
+      "S2"
+     ],
+     "onPreview": [
+      "S2"
+     ]
+    },
+    {
+     "type": "screen",
+     "slot": 33,
+     "label": "Sponsor R",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [
+      "S3"
+     ],
+     "onProgram": [
+      "S3"
+     ],
+     "onPreview": [
+      "S3"
+     ]
+    },
+    {
+     "type": "screen",
+     "slot": 40,
+     "label": "Conf PPT",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 41,
+     "label": "Record Clean",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 42,
+     "label": "Conf Clock",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 43,
+     "label": "Record PGM",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 50,
+     "label": "Awards C",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 51,
+     "label": "Awards LR",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 52,
+     "label": "Awards Floor",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "screen",
+     "slot": 53,
+     "label": "Awards Logo",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    }
+   ],
+   "master": [
+    {
+     "type": "master",
+     "slot": 1,
+     "label": "Show Open",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "master",
+     "slot": 2,
+     "label": "Keynote",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "master",
+     "slot": 3,
+     "label": "Panel",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [
+      "master"
+     ],
+     "onProgram": [
+      "master"
+     ],
+     "onPreview": [
+      "master"
+     ]
+    },
+    {
+     "type": "master",
+     "slot": 4,
+     "label": "Break",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "master",
+     "slot": 5,
+     "label": "Awards",
+     "status": "valid",
+     "evidence": "label",
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    }
+   ],
+   "multiviewer": [
+    {
+     "type": "multiviewer",
+     "slot": 1,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 2,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 3,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 4,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 5,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 6,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 7,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 8,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 9,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 10,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 11,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 12,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 13,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 14,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 15,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 16,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 17,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 18,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 19,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 20,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 21,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 22,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 23,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 24,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 25,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 26,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 27,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 28,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 29,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 30,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 31,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 32,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 33,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 34,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 35,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 36,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 37,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 38,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 39,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 40,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 41,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 42,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 43,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 44,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 45,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 46,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 47,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 48,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 49,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    },
+    {
+     "type": "multiviewer",
+     "slot": 50,
+     "label": "",
+     "status": "unknown",
+     "evidence": null,
+     "seenOn": [],
+     "onProgram": [],
+     "onPreview": []
+    }
+   ]
+  },
+  "import": {
+   "at": "2026-10-19T03:27:44.275Z",
+   "error": null,
+   "count": 1500,
+   "probe": false
+  },
+  "probe": false
+ },
+ "master": {
+  "preview": 3,
+  "program": 3
+ },
+ "lastRecalled": {
+  "number": 9,
+  "name": "Keynote + Sponsors"
+ },
+ "programPresets": [
+  10
+ ],
+ "presets": [
+  {
+   "number": 1,
+   "name": "Walk-in",
+   "color": null,
+   "destinations": [
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "memories": {
+    "S1": 1,
+    "S2": 2,
+    "S3": 2
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "hasSources": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.125Z"
+  },
+  {
+   "number": 2,
+   "name": "Keynote Full",
+   "color": null,
+   "destinations": [
+    "S1"
+   ],
+   "memories": {
+    "S1": 10
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "S1"
+   ],
+   "hasSources": {
+    "S1": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.144Z"
+  },
+  {
+   "number": 3,
+   "name": "IMAG Both",
+   "color": null,
+   "destinations": [
+    "S2",
+    "S3"
+   ],
+   "memories": {
+    "S2": 11,
+    "S3": 12
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "S2",
+    "S3"
+   ],
+   "hasSources": {
+    "S2": true,
+    "S3": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.149Z"
+  },
+  {
+   "number": 4,
+   "name": "Panel 4-up",
+   "color": null,
+   "destinations": [
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "memories": {
+    "S1": 20,
+    "S2": 21,
+    "S3": 21
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "hasSources": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.163Z"
+  },
+  {
+   "number": 5,
+   "name": "Floor Logo",
+   "color": null,
+   "destinations": [
+    "S4"
+   ],
+   "memories": {
+    "S4": 30
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "S4"
+   ],
+   "hasSources": {
+    "S4": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.180Z"
+  },
+  {
+   "number": 6,
+   "name": "Confidence PPT",
+   "color": null,
+   "destinations": [
+    "A1"
+   ],
+   "memories": {
+    "A1": 40
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "A1"
+   ],
+   "hasSources": {
+    "A1": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.187Z"
+  },
+  {
+   "number": 7,
+   "name": "Record Clean",
+   "color": null,
+   "destinations": [
+    "A2"
+   ],
+   "memories": {
+    "A2": 41
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "A2"
+   ],
+   "hasSources": {
+    "A2": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.191Z"
+  },
+  {
+   "number": 8,
+   "name": "Awards Stinger",
+   "color": null,
+   "destinations": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+   ],
+   "memories": {
+    "S1": 50,
+    "S2": 51,
+    "S3": 51,
+    "S4": 52
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+   ],
+   "hasSources": {
+    "S1": true,
+    "S2": true,
+    "S3": true,
+    "S4": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.196Z"
+  },
+  {
+   "number": 9,
+   "name": "Keynote + Sponsors",
+   "color": null,
+   "destinations": [
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "memories": {
+    "S1": 10,
+    "S2": 32,
+    "S3": 33
+   },
+   "master": null,
+   "mvMemories": {},
+   "targets": [
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "hasSources": {
+    "S1": false,
+    "S2": false,
+    "S3": false
+   },
+   "tally": {
+    "pvw": "full",
+    "pgm": "partial"
+   },
+   "onPreview": true,
+   "onProgram": false,
+   "lastRecalled": true,
+   "updatedAt": "2026-10-19T03:25:44.215Z"
+  },
+  {
+   "number": 10,
+   "name": "Panel Master + MV",
+   "color": null,
+   "destinations": [
+    "S4"
+   ],
+   "memories": {
+    "S4": 30
+   },
+   "master": {
+    "slot": 3,
+    "dests": [
+     "S1",
+     "S2",
+     "S3",
+     "S4",
+     "A1",
+     "A2"
+    ]
+   },
+   "mvMemories": {
+    "M1": 2
+   },
+   "targets": [
+    "S1",
+    "S2",
+    "S3",
+    "S4",
+    "A1",
+    "A2"
+   ],
+   "hasSources": {
+    "S4": false
+   },
+   "tally": {
+    "pvw": "full",
+    "pgm": "full"
+   },
+   "onPreview": true,
+   "onProgram": true,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T03:25:44.216Z"
+  }
+ ],
+ "tally": {
+  "preview": {
+   "S1": 9,
+   "S2": 9,
+   "S3": 9,
+   "S4": 10
+  },
+  "program": {
+   "S2": 9,
+   "S3": 9,
+   "S4": 10
+  },
+  "source": "device-memory"
+ },
+ "live": {
+  "mode": "push",
+  "subscribed": true,
+  "hasMemoryInfo": true,
+  "lastUpdate": "2026-10-19T03:27:44.275Z",
+  "error": null,
+  "destinations": {
+   "S1": {
+    "key": "S1",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "LIVE_7",
+      "2": "STILL_7",
+      "3": "LIVE_11",
+      "4": "NONE"
+     },
+     "background": "NATIVE_7",
+     "memory": {
+      "id": 31,
+      "label": "Sponsor C"
+     },
+     "layer1Label": "Walk-in Loop"
+    },
+    "preview": {
+     "layers": {
+      "1": "LIVE_10",
+      "2": "STILL_2",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NATIVE_2",
+     "memory": {
+      "id": 10,
+      "label": "Keynote"
+     },
+     "layer1Label": "Zoom"
+    }
+   },
+   "S2": {
+    "key": "S2",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "LIVE_8",
+      "2": "STILL_8",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NATIVE_8",
+     "memory": {
+      "id": 32,
+      "label": "Sponsor L"
+     },
+     "layer1Label": "Spare"
+    },
+    "preview": {
+     "layers": {
+      "1": "LIVE_8",
+      "2": "STILL_8",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NATIVE_8",
+     "memory": {
+      "id": 32,
+      "label": "Sponsor L"
+     },
+     "layer1Label": "Spare"
+    }
+   },
+   "S3": {
+    "key": "S3",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "LIVE_9",
+      "2": "STILL_1",
+      "3": "LIVE_1",
+      "4": "NONE"
+     },
+     "background": "NATIVE_1",
+     "memory": {
+      "id": 33,
+      "label": "Sponsor R"
+     },
+     "layer1Label": "PPT Main Bkp"
+    },
+    "preview": {
+     "layers": {
+      "1": "LIVE_9",
+      "2": "STILL_1",
+      "3": "LIVE_1",
+      "4": "NONE"
+     },
+     "background": "NATIVE_1",
+     "memory": {
+      "id": 33,
+      "label": "Sponsor R"
+     },
+     "layer1Label": "PPT Main Bkp"
+    }
+   },
+   "S4": {
+    "key": "S4",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "LIVE_6",
+      "2": "STILL_6",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NATIVE_6",
+     "memory": {
+      "id": 30,
+      "label": "Floor Logo"
+     },
+     "layer1Label": "Playback"
+    },
+    "preview": {
+     "layers": {
+      "1": "LIVE_6",
+      "2": "STILL_6",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NATIVE_6",
+     "memory": {
+      "id": 30,
+      "label": "Floor Logo"
+     },
+     "layer1Label": "Playback"
+    }
+   },
+   "A1": {
+    "key": "A1",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    },
+    "preview": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    }
+   },
+   "A2": {
+    "key": "A2",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    },
+    "preview": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    }
+   }
+  },
+  "tally": {
+   "program": [
+    1,
+    6,
+    7,
+    8,
+    9,
+    11
+   ],
+   "preview": [
+    1,
+    6,
+    8,
+    9,
+    10
+   ],
+   "inputs": {
+    "1": {
+     "program": [
+      "S3"
+     ],
+     "preview": [
+      "S3"
+     ]
+    },
+    "6": {
+     "program": [
+      "S4"
+     ],
+     "preview": [
+      "S4"
+     ]
+    },
+    "7": {
+     "program": [
+      "S1"
+     ],
+     "preview": []
+    },
+    "8": {
+     "program": [
+      "S2"
+     ],
+     "preview": [
+      "S2"
+     ]
+    },
+    "9": {
+     "program": [
+      "S3"
+     ],
+     "preview": [
+      "S3"
+     ]
+    },
+    "10": {
+     "program": [],
+     "preview": [
+      "S1"
+     ]
+    },
+    "11": {
+     "program": [
+      "S1"
+     ],
+     "preview": []
+    }
+   }
+  },
+  "inputs": [
+   {
+    "number": 1,
+    "label": "Cam 1 Wide",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "4K",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": true,
+    "programOn": [
+     "S3"
+    ],
+    "previewOn": [
+     "S3"
+    ],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 2,
+    "label": "Cam 2 Tight",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "4K",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 3,
+    "label": "Cam 3 Jib",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "4K",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 4,
+    "label": "PPT Main",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "LIVE_9",
+      "2": "STILL_1"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 5,
+    "label": "PPT Backup",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 6,
+    "label": "Playback",
+    "isEnabled": true,
+    "isAvailable": false,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": true,
+    "programOn": [
+     "S4"
+    ],
+    "previewOn": [
+     "S4"
+    ],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 7,
+    "label": "Walk-in Loop",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": false,
+    "programOn": [
+     "S1"
+    ],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 8,
+    "label": "Spare",
+    "isEnabled": false,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": true,
+    "programOn": [
+     "S2"
+    ],
+    "previewOn": [
+     "S2"
+    ],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 9,
+    "label": "PPT Main Bkp",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": true,
+    "programOn": [
+     "S3"
+    ],
+    "previewOn": [
+     "S3"
+    ],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 10,
+    "label": "Zoom",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": true,
+    "programOn": [],
+    "previewOn": [
+     "S1"
+    ],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 11,
+    "label": "Graphics",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": false,
+    "programOn": [
+     "S1"
+    ],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 12,
+    "label": "Clock",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 13,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 14,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 15,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 16,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 17,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 18,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 19,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 20,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 21,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 22,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 23,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 24,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 25,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 26,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 27,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 28,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 29,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 30,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 31,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 32,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   }
+  ],
+  "lastMaster": {
+   "program": {
+    "id": 3,
+    "label": "Panel"
+   },
+   "preview": {
+    "id": 3,
+    "label": "Panel"
+   }
+  },
+  "backup": {
+   "inputs": [
+    {
+     "number": 4,
+     "label": "PPT Main",
+     "slots": {
+      "1": "LIVE_9",
+      "2": "STILL_1"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   ],
+   "backgrounds": [
+    {
+     "screen": "S1",
+     "set": 1,
+     "slots": {
+      "1": "NATIVE_2",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 2,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 3,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 4,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 5,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 6,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 7,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 8,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 1,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 2,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 3,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 4,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 5,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 6,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 7,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 8,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 1,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 2,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 3,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 4,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 5,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 6,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 7,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 8,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 1,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 2,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 3,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 4,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 5,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 6,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 7,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 8,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   ],
+   "groups": [
+    {
+     "group": 1,
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "group": 2,
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "group": 3,
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "group": 4,
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   ]
+  },
+  "audio": {
+   "inputs": [
+    {
+     "input": 1,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "input": 2,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "input": 3,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "input": 4,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "output": 1,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "output": 2,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "output": 3,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "output": 4,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
