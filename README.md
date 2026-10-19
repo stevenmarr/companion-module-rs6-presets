@@ -44,6 +44,10 @@ store; see the Modules page in the Companion user guide):
 3. Drag buttons from **Buttons › Presets › rs6-presets**. Buttons you dragged from an older version
    keep their old text; drag them again to get the new text.
 
+## New in 0.3.2
+
+- **Recalling a preset selects that preset's destinations.** TAKE and CUT, and the destination buttons, follow the destination group assigned on the preset in the app (its screens, plus the Master's screens). If the app's selection is still the previous group after the recall, the module sets it.
+
 ## New in 0.3.1
 
 - **Preset buttons show the preset's name**, live from `$(rs6presets:preset_<N>_name)`. The number

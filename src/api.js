@@ -21,7 +21,7 @@ class AppApi {
   state(opts) { return this._req('GET', '/api/state', undefined, opts); }
   // Long-poll: the app holds the request until its state revision passes `rev` or `waitMs` elapses (app >= 0.2.0).
   stateSince(rev, waitMs, signal) { return this._req('GET', `/api/state?since=${Number(rev)}&timeout=${Number(waitMs)}`, undefined, { timeoutMs: waitMs + 5000, signal }); }
-  recall(n) { return this._req('POST', `/api/presets/${Number(n)}/recall`); }
+  recall(n) { return this._req('POST', `/api/presets/${Number(n)}/recall`, undefined, { timeoutMs: 30000 }); }
   take() { return this._req('POST', '/api/take'); }
   cut() { return this._req('POST', '/api/cut'); }
   toggleDestination(key) { return this._req('POST', `/api/destinations/${encodeURIComponent(key)}/toggle`); }

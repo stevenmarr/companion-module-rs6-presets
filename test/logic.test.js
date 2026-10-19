@@ -25,6 +25,18 @@ test('tally feedback logic', () => {
   assert.equal(L.presetTally(null, 1, 'pgm'), false);
   assert.equal(L.destSelected(STATE, 's3'), true);
   assert.equal(L.destSelected(STATE, 'A1'), false);
+  assert.equal(L.variableValues({ ...STATE, transitionTargets: [] }).selection, 'S1,S3');
+  assert.equal(L.variableValues({ ...STATE, transitionTargets: ['A1'] }).selection, 'A1');
+});
+
+test('recall applies the destination group assigned on the preset', () => {
+  const presets = [{ number: 4, name: 'Wide', destinations: ['S1'], master: { slot: 2, dests: ['S2', 'A1'] }, targets: ['A1', 'S1', 'S2'] }];
+  const before = { selection: ['S3'], transitionTargets: ['S3'], presets };
+  assert.deepEqual(L.presetTargets(presets[0]), ['A1', 'S1', 'S2']);
+  assert.deepEqual(L.selectionToApply(before, 4), ['A1', 'S1', 'S2']);
+  assert.equal(L.selectionToApply({ selection: ['S2', 'A1', 'S1'], presets }, 4), null);
+  assert.equal(L.selectionToApply({ selection: ['S1'], presets: [{ number: 3, name: 'Panel' }] }, 3), null);
+  assert.deepEqual(L.presetTargets({ destinations: ['s2'], master: { dests: ['S2', 'A1'] } }), ['S2', 'A1']);
 });
 
 test('variables', () => {

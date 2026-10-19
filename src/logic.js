@@ -13,7 +13,43 @@ function presetTally(state, number, which, includePartial = false) {
   return v === 'full' || (includePartial && v === 'partial');
 }
 
-function destSelected(state, key) { return !!(state && Array.isArray(state.selection) && state.selection.includes(String(key).toUpperCase())); }
+function destSelected(state, key) {
+  const k = String(key).toUpperCase();
+  if (selectionKeys(state).includes(k)) return true;
+  const d = findDest(state, key);
+  return !!(d && d.selected);
+}
+
+// Destinations a preset was assigned in the app: its `targets` (screens plus the Master's screens),
+// or the Screen destinations plus master.dests on an older state that has no targets list.
+function presetTargets(p) {
+  if (!p) return [];
+  const raw = Array.isArray(p.targets) && p.targets.length
+    ? p.targets
+    : [...(p.destinations || []), ...((p.master && p.master.dests) || [])];
+  const out = []; const seen = new Set();
+  for (const k of raw) {
+    const key = String(k).toUpperCase();
+    if (!/^[SA]\d+$/.test(key) || seen.has(key)) continue;
+    seen.add(key); out.push(key);
+  }
+  return out;
+}
+
+function selectionKeys(state) {
+  const targets = state && Array.isArray(state.transitionTargets) && state.transitionTargets.length ? state.transitionTargets : null;
+  const list = targets || (state && state.selection) || [];
+  return list.map((k) => String(k).toUpperCase());
+}
+
+// Keys to POST to /api/selection after a recall, or null when the app already selected this preset's destinations.
+function selectionToApply(state, number) {
+  const keys = presetTargets(findPreset(state, number));
+  if (!keys.length) return null;
+  const now = selectionKeys(state);
+  if (now.length === keys.length && keys.every((k) => now.includes(k))) return null;
+  return keys;
+}
 
 // ---------- live device state (app >= 0.2.0: state.live) ----------
 const live = (state) => (state && state.live) || null;
@@ -139,7 +175,7 @@ function variableValues(state) {
     last_preset_name: state && state.lastRecalled ? state.lastRecalled.name : '',
     program_presets: state && state.programPresets ? state.programPresets.join(',') : '',
     // what TAKE / CUT will act on (app 0.3.1 transitionTargets; the plain selection on older apps)
-    selection: state && (state.transitionTargets || state.selection) ? (state.transitionTargets || state.selection).join(',') : '',
+    selection: selectionKeys(state).join(','),
     auto_take: state && state.autoTake ? 'ON' : 'OFF',
     device_connected: state ? String(!!state.connected) : 'false',
   };
@@ -279,7 +315,7 @@ function buildPresets(state) {
 }
 
 module.exports = {
-  rgb, COLORS, findPreset, presetTally, destSelected, variableDefinitions, variableValues, presetSignature, buttonPresets,
+  rgb, COLORS, findPreset, presetTally, destSelected, presetTargets, selectionToApply, variableDefinitions, variableValues, presetSignature, buttonPresets,
   presetSummary, presetChoices, memoryChoices, mvChoices, memLabel, memItems, LOGO_PNG64,
   inputChoices, inputTally, destMemoryIs, masterIs, inputFrozen, inputProblem, backupEntry, backupActive, audioMuted, findInput,
 };

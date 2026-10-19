@@ -90,6 +90,7 @@ test('instance: preset recall/feedback dropdowns list combined presets; memory a
     await c.actions.refresh_memories.callback({ options: {} });
     assert.deepEqual(posts, [
       '/api/presets/10/recall ',
+      '/api/selection {"destinations":["S1","S2","S3","S4","A1","A2"]}',
       '/api/memories/load {"type":"screen","slot":12,"dest":"S3","target":"preview"}',
       '/api/memories/load {"type":"master","slot":4,"target":"program"}',
       '/api/memories/load {"type":"multiviewer","slot":3,"dest":"M2"}',

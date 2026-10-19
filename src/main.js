@@ -118,7 +118,15 @@ class RS6PresetsInstance extends InstanceBase {
       recall_preset: {
         name: 'Recall preset to Preview (combined: Master + per-screen memories + Multiviewer)',
         options: [this.presetOpt()],
-        callback: (a) => this.run('Recall', () => this.api.recall(a.options.preset)),
+        callback: (a) => this.run('Recall', async () => {
+          const n = Number(a.options.preset);
+          await this.api.recall(n);
+          // The app should move the TAKE selection onto this preset's destinations. If it didn't
+          // (or the state we can see is still the previous group), set that group explicitly.
+          const st = await this.api.state();
+          const keys = L.selectionToApply(st, n);
+          if (keys) await this.api.setSelection(keys);
+        }),
       },
       load_screen_memory: {
         name: 'Load a Screen memory to ONE destination',
