@@ -4,10 +4,10 @@
   "name": "rs6-presets",
   "shortname": "rs6presets",
   "description": "Control the RS6 Presets app: E2-style destination presets, Take/Cut and tally for Analog Way Aquilon RS6",
-  "version": "1.0.0",
+  "version": "0.2.0",
   "license": "MIT",
-  "repository": "git+https://github.com/YOUR-ACCOUNT/companion-module-rs6-presets.git",
-  "bugs": "https://github.com/YOUR-ACCOUNT/companion-module-rs6-presets/issues",
+  "repository": "git+https://github.com/stevenmarr/companion-module-rs6-presets.git",
+  "bugs": "https://github.com/stevenmarr/companion-module-rs6-presets/issues",
   "maintainers": [{ "name": "Steven" }],
   "legacyIds": [],
   "runtime": {

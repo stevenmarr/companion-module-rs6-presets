@@ -1,0 +1,2024 @@
+{
+ "app": "rs6-presets",
+ "version": 2,
+ "rev": 21,
+ "mock": true,
+ "connected": true,
+ "lastError": null,
+ "system": {
+  "type": "AQL RS6",
+  "label": "MOCK-RS6",
+  "isLinked": false,
+  "linkName": "",
+  "version": {
+   "major": 6,
+   "minor": 2,
+   "patch": 79,
+   "beta": false
+  }
+ },
+ "autoTake": false,
+ "destinations": [
+  {
+   "key": "S1",
+   "kind": "screen",
+   "id": 1,
+   "label": "Center LED",
+   "selected": true,
+   "pvwPreset": 4,
+   "pgmPreset": 1,
+   "programMemory": {
+    "id": 1,
+    "label": "Walk-in L"
+   },
+   "previewMemory": {
+    "id": 20,
+    "label": "Panel C"
+   },
+   "programLayer1": "Cam 1 Wide",
+   "transition": "AT_UP"
+  },
+  {
+   "key": "S2",
+   "kind": "screen",
+   "id": 2,
+   "label": "Left IMAG",
+   "selected": true,
+   "pvwPreset": 4,
+   "pgmPreset": 1,
+   "programMemory": {
+    "id": 2,
+    "label": "Walk-in R"
+   },
+   "previewMemory": {
+    "id": 21,
+    "label": "Panel LR"
+   },
+   "programLayer1": "Cam 2 Tight",
+   "transition": "AT_UP"
+  },
+  {
+   "key": "S3",
+   "kind": "screen",
+   "id": 3,
+   "label": "Right IMAG",
+   "selected": true,
+   "pvwPreset": 4,
+   "pgmPreset": 1,
+   "programMemory": {
+    "id": 2,
+    "label": "Walk-in R"
+   },
+   "previewMemory": {
+    "id": 21,
+    "label": "Panel LR"
+   },
+   "programLayer1": "Cam 2 Tight",
+   "transition": "AT_UP"
+  },
+  {
+   "key": "S4",
+   "kind": "screen",
+   "id": 4,
+   "label": "Stage Floor",
+   "selected": false,
+   "pvwPreset": null,
+   "pgmPreset": null,
+   "programMemory": null,
+   "previewMemory": null,
+   "programLayer1": "",
+   "transition": "AT_DOWN"
+  },
+  {
+   "key": "A1",
+   "kind": "aux",
+   "id": 1,
+   "label": "Confidence",
+   "selected": false,
+   "pvwPreset": null,
+   "pgmPreset": null,
+   "programMemory": null,
+   "previewMemory": null,
+   "programLayer1": "",
+   "transition": "AT_DOWN"
+  },
+  {
+   "key": "A2",
+   "kind": "aux",
+   "id": 2,
+   "label": "Record",
+   "selected": false,
+   "pvwPreset": null,
+   "pgmPreset": null,
+   "programMemory": null,
+   "previewMemory": null,
+   "programLayer1": "",
+   "transition": "AT_DOWN"
+  }
+ ],
+ "selection": [
+  "S1",
+  "S2",
+  "S3"
+ ],
+ "lastRecalled": {
+  "number": 4,
+  "name": "Panel 4-up"
+ },
+ "programPresets": [
+  1
+ ],
+ "presets": [
+  {
+   "number": 1,
+   "name": "Walk-in",
+   "color": null,
+   "destinations": [
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "memories": {
+    "S1": 1,
+    "S2": 2,
+    "S3": 2
+   },
+   "hasSources": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "full"
+   },
+   "onPreview": false,
+   "onProgram": true,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T02:54:04.104Z"
+  },
+  {
+   "number": 2,
+   "name": "Keynote Full",
+   "color": null,
+   "destinations": [
+    "S1"
+   ],
+   "memories": {
+    "S1": 10
+   },
+   "hasSources": {
+    "S1": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T02:54:04.125Z"
+  },
+  {
+   "number": 3,
+   "name": "IMAG Both",
+   "color": null,
+   "destinations": [
+    "S2",
+    "S3"
+   ],
+   "memories": {
+    "S2": 11,
+    "S3": 12
+   },
+   "hasSources": {
+    "S2": true,
+    "S3": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T02:54:04.132Z"
+  },
+  {
+   "number": 4,
+   "name": "Panel 4-up",
+   "color": null,
+   "destinations": [
+    "S1",
+    "S2",
+    "S3"
+   ],
+   "memories": {
+    "S1": 20,
+    "S2": 21,
+    "S3": 21
+   },
+   "hasSources": {
+    "S1": true,
+    "S2": true,
+    "S3": true
+   },
+   "tally": {
+    "pvw": "full",
+    "pgm": "none"
+   },
+   "onPreview": true,
+   "onProgram": false,
+   "lastRecalled": true,
+   "updatedAt": "2026-10-19T02:54:04.144Z"
+  },
+  {
+   "number": 5,
+   "name": "Floor Logo",
+   "color": null,
+   "destinations": [
+    "S4"
+   ],
+   "memories": {
+    "S4": 30
+   },
+   "hasSources": {
+    "S4": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T02:54:04.164Z"
+  },
+  {
+   "number": 6,
+   "name": "Confidence PPT",
+   "color": null,
+   "destinations": [
+    "A1"
+   ],
+   "memories": {
+    "A1": 40
+   },
+   "hasSources": {
+    "A1": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T02:54:04.170Z"
+  },
+  {
+   "number": 7,
+   "name": "Record Clean",
+   "color": null,
+   "destinations": [
+    "A2"
+   ],
+   "memories": {
+    "A2": 41
+   },
+   "hasSources": {
+    "A2": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T02:54:04.177Z"
+  },
+  {
+   "number": 8,
+   "name": "Awards Stinger",
+   "color": null,
+   "destinations": [
+    "S1",
+    "S2",
+    "S3",
+    "S4"
+   ],
+   "memories": {
+    "S1": 50,
+    "S2": 51,
+    "S3": 51,
+    "S4": 52
+   },
+   "hasSources": {
+    "S1": true,
+    "S2": true,
+    "S3": true,
+    "S4": true
+   },
+   "tally": {
+    "pvw": "none",
+    "pgm": "none"
+   },
+   "onPreview": false,
+   "onProgram": false,
+   "lastRecalled": false,
+   "updatedAt": "2026-10-19T02:54:04.181Z"
+  }
+ ],
+ "tally": {
+  "preview": {
+   "S1": 4,
+   "S2": 4,
+   "S3": 4
+  },
+  "program": {
+   "S1": 1,
+   "S2": 1,
+   "S3": 1
+  },
+  "source": "device-memory"
+ },
+ "live": {
+  "mode": "push",
+  "subscribed": true,
+  "hasMemoryInfo": true,
+  "lastUpdate": "2026-10-19T02:56:29.120Z",
+  "error": null,
+  "destinations": {
+   "S1": {
+    "key": "S1",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "LIVE_1",
+      "2": "STILL_1",
+      "3": "LIVE_5",
+      "4": "NONE"
+     },
+     "background": "NATIVE_1",
+     "memory": {
+      "id": 1,
+      "label": "Walk-in L"
+     },
+     "layer1Label": "Cam 1 Wide"
+    },
+    "preview": {
+     "layers": {
+      "1": "LIVE_8",
+      "2": "STILL_4",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NATIVE_4",
+     "memory": {
+      "id": 20,
+      "label": "Panel C"
+     },
+     "layer1Label": "Spare"
+    }
+   },
+   "S2": {
+    "key": "S2",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "LIVE_2",
+      "2": "STILL_2",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NATIVE_2",
+     "memory": {
+      "id": 2,
+      "label": "Walk-in R"
+     },
+     "layer1Label": "Cam 2 Tight"
+    },
+    "preview": {
+     "layers": {
+      "1": "LIVE_9",
+      "2": "STILL_5",
+      "3": "LIVE_1",
+      "4": "NONE"
+     },
+     "background": "NATIVE_5",
+     "memory": {
+      "id": 21,
+      "label": "Panel LR"
+     },
+     "layer1Label": "PPT Main Bkp"
+    }
+   },
+   "S3": {
+    "key": "S3",
+    "transition": "AT_UP",
+    "program": {
+     "layers": {
+      "1": "LIVE_2",
+      "2": "STILL_2",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NATIVE_2",
+     "memory": {
+      "id": 2,
+      "label": "Walk-in R"
+     },
+     "layer1Label": "Cam 2 Tight"
+    },
+    "preview": {
+     "layers": {
+      "1": "LIVE_9",
+      "2": "STILL_5",
+      "3": "LIVE_1",
+      "4": "NONE"
+     },
+     "background": "NATIVE_5",
+     "memory": {
+      "id": 21,
+      "label": "Panel LR"
+     },
+     "layer1Label": "PPT Main Bkp"
+    }
+   },
+   "S4": {
+    "key": "S4",
+    "transition": "AT_DOWN",
+    "program": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    },
+    "preview": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE",
+      "3": "NONE",
+      "4": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    }
+   },
+   "A1": {
+    "key": "A1",
+    "transition": "AT_DOWN",
+    "program": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    },
+    "preview": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    }
+   },
+   "A2": {
+    "key": "A2",
+    "transition": "AT_DOWN",
+    "program": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    },
+    "preview": {
+     "layers": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "background": "NONE",
+     "memory": null,
+     "layer1Label": ""
+    }
+   }
+  },
+  "tally": {
+   "program": [
+    1,
+    2,
+    5
+   ],
+   "preview": [
+    1,
+    8,
+    9
+   ],
+   "inputs": {
+    "1": {
+     "program": [
+      "S1"
+     ],
+     "preview": [
+      "S2",
+      "S3"
+     ]
+    },
+    "2": {
+     "program": [
+      "S2",
+      "S3"
+     ],
+     "preview": []
+    },
+    "5": {
+     "program": [
+      "S1"
+     ],
+     "preview": []
+    },
+    "8": {
+     "program": [],
+     "preview": [
+      "S1"
+     ]
+    },
+    "9": {
+     "program": [],
+     "preview": [
+      "S2",
+      "S3"
+     ]
+    }
+   }
+  },
+  "inputs": [
+   {
+    "number": 1,
+    "label": "Cam 1 Wide",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "4K",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": true,
+    "programOn": [
+     "S1"
+    ],
+    "previewOn": [
+     "S2",
+     "S3"
+    ],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 2,
+    "label": "Cam 2 Tight",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "4K",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": false,
+    "programOn": [
+     "S2",
+     "S3"
+    ],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 3,
+    "label": "Cam 3 Jib",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "4K",
+    "freeze": true,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 4,
+    "label": "PPT Main",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "LIVE_9",
+      "2": "STILL_1"
+     },
+     "selected": "1",
+     "auto": false,
+     "active": true
+    }
+   },
+   {
+    "number": 5,
+    "label": "PPT Backup",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": true,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": true,
+    "onPreview": false,
+    "programOn": [
+     "S1"
+    ],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 6,
+    "label": "Playback",
+    "isEnabled": true,
+    "isAvailable": false,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 7,
+    "label": "Walk-in Loop",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 8,
+    "label": "Spare",
+    "isEnabled": false,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": true,
+    "programOn": [],
+    "previewOn": [
+     "S1"
+    ],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 9,
+    "label": "PPT Main Bkp",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": true,
+    "programOn": [],
+    "previewOn": [
+     "S2",
+     "S3"
+    ],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 10,
+    "label": "Zoom",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 11,
+    "label": "Graphics",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 12,
+    "label": "Clock",
+    "isEnabled": true,
+    "isAvailable": true,
+    "capability": "DUAL",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 13,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 14,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 15,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 16,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 17,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 18,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 19,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 20,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 21,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 22,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 23,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 24,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 25,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 26,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 27,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 28,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 29,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 30,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 31,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   },
+   {
+    "number": 32,
+    "label": "",
+    "isEnabled": false,
+    "isAvailable": false,
+    "capability": "OFF",
+    "freeze": false,
+    "scope": "GLOBAL",
+    "device": "1",
+    "onProgram": false,
+    "onPreview": false,
+    "programOn": [],
+    "previewOn": [],
+    "backup": {
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   }
+  ],
+  "lastMaster": {
+   "program": null,
+   "preview": null
+  },
+  "backup": {
+   "inputs": [
+    {
+     "number": 4,
+     "label": "PPT Main",
+     "slots": {
+      "1": "LIVE_9",
+      "2": "STILL_1"
+     },
+     "selected": "1",
+     "auto": false,
+     "active": true
+    }
+   ],
+   "backgrounds": [
+    {
+     "screen": "S1",
+     "set": 1,
+     "slots": {
+      "1": "NATIVE_2",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 2,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 3,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 4,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 5,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 6,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 7,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S1",
+     "set": 8,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 1,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 2,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 3,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 4,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 5,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 6,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 7,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S2",
+     "set": 8,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 1,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 2,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 3,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 4,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 5,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 6,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 7,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S3",
+     "set": 8,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 1,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 2,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 3,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 4,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 5,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 6,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 7,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "screen": "S4",
+     "set": 8,
+     "slots": {
+      "1": "NONE",
+      "2": "NONE"
+     },
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   ],
+   "groups": [
+    {
+     "group": 1,
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "group": 2,
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "group": 3,
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    },
+    {
+     "group": 4,
+     "selected": "NONE",
+     "auto": false,
+     "active": false
+    }
+   ]
+  },
+  "audio": {
+   "inputs": [
+    {
+     "input": 1,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": true
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "input": 2,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "input": 3,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "input": 4,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    }
+   ],
+   "outputs": [
+    {
+     "output": 1,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "output": 2,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "output": 3,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    },
+    {
+     "output": 4,
+     "channels": [
+      {
+       "channel": 1,
+       "mute": false
+      },
+      {
+       "channel": 2,
+       "mute": false
+      },
+      {
+       "channel": 3,
+       "mute": false
+      },
+      {
+       "channel": 4,
+       "mute": false
+      },
+      {
+       "channel": 5,
+       "mute": false
+      },
+      {
+       "channel": 6,
+       "mute": false
+      },
+      {
+       "channel": 7,
+       "mute": false
+      },
+      {
+       "channel": 8,
+       "mute": false
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
