@@ -1,0 +1,22 @@
+{
+  "$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
+  "id": "rs6-presets",
+  "name": "rs6-presets",
+  "shortname": "rs6presets",
+  "description": "Control the RS6 Presets app: E2-style destination presets, Take/Cut and tally for Analog Way Aquilon RS6",
+  "version": "1.0.0",
+  "license": "MIT",
+  "repository": "git+https://github.com/YOUR-ACCOUNT/companion-module-rs6-presets.git",
+  "bugs": "https://github.com/YOUR-ACCOUNT/companion-module-rs6-presets/issues",
+  "maintainers": [{ "name": "Steven" }],
+  "legacyIds": [],
+  "runtime": {
+    "type": "node18",
+    "api": "nodejs-ipc",
+    "apiVersion": "0.0.0",
+    "entrypoint": "../src/main.js"
+  },
+  "manufacturer": "Analog Way",
+  "products": ["Aquilon RS6 via RS6 Presets app"],
+  "keywords": ["Analog Way", "Aquilon", "RS6", "presets", "E2", "switcher"]
+}
