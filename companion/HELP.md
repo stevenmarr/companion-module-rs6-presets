@@ -36,7 +36,7 @@ destination presets. Companion talks to the app (default port 8080), and the app
 
 **Variables:** `$(rs6presets:last_preset_number)`, `$(rs6presets:last_preset_name)`,
 `$(rs6presets:program_presets)`, `$(rs6presets:selection)`, `$(rs6presets:auto_take)`,
-`$(rs6presets:device_connected)`, and `$(rs6presets:preset_N_name)` for each preset.
+`$(rs6presets:device_connected)`, and `$(rs6presets:preset_N_name)` for each tile (1 to max(24, highest); "N (empty)" for an empty tile). Swapping or moving tiles in the app (0.4.0) swaps the numbers, so buttons follow the tile. `$(rs6presets:backup_group_G_name)` holds each backup group's device name.
 New in 0.2.0:
 - `$(rs6presets:input_N_label)`
 - `$(rs6presets:S1_pgm_memory_number)` and `_name`, with the matching `pvw` versions

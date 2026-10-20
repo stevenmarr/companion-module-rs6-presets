@@ -87,6 +87,7 @@ function inputProblem(state, n, what = 'either') {
   const unavailable = i.isAvailable === false; const disabled = i.isEnabled === false;
   return what === 'unavailable' ? unavailable : what === 'disabled' ? disabled : unavailable || disabled;
 }
+function backupGroups(state) { const b = live(state) && live(state).backup; return (b && b.groups) || []; }
 function backupEntry(state, kind, id) {
   const b = live(state) && live(state).backup; if (!b) return null;
   if (kind === 'input') return (b.inputs || []).find((x) => x.number === Number(id)) || null;
@@ -137,6 +138,18 @@ function mvChoices(state) {
 const memNum = (m) => (m ? m.id : '');
 const memName = (m) => (m ? m.label || '' : '');
 
+// 0.4.0: tiles can be swapped / moved in the app (POST /api/presets/swap). A preset number IS a tile position, so
+// every per-preset variable exists for each tile 1..max(24, highest number), filled or not: a Stream Deck page
+// laid out like the app's grid keeps following the TILE. After a swap the "preset 3" button shows, recalls and
+// tallies whatever is now in tile 3; a tile emptied by a move shows "<n> (empty)" instead of a stale name.
+const MIN_TILES = 24;
+function presetSlots(state) {
+  const ps = (state && state.presets) || [];
+  const max = Math.max(MIN_TILES, ...ps.map((p) => Number(p.number) || 0));
+  return Array.from({ length: max }, (_, i) => i + 1);
+}
+const groupLabel = (g) => String((g && g.label) || `Group ${g && g.group}`);
+
 function variableDefinitions(state) {
   const defs = [
     { variableId: 'last_preset_number', name: 'Last recalled preset number' },
@@ -146,7 +159,7 @@ function variableDefinitions(state) {
     { variableId: 'auto_take', name: 'Auto take on recall (ON/OFF)' },
     { variableId: 'device_connected', name: 'App connected to the RS6 (true/false)' },
   ];
-  for (const p of (state && state.presets) || []) defs.push({ variableId: `preset_${p.number}_name`, name: `Preset ${p.number} name` });
+  for (const n of presetSlots(state)) defs.push({ variableId: `preset_${n}_name`, name: `Preset ${n} name (tile ${n}; "${n} (empty)" when the tile is empty)` });
   defs.push({ variableId: 'live_mode', name: 'Live device state mode (push / poll-awj / poll-rest / off)' });
   for (const side of ['pgm', 'pvw']) {
     defs.push({ variableId: `master_${side}_number`, name: `Last Master memory on ${side.toUpperCase()} (number)` });
@@ -164,7 +177,9 @@ function variableDefinitions(state) {
   for (const type of ['screen', 'master', 'multiviewer']) {
     for (const i of memItems(state, type)) if (i.label) defs.push({ variableId: `${type === 'multiviewer' ? 'mv' : type}_mem_${i.slot}_name`, name: `${TYPE_SHORT[type]} memory ${i.slot} name` });
   }
-  for (const p of (state && state.presets) || []) defs.push({ variableId: `preset_${p.number}_summary`, name: `Preset ${p.number} contents (e.g. S1:10 M:3)` });
+  for (const n of presetSlots(state)) defs.push({ variableId: `preset_${n}_summary`, name: `Preset ${n} contents (e.g. S1:10 M:3)` });
+  // 0.4.0: backup groups by the name given on the device (app 0.4.0 lists only groups that exist)
+  for (const g of backupGroups(state)) defs.push({ variableId: `backup_group_${g.group}_name`, name: `Backup group ${g.group} name` });
   defs.push({ variableId: 'memories_imported', name: 'Time the app last imported the device memories (ISO)' });
   return defs;
 }
@@ -180,7 +195,8 @@ function variableValues(state) {
     device_connected: state ? String(!!state.connected) : 'false',
   };
   // The preset's name, or its number when it has none (the recall buttons show this variable).
-  for (const p of (state && state.presets) || []) v[`preset_${p.number}_name`] = String(p.name || '').trim() || String(p.number);
+  const byNum = new Map(((state && state.presets) || []).map((p) => [Number(p.number), p]));
+  for (const n of presetSlots(state)) { const p = byNum.get(n); v[`preset_${n}_name`] = p ? String(p.name || '').trim() || String(n) : `${n} (empty)`; }
   const lv = live(state);
   v.live_mode = lv ? lv.mode || 'off' : 'off';
   const lm = (lv && lv.lastMaster) || {};
@@ -195,7 +211,8 @@ function variableValues(state) {
   for (const type of ['screen', 'master', 'multiviewer']) {
     for (const i of memItems(state, type)) if (i.label) v[`${type === 'multiviewer' ? 'mv' : type}_mem_${i.slot}_name`] = i.label;
   }
-  for (const p of (state && state.presets) || []) v[`preset_${p.number}_summary`] = presetSummary(p);
+  for (const n of presetSlots(state)) { const p = byNum.get(n); v[`preset_${n}_summary`] = p ? presetSummary(p) : ''; }
+  for (const g of backupGroups(state)) v[`backup_group_${g.group}_name`] = groupLabel(g);
   v.memories_imported = (state && state.memories && state.memories.import && state.memories.import.at) || '';
   return v;
 }
@@ -207,8 +224,9 @@ function presetSignature(state) {
     v: ((state && state.multiviewers) || []).map((x) => [x.key, x.label]),
     d: ((state && state.destinations) || []).map((d) => [d.key, d.label]),
     i: liveInputs(state).map((i) => [i.number, i.label]),
+    g: backupGroups(state).map((g) => [g.group, g.label]),
     a: ((live(state) && live(state).audio) || { inputs: [], outputs: [] }),
-    b: ((live(state) && live(state).backup) || { inputs: [], backgrounds: [], groups: [] }).inputs.map((x) => x.number),
+    b: (((live(state) && live(state).backup) || {}).inputs || []).map((x) => x.number),
   }, (k, val) => (k === 'mute' ? undefined : val)); // structure only, not mute values
 }
 
@@ -318,4 +336,5 @@ module.exports = {
   rgb, COLORS, findPreset, presetTally, destSelected, presetTargets, selectionToApply, variableDefinitions, variableValues, presetSignature, buttonPresets,
   presetSummary, presetChoices, memoryChoices, mvChoices, memLabel, memItems, LOGO_PNG64,
   inputChoices, inputTally, destMemoryIs, masterIs, inputFrozen, inputProblem, backupEntry, backupActive, audioMuted, findInput,
+  presetSlots, backupGroups,
 };

@@ -44,6 +44,17 @@ store; see the Modules page in the Companion user guide):
 3. Drag buttons from **Buttons › Presets › rs6-presets**. Buttons you dragged from an older version
    keep their old text; drag them again to get the new text.
 
+## New in 0.4.0 (for app 0.4.0)
+
+- **Buttons follow the tile.** The app can now swap or move preset tiles (drag, MOVE mode, or
+  `POST /api/presets/swap`). The preset numbers swap, so "Recall preset 3", `$(rs6presets:preset_3_name)`
+  and the preset-3 tally feedbacks always mean *whatever is in tile 3*. A Stream Deck page laid out like the
+  app's grid stays in step with it, with no re-programming. `preset_<N>_name` and `preset_<N>_summary` now
+  exist for every tile from 1 to max(24, highest number). A tile emptied by a move shows `N (empty)`
+  instead of a stale name.
+- **`backup_group_<G>_name`**: the backup group's name as set on the device, for groups that exist.
+- Older apps work as before.
+
 ## New in 0.3.2
 
 - **Recalling a preset selects that preset's destinations.** TAKE and CUT, and the destination buttons, follow the destination group assigned on the preset in the app (its screens, plus the Master's screens). If the app's selection is still the previous group after the recall, the module sets it.
@@ -92,7 +103,7 @@ memory actions return the app's 404.
 | **Config** | App host/IP · app port (8080) · Updates: **Long-poll** (default) or Poll only · poll interval (300 ms) |
 | **Actions** | Recall preset to Preview (dropdown of combined presets, **0.3.0**) · **Load Screen / Master / Multiviewer memory** and **Refresh memories** (**0.3.0**) · TAKE · CUT · Toggle destination (S1…, A1…) · Auto take (toggle/on/off) · **Input freeze** (toggle/on/off) · **Backup: select primary / backup 1 / backup 2** for an input, background set (`S1/2`) or backup group · **Backup: automatic/manual mode** · **Audio channel mute** (input rx / output tx; toggle/on/off) |
 | **Feedbacks** | Preset on Preview (green) and Preset on Program (red), each with an optional "partial" match · Destination selected (amber) · Auto take ON · App connected to the RS6 · **Input on Program (red)** and **Input on Preview (green)** from the device, with an input dropdown built from the device's input labels and optionally limited to one destination · **Destination last Screen memory is X** (PGM or PVW) · **Last Master memory is X** · **Input frozen** (blue) · **Input unavailable / disabled** · **Backup active** (any slot, or a specific one) · **Audio channel muted** (red) |
-| **Variables** | `last_preset_number`, `last_preset_name`, `program_presets`, `selection`, `auto_take`, `device_connected`, `preset_<N>_name`. **New in 0.2.0:** `input_<N>_label`; `<S1>_pgm_memory_number`, `<S1>_pgm_memory_name`, `<S1>_pvw_memory_number` and `<S1>_pvw_memory_name` for every destination; `master_pgm_number`, `master_pgm_name`, `master_pvw_number` and `master_pvw_name`; `<S1>_pgm_layer1` (label of the Program layer-1 source); `live_mode`. **New in 0.3.0:** `screen_mem_<N>_name`, `master_mem_<N>_name`, `mv_mem_<N>_name`, `preset_<N>_summary`, `memories_imported` |
+| **Variables** | `last_preset_number`, `last_preset_name`, `program_presets`, `selection`, `auto_take`, `device_connected`, `preset_<N>_name`. **New in 0.2.0:** `input_<N>_label`; `<S1>_pgm_memory_number`, `<S1>_pgm_memory_name`, `<S1>_pvw_memory_number` and `<S1>_pvw_memory_name` for every destination; `master_pgm_number`, `master_pgm_name`, `master_pvw_number` and `master_pvw_name`; `<S1>_pgm_layer1` (label of the Program layer-1 source); `live_mode`. **New in 0.3.0:** `screen_mem_<N>_name`, `master_mem_<N>_name`, `mv_mem_<N>_name`, `preset_<N>_summary`, `memories_imported`. **New in 0.4.0:** `backup_group_<G>_name`; preset variables exist for every tile 1..max(24, highest) |
 | **Presets** | One button per app preset (recall plus PVW/PGM tally), one per destination (toggle plus selected feedback), TAKE, CUT, AUTO TAKE, and "last recalled" and "last Master" displays. **New:** *Input tally* (one per input: label, PVW green, PGM red, yellow text when unavailable or disabled); *Input freeze* (one per input: toggle, blue when frozen); *Backups* (PRIMARY / BKP 1 / BKP 2 for each input with backups); *Audio inputs mute* and *Audio outputs mute* (one per channel). **0.3.0:** *Master memories*, *Refresh memories*, logo button. Presets regenerate when presets, inputs, channels or labels change. |
 
 ### How it stays up to date

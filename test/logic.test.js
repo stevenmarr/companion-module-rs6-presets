@@ -75,3 +75,32 @@ test('AppApi talks to the app endpoints', async () => {
     ]);
   } finally { await new Promise((r) => srv.close(r)); }
 });
+
+// 0.4.0: tiles can be swapped/moved in the app; the per-preset variables follow the TILE number.
+test('0.4.0 preset variables follow the tile after a swap or move, emptied tiles say so', () => {
+  const before = { presets: [{ number: 1, name: 'Walk-in' }, { number: 2, name: 'Wide', screens: [] }] };
+  const v1 = L.variableValues(before);
+  assert.equal(v1.preset_1_name, 'Walk-in'); assert.equal(v1.preset_2_name, 'Wide');
+  assert.equal(v1.preset_24_name, '24 (empty)', 'all 24 grid tiles exist as variables');
+  // swap 1 <-> 2: the numbers swap, so the "preset 1" button now shows/recalls Wide
+  const swapped = { presets: [{ number: 1, name: 'Wide' }, { number: 2, name: 'Walk-in' }] };
+  const v2 = L.variableValues(swapped);
+  assert.equal(v2.preset_1_name, 'Wide'); assert.equal(v2.preset_2_name, 'Walk-in');
+  // move 2 -> 30: tile 2 is empty, 30 exists, defs grow to 30 so no button is left with an undefined variable
+  const moved = { presets: [{ number: 1, name: 'Walk-in' }, { number: 30, name: 'Wide' }] };
+  const v3 = L.variableValues(moved);
+  assert.equal(v3.preset_2_name, '2 (empty)'); assert.equal(v3.preset_2_summary, ''); assert.equal(v3.preset_30_name, 'Wide');
+  const ids = L.variableDefinitions(moved).map((d) => d.variableId);
+  for (const n of [1, 2, 24, 30]) { assert.ok(ids.includes(`preset_${n}_name`), n); assert.ok(ids.includes(`preset_${n}_summary`), n); }
+  assert.notEqual(L.presetSignature(before), L.presetSignature(swapped), 'a swap refreshes the definitions');
+});
+
+test('0.4.0 backup group name variables use the label from the device', () => {
+  const st = { live: { backup: { groups: [{ group: 1, label: 'MEDIA BU' }, { group: 3, label: '' }] } } };
+  const v = L.variableValues(st);
+  assert.equal(v.backup_group_1_name, 'MEDIA BU'); assert.equal(v.backup_group_3_name, 'Group 3');
+  assert.equal(v.backup_group_2_name, undefined);
+  const ids = L.variableDefinitions(st).map((d) => d.variableId);
+  assert.ok(ids.includes('backup_group_1_name')); assert.ok(!ids.includes('backup_group_2_name'));
+  assert.notEqual(L.presetSignature(st), L.presetSignature({ live: { backup: { groups: [{ group: 1, label: 'RENAMED' }] } } }));
+});
