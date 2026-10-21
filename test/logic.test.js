@@ -31,9 +31,15 @@ test('tally feedback logic', () => {
 
 test('recall applies the destination group assigned on the preset', () => {
   const presets = [{ number: 4, name: 'Wide', destinations: ['S1'], master: { slot: 2, dests: ['S2', 'A1'] }, targets: ['A1', 'S1', 'S2'] }];
-  const before = { selection: ['S3'], transitionTargets: ['S3'], presets };
+  // an app without transitionTargets (before 0.3.1) does not move the selection itself: the module does
+  const before = { selection: ['S3'], presets };
   assert.deepEqual(L.presetTargets(presets[0]), ['A1', 'S1', 'S2']);
   assert.deepEqual(L.selectionToApply(before, 4), ['A1', 'S1', 'S2']);
+  // 0.5.0: apps with transitionTargets (0.3.1+) select the recalled preset's screens themselves; the module must
+  // not POST a second selection (it raced the app)
+  assert.equal(L.selectionToApply({ selection: ['S3'], transitionTargets: ['S3'], presets }, 4), null);
+  // old app: only destinations the app knows
+  assert.deepEqual(L.selectionToApply({ selection: ['S3'], destinations: [{ key: 'S1' }, { key: 'S2' }], presets }, 4), ['S1', 'S2']);
   assert.equal(L.selectionToApply({ selection: ['S2', 'A1', 'S1'], presets }, 4), null);
   assert.equal(L.selectionToApply({ selection: ['S1'], presets: [{ number: 3, name: 'Panel' }] }, 3), null);
   assert.deepEqual(L.presetTargets({ destinations: ['s2'], master: { dests: ['S2', 'A1'] } }), ['S2', 'A1']);

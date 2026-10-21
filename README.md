@@ -41,8 +41,38 @@ store; see the Modules page in the Companion user guide):
    Mac) and **App port** `8080`.
    **Existing connection:** open it, click the **pencil** next to the module version, pick the new
    version and **Save**. The connection restarts; Companion itself doesn't need a restart.
-3. Drag buttons from **Buttons › Presets › rs6-presets**. Buttons you dragged from an older version
-   keep their old text; drag them again to get the new text.
+3. Drag buttons from **Buttons › Presets › rs6-presets**. Buttons you already have keep working,
+   because the module id never changes. Buttons dragged from an older version keep their old text;
+   drag them again only if you want the new text.
+
+## New in 0.5.0 (for app 0.5.0)
+
+**Upgrading keeps your connection and buttons.** The module id is still `rs6-presets` (the same id in every
+release), so Companion treats 0.5.0 as a new version of the same module. Import the `.tgz`, then on the
+existing connection click the **pencil** next to the version and pick **0.5.0**. Until you do that, the
+connection stays on the version it was created with. Importing alone doesn't switch it.
+
+- **Covers 24 to 96 tiles.** The app now has a tile-count setting (24/48/72/96, default 48). The recall
+  dropdown, the `preset_<N>_name`/`preset_<N>_summary` variables and the button presets cover every tile
+  up to that count, plus any used tile above it. Empty tiles show `N (empty)`. The button presets are grouped
+  in pages of 24 (`Preset tiles 1-24`, `25-48`, ...), matching the app's pager.
+- **Version check.** The module reads `appVersion`/`apiVersion` from the app (`GET /api/version` also
+  exists). If the app is older or newer than the module expects (API 5), the connection shows a
+  **warning** status and the log says which one to update. It is logged once, not on every poll.
+- **Recall no longer fights the app.** 0.3.2 sent its own `POST /api/selection` after a recall, which
+  raced the app (since app 0.3.1 the app selects the preset's screens itself) and could name destinations
+  the app no longer had. Against app 0.3.1+ the module now leaves the selection to the app. Against older
+  apps it still sets the selection, but only to destinations that exist.
+- **New variables:** `app_version`, `app_api_version`, `show_name` (the app's current show file) and `tile_count`.
+- Backup feedback uses the app's `active` flag when the app provides it.
+- A contract test runs this module against the real app (mock device) to check every field it reads.
+
+| Module | Works with app | Notes |
+|---|---|---|
+| 0.5.0 | 0.5.0 (API 5) | Warns against older or newer apps but still works with 0.2.0+. |
+| 0.4.0 | 0.4.0 | Tiles 1-24 only. No version check. |
+| 0.3.2 | 0.3.x | Extra selection POST after recall. |
+| 0.3.1 and older | 0.3.x | Variables only for existing presets. Buttons for a moved tile say "No preset N". |
 
 ## New in 0.4.0 (for app 0.4.0)
 

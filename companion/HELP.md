@@ -36,7 +36,12 @@ destination presets. Companion talks to the app (default port 8080), and the app
 
 **Variables:** `$(rs6presets:last_preset_number)`, `$(rs6presets:last_preset_name)`,
 `$(rs6presets:program_presets)`, `$(rs6presets:selection)`, `$(rs6presets:auto_take)`,
-`$(rs6presets:device_connected)`, and `$(rs6presets:preset_N_name)` for each tile (1 to max(24, highest); "N (empty)" for an empty tile). Swapping or moving tiles in the app (0.4.0) swaps the numbers, so buttons follow the tile. `$(rs6presets:backup_group_G_name)` holds each backup group's device name.
+`$(rs6presets:device_connected)`, and `$(rs6presets:preset_N_name)` for each tile (1 to the app's tile count, or the highest used; "N (empty)" for an empty tile). Swapping or moving tiles in the app (0.4.0) swaps the numbers, so buttons follow the tile. `$(rs6presets:backup_group_G_name)` holds each backup group's device name.
+New in 0.5.0: the tiles follow the app's tile count (24/48/72/96), with button presets in pages of 24.
+`$(rs6presets:app_version)`, `$(rs6presets:app_api_version)`, `$(rs6presets:show_name)` and `$(rs6presets:tile_count)`
+are new. If the app version doesn't match, the connection shows a warning and the log says what to update.
+**Upgrading:** import the new package, then click the pencil next to the version on the connection and pick
+the new version. The connection and its buttons are kept.
 New in 0.2.0:
 - `$(rs6presets:input_N_label)`
 - `$(rs6presets:S1_pgm_memory_number)` and `_name`, with the matching `pvw` versions

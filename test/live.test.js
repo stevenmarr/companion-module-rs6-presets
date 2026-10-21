@@ -134,7 +134,7 @@ function loadInstance() {
 // Fake app with ?since=rev long-poll semantics (like lib/server.js in the app).
 function fakeApp({ longPoll = true } = {}) {
   let state = fixture(); const waiters = new Set(); const reqs = [];
-  const send = (res) => { res.writeHead(200, { 'Content-Type': 'application/json' }); const s = { ...state }; if (!longPoll) delete s.rev; res.end(JSON.stringify(s)); };
+  const send = (res) => { res.writeHead(200, { 'Content-Type': 'application/json' }); const s = { appVersion: '0.5.0', apiVersion: 5, ...state }; if (!longPoll) delete s.rev; res.end(JSON.stringify(s)); };
   const srv = http.createServer((req, res) => {
     let b = ''; req.on('data', (c) => (b += c));
     req.on('end', () => {

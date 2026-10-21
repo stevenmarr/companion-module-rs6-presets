@@ -122,8 +122,13 @@ if [ "${CMAJOR:-4}" -ge 4 ] 2>/dev/null || [ -z "$CVER" ]; then
   say "  2. New connection: Connections > + Add connection > search \"rs6-presets\" (Analog Way) >"
   say "     version $MVER > set App host/IP (127.0.0.1 if the RS6 Presets app runs on this Mac) and port 8080."
   say "     Existing connection: open it, click the pencil next to the module version, pick $MVER, Save."
-  say "  3. Buttons: Buttons > Presets > rs6-presets. Re-drag preset buttons made with 0.3.0 to get the"
-  say "     name-only text. No Companion restart is needed for an imported package."
+  say "  3. Buttons: your existing buttons and the connection settings are kept (the module id never changes)."
+  say "     New button presets: Buttons > Presets > rs6-presets. No Companion restart is needed."
+  if [ -n "$HAVE" ]; then
+    say ""
+    say "  Upgrading: importing adds $MVER next to the old version(s). Your connection keeps using the old one"
+    say "  until you click the pencil next to its version and choose $MVER."
+  fi
 fi
 if [ "$DEV" -eq 1 ]; then
   hd "Developer modules path (Companion 3.x, or instead of importing):"

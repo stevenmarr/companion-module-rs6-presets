@@ -66,7 +66,13 @@ class RS6PresetsInstance extends InstanceBase {
         this.failures = 0;
         if (this.longPoll && typeof st.rev !== 'number' && !this.warnedNoRev) { this.warnedNoRev = true; this.log('info', 'App has no long-poll support (pre-0.2.0); polling instead'); }
         this.applyState(st);
-        if (st.connected) this.updateStatus(InstanceStatus.Ok);
+        // 0.5.0: say so when the app and this module don't match (log once per app version)
+        const vp = L.versionProblem(st);
+        const vkey = `${st.appVersion}|${st.apiVersion}`;
+        if (vp && this.warnedVersion !== vkey) { this.warnedVersion = vkey; this.log('warn', vp); }
+        if (!vp) this.warnedVersion = null;
+        if (vp) this.updateStatus(InstanceStatus.UnknownWarning, vp);
+        else if (st.connected) this.updateStatus(InstanceStatus.Ok);
         else this.updateStatus(InstanceStatus.UnknownWarning, 'App reachable, but it is not connected to the RS6');
         if (!(this.longPoll && typeof st.rev === 'number')) await this.sleep(pollMs, signal);
       } catch (e) {

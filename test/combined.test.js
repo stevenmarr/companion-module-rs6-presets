@@ -15,7 +15,10 @@ test('preset dropdown lists combined presets with their contents', () => {
   const c = L.presetChoices(s);
   assert.deepEqual(c.find((x) => x.id === 10), { id: 10, label: '10 Panel Master + MV (M:3 S4:30 MV1:2)' });
   assert.deepEqual(c.find((x) => x.id === 9), { id: 9, label: '9 Keynote + Sponsors (S1:10 S2:32 S3:33)' });
-  assert.deepEqual(L.presetChoices(null), [{ id: 1, label: '1' }]);
+  // 0.5.0: every tile is a choice, filled or not (buttons follow the tile)
+  const none = L.presetChoices(null);
+  assert.equal(none.length, 24); assert.deepEqual(none[0], { id: 1, label: '1 (empty)' });
+  assert.equal(L.presetChoices({ ...s, tileCount: 96 }).length, 96);
   assert.equal(L.presetTally(s, 10, 'pgm'), true); assert.equal(L.presetTally(s, 9, 'pvw'), true);
 });
 

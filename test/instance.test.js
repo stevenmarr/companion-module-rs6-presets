@@ -31,7 +31,7 @@ function stubBase() {
 }
 
 test('module instance polls the app, exposes variables/feedbacks/presets and sends actions', async () => {
-  let state = {
+  let state = { appVersion: '0.5.0', apiVersion: 5,
     connected: true, autoTake: false, selection: ['S1'], lastRecalled: { number: 3, name: 'Panel' }, programPresets: [],
     destinations: [{ key: 'S1', label: 'Center' }, { key: 'A1', label: 'Conf' }],
     presets: [{ number: 3, name: 'Panel', tally: { pvw: 'full', pgm: 'none' } }],

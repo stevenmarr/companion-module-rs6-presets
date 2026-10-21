@@ -43,8 +43,13 @@ function selectionKeys(state) {
 }
 
 // Keys to POST to /api/selection after a recall, or null when the app already selected this preset's destinations.
+// 0.5.0: apps that report transitionTargets (0.3.1+) move the selection onto the recalled preset themselves, so the
+// module leaves it alone (a second POST /api/selection raced the app and could re-select screens the device does
+// not have). Only older apps get the explicit selection, limited to destinations the app knows.
 function selectionToApply(state, number) {
-  const keys = presetTargets(findPreset(state, number));
+  if (state && Array.isArray(state.transitionTargets)) return null;
+  const known = new Set(((state && state.destinations) || []).map((d) => String(d.key).toUpperCase()));
+  const keys = presetTargets(findPreset(state, number)).filter((k) => !known.size || known.has(k));
   if (!keys.length) return null;
   const now = selectionKeys(state);
   if (now.length === keys.length && keys.every((k) => now.includes(k))) return null;
@@ -98,7 +103,8 @@ function backupEntry(state, kind, id) {
 // slot 'any' = a backup slot (1 or 2) is selected; otherwise the exact slot is selected.
 function backupActive(state, kind, id, slot = 'any') {
   const e = backupEntry(state, kind, id); if (!e) return false;
-  return slot === 'any' ? !!e.selected && e.selected !== 'NONE' : String(e.selected) === String(slot);
+  if (slot === 'any') return typeof e.active === 'boolean' ? e.active : !!e.selected && e.selected !== 'NONE'; // app 0.4.0+: active
+  return String(e.selected) === String(slot);
 }
 function audioMuted(state, dir, n, ch) {
   const a = live(state) && live(state).audio; if (!a) return false;
@@ -120,9 +126,10 @@ function presetSummary(p) {
   for (const [k, v] of Object.entries(p.mvMemories || {})) parts.push(`MV${String(k).slice(1)}:${v}`);
   return parts.join(' ');
 }
+// 0.5.0: every tile, filled or not (a button follows its tile, so an empty tile is a valid choice)
 function presetChoices(state) {
-  const ps = (state && state.presets) || [];
-  return ps.length ? ps.map((p) => ({ id: p.number, label: `${p.number} ${p.name}${presetSummary(p) ? ' (' + presetSummary(p) + ')' : ''}` })) : [{ id: 1, label: '1' }];
+  const byNum = new Map(((state && state.presets) || []).map((p) => [Number(p.number), p]));
+  return presetSlots(state).map((n) => { const p = byNum.get(n); return { id: n, label: p ? `${n} ${p.name}${presetSummary(p) ? ' (' + presetSummary(p) + ')' : ''}` : `${n} (empty)` }; });
 }
 // Memory dropdown for a type. Unnamed slots are listed as just the number.
 function memoryChoices(state, type) {
@@ -143,10 +150,34 @@ const memName = (m) => (m ? m.label || '' : '');
 // laid out like the app's grid keeps following the TILE. After a swap the "preset 3" button shows, recalls and
 // tallies whatever is now in tile 3; a tile emptied by a move shows "<n> (empty)" instead of a stale name.
 const MIN_TILES = 24;
+const MAX_TILES = 96;
+// 0.5.0: the app's tile count (Settings › Preset tiles, 24/48/72/96; app 0.5.0+), at least 24, plus any preset
+// above it. Capped at 96 + the used tiles above 96, so Companion never gets thousands of variables.
+function tileCount(state) {
+  const n = Number(state && state.tileCount);
+  return Number.isInteger(n) && n >= MIN_TILES ? Math.min(n, MAX_TILES) : MIN_TILES;
+}
 function presetSlots(state) {
   const ps = (state && state.presets) || [];
-  const max = Math.max(MIN_TILES, ...ps.map((p) => Number(p.number) || 0));
-  return Array.from({ length: max }, (_, i) => i + 1);
+  const base = tileCount(state);
+  const used = ps.map((p) => Number(p.number) || 0);
+  const max = Math.max(base, ...used.filter((n) => n <= MAX_TILES));
+  const out = Array.from({ length: max }, (_, i) => i + 1);
+  for (const n of used.filter((x) => x > max).sort((a, b) => a - b)) out.push(n); // used tiles beyond 96
+  return out;
+}
+
+// ---------- 0.5.0 app / module version check ----------
+const EXPECTED_API = 5; // app 0.5.0
+// null = fine; otherwise a short warning for the log and the connection status
+function versionProblem(state) {
+  if (!state) return null;
+  const app = state.appVersion || 'unknown';
+  const api = Number(state.apiVersion);
+  if (!api) return `RS6 Presets app ${app} is older than this module expects (app 0.5.0, API ${EXPECTED_API}): update the app; tile moves, tile counts and shows need it`;
+  if (api < EXPECTED_API) return `RS6 Presets app ${app} has API ${api}, this module expects ${EXPECTED_API}: update the app`;
+  if (api > EXPECTED_API) return `RS6 Presets app ${app} has API ${api}, newer than this module (API ${EXPECTED_API}): update the Companion module`;
+  return null;
 }
 const groupLabel = (g) => String((g && g.label) || `Group ${g && g.group}`);
 
@@ -158,6 +189,10 @@ function variableDefinitions(state) {
     { variableId: 'selection', name: 'Selected destinations' },
     { variableId: 'auto_take', name: 'Auto take on recall (ON/OFF)' },
     { variableId: 'device_connected', name: 'App connected to the RS6 (true/false)' },
+    { variableId: 'app_version', name: 'RS6 Presets app version' },
+    { variableId: 'app_api_version', name: 'RS6 Presets app API version (this module expects 5)' },
+    { variableId: 'show_name', name: 'Current show in the app (app 0.5.0+)' },
+    { variableId: 'tile_count', name: 'Preset tiles in the app (24/48/72/96)' },
   ];
   for (const n of presetSlots(state)) defs.push({ variableId: `preset_${n}_name`, name: `Preset ${n} name (tile ${n}; "${n} (empty)" when the tile is empty)` });
   defs.push({ variableId: 'live_mode', name: 'Live device state mode (push / poll-awj / poll-rest / off)' });
@@ -193,6 +228,10 @@ function variableValues(state) {
     selection: selectionKeys(state).join(','),
     auto_take: state && state.autoTake ? 'ON' : 'OFF',
     device_connected: state ? String(!!state.connected) : 'false',
+    app_version: (state && state.appVersion) || '',
+    app_api_version: state && state.apiVersion ? String(state.apiVersion) : '',
+    show_name: (state && state.show && state.show.name) || '',
+    tile_count: String(tileCount(state)),
   };
   // The preset's name, or its number when it has none (the recall buttons show this variable).
   const byNum = new Map(((state && state.presets) || []).map((p) => [Number(p.number), p]));
@@ -225,6 +264,7 @@ function presetSignature(state) {
     d: ((state && state.destinations) || []).map((d) => [d.key, d.label]),
     i: liveInputs(state).map((i) => [i.number, i.label]),
     g: backupGroups(state).map((g) => [g.group, g.label]),
+    t: tileCount(state), api: state && state.apiVersion,
     a: ((live(state) && live(state).audio) || { inputs: [], outputs: [] }),
     b: (((live(state) && live(state).backup) || {}).inputs || []).map((x) => x.number),
   }, (k, val) => (k === 'mute' ? undefined : val)); // structure only, not mute values
@@ -242,15 +282,19 @@ function buttonPresets(state, label = 'rs6presets') {
 
 function buildPresets(state) {
   const out = {};
-  for (const p of (state && state.presets) || []) {
-    out[`preset_${p.number}`] = {
-      type: 'button', category: 'Presets', name: `${p.number} ${p.name}`,
+  // 0.5.0: one button per TILE (1..tile count), in pages of 24 like the app's pager / a Stream Deck XL page.
+  // Buttons follow the tile: after a move or swap in the app they show / recall / tally what is there now.
+  const byNum = new Map(((state && state.presets) || []).map((p) => [Number(p.number), p]));
+  for (const n of presetSlots(state)) {
+    const p = byNum.get(n); const lo = Math.floor((n - 1) / 24) * 24 + 1;
+    out[`preset_${n}`] = {
+      type: 'button', category: `Preset tiles ${lo}-${lo + 23}`, name: p ? `${n} ${p.name}` : `${n} (empty tile)`,
       // Name only (live through the variable; it falls back to the number). size auto wraps on spaces.
-      style: { text: `$(rs6presets:preset_${p.number}_name)`, size: 'auto', color: COLORS.white, bgcolor: COLORS.grey },
-      steps: [{ down: [{ actionId: 'recall_preset', options: { preset: p.number } }], up: [] }],
+      style: { text: `$(rs6presets:preset_${n}_name)`, size: 'auto', color: COLORS.white, bgcolor: COLORS.grey },
+      steps: [{ down: [{ actionId: 'recall_preset', options: { preset: n } }], up: [] }],
       feedbacks: [
-        { feedbackId: 'preset_pvw', options: { preset: p.number, partial: false }, style: { bgcolor: COLORS.green, color: COLORS.white } },
-        { feedbackId: 'preset_pgm', options: { preset: p.number, partial: false }, style: { bgcolor: COLORS.red, color: COLORS.white } },
+        { feedbackId: 'preset_pvw', options: { preset: n, partial: false }, style: { bgcolor: COLORS.green, color: COLORS.white } },
+        { feedbackId: 'preset_pgm', options: { preset: n, partial: false }, style: { bgcolor: COLORS.red, color: COLORS.white } },
       ],
     };
   }
@@ -336,5 +380,5 @@ module.exports = {
   rgb, COLORS, findPreset, presetTally, destSelected, presetTargets, selectionToApply, variableDefinitions, variableValues, presetSignature, buttonPresets,
   presetSummary, presetChoices, memoryChoices, mvChoices, memLabel, memItems, LOGO_PNG64,
   inputChoices, inputTally, destMemoryIs, masterIs, inputFrozen, inputProblem, backupEntry, backupActive, audioMuted, findInput,
-  presetSlots, backupGroups,
+  presetSlots, backupGroups, tileCount, versionProblem, EXPECTED_API,
 };
