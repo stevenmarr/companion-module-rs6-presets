@@ -66,6 +66,45 @@ function selectionToApply(state, number) {
   return keys;
 }
 
+// Screens a Master memory covers, as stored on a preset (master.dests) or on the board.
+// The device does not report this. Newest preset wins when two presets disagree.
+// [] = the app never said which screens, so the selection must be left alone.
+const destOrder = (k) => (k[0] === 'S' ? 0 : k[0] === 'A' ? 1000 : 2000) + Number(String(k).slice(1));
+function masterCover(state, slot) {
+  const n = Number(slot);
+  const known = new Set(((state && state.destinations) || []).map((d) => String(d.key).toUpperCase()));
+  const keep = (list) => {
+    const out = []; const seen = new Set();
+    for (const k of list || []) {
+      const key = String(k).toUpperCase();
+      if (!/^[SA]\d+$/.test(key) || seen.has(key)) continue;
+      if (known.size && !known.has(key)) continue;
+      seen.add(key); out.push(key);
+    }
+    return out.sort((a, b) => destOrder(a) - destOrder(b));
+  };
+  const hits = ((state && state.presets) || [])
+    .filter((p) => p && p.master && Number(p.master.slot) === n)
+    .map((p) => ({ at: String(p.updatedAt || ''), dests: keep(p.master.dests) }))
+    .filter((x) => x.dests.length)
+    .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0));
+  if (hits.length) return hits[0].dests;
+  const st = state && state.staging && state.staging.master;
+  if (st && Number(st.slot) === n) { const ds = keep(st.dests); if (ds.length) return ds; }
+  return [];
+}
+// Keys to POST to /api/selection after a Master memory load, or null when there is nothing to change.
+// Preset recall already moves the selection (the app does it, and selectionToApply covers older apps).
+// A Master memory button does not: through app 0.9.0, POST /api/memories/load leaves the destination
+// group untouched, so the module sets the screens that master was given.
+function masterSelection(state, slot) {
+  const keys = masterCover(state, slot);
+  if (!keys.length) return null;
+  const now = ((state && state.selection) || []).map((k) => String(k).toUpperCase());
+  if (now.length === keys.length && keys.every((k) => now.includes(k))) return null;
+  return keys;
+}
+
 // ---------- live device state (app >= 0.2.0: state.live) ----------
 const live = (state) => (state && state.live) || null;
 const liveInputs = (state) => (live(state) && live(state).inputs) || [];
@@ -488,5 +527,5 @@ module.exports = {
   presetSummary, presetChoices, memoryChoices, mvChoices, memLabel, memItems, LOGO_PNG64,
   inputChoices, inputTally, destMemoryIs, masterIs, inputFrozen, inputProblem, backupEntry, backupActive, audioMuted, findInput,
   presetSlots, backupGroups, tileCount, versionProblem, EXPECTED_API, MIN_API, SYS_FEATURES, sysSupported, versionSoft, TEXT_SIZE, BG, look, lit, relabel,
-  backupSourceName, backupStateText,
+  backupSourceName, backupStateText, masterCover, masterSelection,
 };

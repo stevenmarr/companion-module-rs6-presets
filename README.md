@@ -10,6 +10,10 @@ Built on `@companion-module/base` ~1.10 (node18 runtime) in plain JavaScript, wi
 
 ![icon](companion/icon.png)
 
+## New in 0.7.2
+
+- **Master memory recalls select that master's screens.** Pressing a Master memory button loads it and then sets the TAKE / CUT destination group to the screens stored for that master on a preset (or on the board). The newest preset wins if two disagree. A master with no stored screens leaves the current group alone. Preset recall is unchanged.
+
 ## New in 0.7.1
 
 - **RS6 backup buttons name the source.** Each input and background backup key shows the source it protects, the backup source that slot switches to (`LIVE_9` becomes that input's label, `STILL_1` is `Still 1`, `NATIVE_2` is `Native 2`), and the live state (`PRIMARY`, `BKP 1`, `BKP 2`, plus `AUTO`). Group backups are buttons too, with the group name, the same state, and the member list.

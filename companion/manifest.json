@@ -4,7 +4,7 @@
   "name": "PV Control Center",
   "shortname": "rs6presets",
   "description": "Control everything through the PV Control Center app: Analog Way Aquilon RS6 presets, Barco E2, PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. The module talks only to the app, never to the devices.",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT",
   "repository": "git+https://github.com/stevenmarr/companion-module-rs6-presets.git",
   "bugs": "https://github.com/stevenmarr/companion-module-rs6-presets/issues",

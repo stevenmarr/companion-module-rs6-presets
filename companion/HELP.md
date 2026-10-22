@@ -74,7 +74,7 @@ weight, and a fixed point size does not shrink, so long names used to run off th
 
 **Actions:**
 - Recall preset to Preview (dropdown of the app's presets, including combined presets, e.g. `10 Panel Master + MV (M:3 S4:30 MV1:2)`)
-- Load Screen memory to a destination, Load Master memory, Load Multiviewer memory (dropdowns of the memories the app imported from the RS6, with names)
+- Load Screen memory to a destination, Load Master memory, Load Multiviewer memory (dropdowns of the memories the app imported from the RS6, with names). A Master memory load also selects the destination group stored for that master (the screens on the preset or the board), so TAKE / CUT follow it. A master with no stored screens leaves the group as it is.
 - Refresh memories from the RS6
 - TAKE and CUT
 - Toggle destination

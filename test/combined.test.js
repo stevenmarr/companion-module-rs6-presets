@@ -89,6 +89,7 @@ test('instance: preset recall/feedback dropdowns list combined presets; memory a
     await c.actions.recall_preset.callback({ options: { preset: 10 } });
     await c.actions.load_screen_memory.callback({ options: { dest: 's3', memory: 12, target: 'preview' } });
     await c.actions.load_master_memory.callback({ options: { memory: 4, target: 'program' } });
+    await c.actions.load_master_memory.callback({ options: { memory: 3, target: 'preview' } });
     await c.actions.load_mv_memory.callback({ options: { mv: 'm2', memory: 3 } });
     await c.actions.refresh_memories.callback({ options: {} });
     assert.deepEqual(posts, [
@@ -96,6 +97,8 @@ test('instance: preset recall/feedback dropdowns list combined presets; memory a
       '/api/selection {"destinations":["S1","S2","S3","S4","A1","A2"]}',
       '/api/memories/load {"type":"screen","slot":12,"dest":"S3","target":"preview"}',
       '/api/memories/load {"type":"master","slot":4,"target":"program"}',
+      '/api/memories/load {"type":"master","slot":3,"target":"preview"}',
+      '/api/selection {"destinations":["S1","S2","S3","S4","A1","A2"]}',
       '/api/memories/load {"type":"multiviewer","slot":3,"dest":"M2"}',
       '/api/memories/refresh ',
     ]);

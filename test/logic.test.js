@@ -45,6 +45,24 @@ test('recall applies the destination group assigned on the preset', () => {
   assert.deepEqual(L.presetTargets({ destinations: ['s2'], master: { dests: ['S2', 'A1'] } }), ['S2', 'A1']);
 });
 
+test('a Master memory recall selects the destination group stored for that master', () => {
+  const state = {
+    selection: ['S3'],
+    destinations: [{ key: 'S1' }, { key: 'S2' }, { key: 'A1' }, { key: 'S9' }],
+    presets: [
+      { number: 1, updatedAt: '2026-01-01T00:00:00.000Z', master: { slot: 4, dests: ['S1'] } },
+      { number: 2, updatedAt: '2026-06-01T00:00:00.000Z', master: { slot: 4, dests: ['S2', 'A1', 'S1'] } },
+    ],
+    staging: { master: { slot: 7, dests: ['S9'] } },
+  };
+  assert.deepEqual(L.masterCover(state, 4), ['S1', 'S2', 'A1']); // newest preset, screens only, S before A
+  assert.deepEqual(L.masterSelection(state, 4), ['S1', 'S2', 'A1']);
+  assert.equal(L.masterSelection({ ...state, selection: ['S1', 'S2', 'A1'] }, 4), null); // already that group
+  assert.deepEqual(L.masterCover(state, 7), ['S9']); // not on a preset: the board
+  assert.deepEqual(L.masterCover(state, 8), []);
+  assert.equal(L.masterSelection(state, 8), null); // unknown cover: do not touch the selection
+});
+
 test('variables', () => {
   const v = L.variableValues(STATE);
   assert.equal(v.last_preset_number, 2); assert.equal(v.last_preset_name, 'Wide');

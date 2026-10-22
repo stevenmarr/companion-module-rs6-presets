@@ -292,7 +292,14 @@ class ControlCenterInstance extends InstanceBase {
           { type: 'dropdown', id: 'memory', label: 'Master memory (imported from the RS6)', default: L.memoryChoices(this.state, 'master')[0].id, choices: L.memoryChoices(this.state, 'master'), allowCustom: true, regex: '/^\\d+$/' },
           SIDE_TARGET,
         ],
-        callback: (a) => this.run('Load Master memory', () => this.api.loadMemory('master', a.options.memory, undefined, a.options.target)),
+        callback: (a) => this.run('Load Master memory', async () => {
+          const slot = Number(a.options.memory);
+          const keys = L.masterSelection(this.state, slot);
+          await this.api.loadMemory('master', slot, undefined, a.options.target);
+          // Preset recall moves the TAKE selection onto that preset's screens. Loading a Master
+          // memory by itself does not (app 0.9.0), so set the destination group stored for it.
+          if (keys) await this.api.setSelection(keys);
+        }),
       },
       load_mv_memory: {
         name: 'Load a Multiviewer memory',
