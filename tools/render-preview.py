@@ -62,14 +62,18 @@ def main():
         ('Input freeze', 'navy, ice-blue accent', [('Normal', key(st['freeze'], 'FRZ 3\nCam 1')), ('Frozen', key(st['freeze_frozen'], 'FRZ 3\nCam 1'))]),
         ('Backups', 'brown, orange accent', [('Normal', key(st['backup'], 'IN 5\nBKP 1')), ('Active', key(st['backup_sel'], 'IN 5\nBKP 1', BLACK)), ('Primary', key(st['backup'], 'IN 5\nPRIMARY'))]),
         ('Audio mute', 'plum, magenta accent', [('Normal', key(st['audio'], 'IN 2\nCH 1\nMUTE')), ('Muted', key(st['audio_muted'], 'IN 2\nCH 1\nMUTE'))]),
+        ('E2 (Barco)', 'olive, lime accent', [('Preset', key(st['e2'], 'Walk-in')), ('On Preview', key(st['e2_pvw'], 'Walk-in')), ('On Program', key(st['e2_pgm'], 'Walk-in')), ('Dest selected', key(st['e2_sel'], 'S1\nMain LED', BLACK)), ('TAKE', key(st['take'], 'E2\nTAKE'))]),
+        ('PixelHue', 'wine, rose accent', [('Preset', key(st['pixelhue'], 'Opener')), ('On Preview', key(st['pixelhue_pvw'], 'Opener')), ('On Program', key(st['pixelhue_pgm'], 'Opener')), ('Dest selected', key(st['pixelhue_sel'], 'S1\nLED Wall', BLACK)), ('CUT', key(st['cut'], 'PIXELHUE\nCUT'))]),
+        ('ATEM', 'bronze, gold accent', [('Program bus', key(st['atem'], 'PGM\nCAM1')), ('On Program', key(st['atem_pgm'], 'PGM\nCAM1')), ('On Preview', key(st['atem_pvw'], 'PVW\nCAM2')), ('Key tied', key(st['atem_sel'], 'KEY 1\nTIE', BLACK)), ('Macro', key(st['atem'], 'MACRO\nOpener roll'))]),
+        ('Panasonic PTZ', 'navy, indigo accent', [('Camera', key(st['ptz'], 'Cam 1 Wide')), ('Selected', key(st['ptz_sel'], 'Cam 1 Wide', BLACK)), ('Tally red', key(st['ptz_pgm'], 'Cam 1 Wide')), ('Preset recalled', key(st['ptz_pvw'], 'Pulpit')), ('Hold to pan', key(st['ptz'], '\u25b2\nPAN TILT'))]),
         ('Status / utility', 'black / grey', [('Last recalled', key(st['status'], 'PVW\n12\nWide Panel', GREEN)), ('Master PGM', key(st['status'], 'MASTER\n3\nKeynote', RED)), ('Refresh', key(st['utility'], 'REFRESH\nMEMORY')), ('Logo', logo_key)]),
     ]
     Z = 2; K = 72 * Z; GAP = 22; LW = 230; TOP = 70; RH = K + 46
-    W = LW + 4 * (K + GAP) + 20; H = TOP + RH * len(rows) + 20
+    W = LW + max(len(r[2]) for r in rows) * (K + GAP) + 20; H = TOP + RH * len(rows) + 20
     sheet = Image.new('RGB', (W, H), (24, 24, 27)); d = ImageDraw.Draw(sheet)
     fb = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf', 18)
     fr = ImageFont.truetype('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf', 13)
-    d.text((20, 18), 'RS6 Presets: Companion button styles (72x72 keys shown at 2x, text size 14)', font=fb, fill=(240, 240, 240))
+    d.text((20, 18), 'PV Control Center: Companion button styles (72x72 keys shown at 2x, text size 14)', font=fb, fill=(240, 240, 240))
     for r, (name, desc, keys) in enumerate(rows):
         y = TOP + r * RH
         d.text((20, y + K / 2 - 18), name, font=fb, fill=(235, 235, 235))

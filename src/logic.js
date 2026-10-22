@@ -174,18 +174,27 @@ function presetSlots(state) {
   return out;
 }
 
-// ---------- 0.5.0 app / module version check ----------
-const EXPECTED_API = 5; // app 0.5.0
+// ---------- app / module version check ----------
+// 0.6.0 (PV Control Center): the module talks to the Control Center app 0.8.0 (API 8) for E2, PixelHue, ATEM
+// and PTZ. RS6 controls keep working from API 5 (app 0.5.0) up; the other systems need API 8.
+const EXPECTED_API = 8; // app 0.8.0
+const MIN_API = 5; // oldest app whose RS6 API this module still speaks
 // null = fine; otherwise a short warning for the log and the connection status
 function versionProblem(state) {
   if (!state) return null;
   const app = state.appVersion || 'unknown';
   const api = Number(state.apiVersion);
-  if (!api) return `RS6 Presets app ${app} is older than this module expects (app 0.5.0, API ${EXPECTED_API}): update the app; tile moves, tile counts and shows need it`;
-  if (api < EXPECTED_API) return `RS6 Presets app ${app} has API ${api}, this module expects ${EXPECTED_API}: update the app`;
-  if (api > EXPECTED_API) return `RS6 Presets app ${app} has API ${api}, newer than this module (API ${EXPECTED_API}): update the Companion module`;
+  if (!api) return `Control Center app ${app} is older than this module expects (app 0.8.0, API ${EXPECTED_API}): update the app; tile moves, tile counts and shows need it`;
+  if (api < MIN_API) return `Control Center app ${app} has API ${api}, this module expects ${EXPECTED_API}: update the app`;
+  if (api < EXPECTED_API) return `Control Center app ${app} has API ${api}, this module expects ${EXPECTED_API}: RS6 controls work, E2 / PixelHue / ATEM / PTZ need app 0.8.0: update the app`;
+  if (api > EXPECTED_API) return `Control Center app ${app} has API ${api}, newer than this module (API ${EXPECTED_API}): update the Companion module`;
   return null;
 }
+// true when the problem is only that E2 / PixelHue / ATEM / PTZ are unavailable (RS6 fine): log it, keep the status OK
+const versionSoft = (state) => { const api = Number(state && state.apiVersion); return api >= MIN_API && api < EXPECTED_API; };
+// features the app must list (GET /api/version) before the module uses the multi-system API
+const SYS_FEATURES = ['sysLongpoll', 'sysViews', 'companionGateway'];
+const sysSupported = (version) => !!(version && Array.isArray(version.features) && SYS_FEATURES.every((f) => version.features.includes(f)));
 const groupLabel = (g) => String((g && g.label) || `Group ${g && g.group}`);
 
 function variableDefinitions(state) {
@@ -196,8 +205,8 @@ function variableDefinitions(state) {
     { variableId: 'selection', name: 'Selected destinations' },
     { variableId: 'auto_take', name: 'Auto take on recall (ON/OFF)' },
     { variableId: 'device_connected', name: 'App connected to the RS6 (true/false)' },
-    { variableId: 'app_version', name: 'RS6 Presets app version' },
-    { variableId: 'app_api_version', name: 'RS6 Presets app API version (this module expects 5)' },
+    { variableId: 'app_version', name: 'Control Center app version' },
+    { variableId: 'app_api_version', name: `Control Center app API version (this module expects ${EXPECTED_API})` },
     { variableId: 'show_name', name: 'Current show in the app (app 0.5.0+)' },
     { variableId: 'tile_count', name: 'Preset tiles in the app (24/48/72/96)' },
   ];
@@ -279,8 +288,9 @@ function presetSignature(state) {
 
 // `label` is this connection's label in Companion (variables are $(<label>:name)); the default label is
 // the manifest shortname, rs6presets, but users can rename the connection.
-function buttonPresets(state, label = 'rs6presets') {
-  const out = buildPresets(state);
+function buttonPresets(state, label = 'rs6presets') { return relabel(buildPresets(state), label); }
+// preset texts use $(rs6presets:...); point them at this connection's label
+function relabel(out, label = 'rs6presets') {
   if (label && label !== 'rs6presets') {
     for (const b of Object.values(out)) if (b.style && typeof b.style.text === 'string') b.style.text = b.style.text.split('$(rs6presets:').join(`$(${label}:`);
   }
@@ -387,5 +397,5 @@ module.exports = {
   rgb, COLORS, findPreset, presetTally, destSelected, presetTargets, selectionToApply, variableDefinitions, variableValues, presetSignature, buttonPresets,
   presetSummary, presetChoices, memoryChoices, mvChoices, memLabel, memItems, LOGO_PNG64,
   inputChoices, inputTally, destMemoryIs, masterIs, inputFrozen, inputProblem, backupEntry, backupActive, audioMuted, findInput,
-  presetSlots, backupGroups, tileCount, versionProblem, EXPECTED_API, TEXT_SIZE, BG,
+  presetSlots, backupGroups, tileCount, versionProblem, EXPECTED_API, MIN_API, SYS_FEATURES, sysSupported, versionSoft, TEXT_SIZE, BG, look, lit, relabel,
 };

@@ -1,5 +1,6 @@
 'use strict';
-// Tiny client for the RS6 Presets app HTTP API (see the app README, "HTTP control API").
+// Tiny client for the PV Control Center app HTTP API (see the app README, "HTTP control API").
+// Every command for every system (RS6, E2, PixelHue, ATEM, PTZ) goes through the app; nothing here talks to a device.
 class AppApi {
   constructor(host, port, timeoutMs = 2000) { this.base = `http://${host}:${port}`; this.timeoutMs = timeoutMs; }
   async _req(method, path, body, { timeoutMs = this.timeoutMs, signal } = {}) {
@@ -42,5 +43,23 @@ class AppApi {
   backup(kind, id, slot) { return this._req('POST', this.backupPath(kind, id), { slot: String(slot) }); }
   backupMode(kind, id, auto) { return this._req('POST', this.backupPath(kind, id) + '/mode', { auto: !!auto }); }
   audioMute(dir, n, ch, value) { return this._req('POST', `/api/audio/${dir === 'outputs' ? 'outputs' : 'inputs'}/${Number(n)}/channels/${Number(ch)}/mute`, value === undefined ? {} : { value }); }
+  // ---- 0.6.0: the multi-system API (app 0.8.0, API 8) ----
+  version(opts) { return this._req('GET', '/api/version', undefined, opts); }
+  sysViews(opts) { return this._req('GET', '/api/sys/views', undefined, opts); }
+  // long-poll: held until the multi-system revision passes `rev`; views=all adds every configured system's view
+  sysSince(rev, waitMs, signal) { return this._req('GET', `/api/sys?since=${Number(rev)}&timeout=${Number(waitMs)}&views=all`, undefined, { timeoutMs: waitMs + 5000, signal }); }
+  sysActive(system) { return this._req('POST', '/api/sys/active', { system }); }
+  sysRecall(sys, preset, target) { return this._req('POST', `/api/sys/${sys}/presets/${encodeURIComponent(preset)}/recall`, { target }, { timeoutMs: 15000 }); }
+  sysTake(sys) { return this._req('POST', `/api/sys/${sys}/take`, undefined, { timeoutMs: 10000 }); }
+  sysCut(sys) { return this._req('POST', `/api/sys/${sys}/cut`, undefined, { timeoutMs: 10000 }); }
+  sysToggleDest(sys, key) { return this._req('POST', `/api/sys/${sys}/destinations/${encodeURIComponent(key)}/toggle`); }
+  sysSelection(sys, keys) { return this._req('POST', `/api/sys/${sys}/selection`, { destinations: keys }); }
+  sysAutoTake(sys, value) { return this._req('POST', `/api/sys/${sys}/autotake`, value === undefined ? {} : { value }); }
+  sysCue(sys, id, op) { return this._req('POST', `/api/sys/${sys}/cues/${Number(id)}/${op}`); }
+  sysFreeze(sys, kind, id, on) { return this._req('POST', `/api/sys/${sys}/freeze`, { kind, id, on: !!on }); }
+  sysRefresh(sys) { return this._req('POST', `/api/sys/${sys}/refresh`, undefined, { timeoutMs: 15000 }); }
+  atem(name, body = {}) { return this._req('POST', `/api/sys/atem/cmd/${encodeURIComponent(name)}`, body); }
+  ptz(name, body = {}, opts) { return this._req('POST', `/api/sys/ptz/cmd/${encodeURIComponent(name)}`, body, opts); }
+  ptzCatalog(cam) { return this._req('GET', `/api/sys/ptz/cameras/${encodeURIComponent(cam)}/catalog`); }
 }
 module.exports = { AppApi };

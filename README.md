@@ -1,12 +1,36 @@
-# companion-module-rs6-presets
+# companion-module-rs6-presets: PV Control Center
 
-A Bitfocus **Companion** module (3.4 and later, including 4.x and 5.x) for the **RS6 Presets** app, which adds Barco E2-style
-destination presets to an Analog Way Aquilon RS6. Companion talks to the app over HTTP (default port
-8080), and the app talks to the RS6. The module never connects to the Aquilon directly.
+A Bitfocus **Companion** module (3.4 and later, including 4.x and 5.x) for the **PV Control Center** app
+(formerly RS6 Presets). It controls an Analog Way Aquilon RS6 (Barco E2-style destination presets), a Barco E2,
+a PixelHue, a Blackmagic ATEM and Panasonic PTZ cameras, **all through the app's HTTP API** (default port 8080).
+The module never connects to a device directly. The module id stays `rs6-presets` (shortname `rs6presets`), so
+existing connections and buttons keep working; only the display name is now "PV Control Center".
 
 Built on `@companion-module/base` ~1.10 (node18 runtime) in plain JavaScript, with no TypeScript build.
 
 ![icon](companion/icon.png)
+
+## New in 0.6.0 (for Control Center app 0.8.0, API 8)
+
+- **One path to every device.** New actions, feedbacks, variables and button presets for E2 (`e2_…`), PixelHue
+  (`pixelhue_…`), ATEM (`atem_…`) and Panasonic PTZ (`ptz_…`), plus `sys_set_active`. All existing RS6 action,
+  feedback and variable ids are unchanged. See `companion/HELP.md` for the full list.
+- **Compatibility check.** The module expects API 8. It starts the multi-system long-poll
+  (`GET /api/sys?since=<rev>&timeout=<ms>&views=all`) only when the app reports API 8 and lists the
+  `sysLongpoll`, `sysViews` and `companionGateway` features in `GET /api/version`. With an app at API 5–7 the RS6
+  buttons keep working, the status stays OK and the log says to update the app.
+- **PTZ hold-to-run** with stop on release: press = move/zoom/focus, release = `ptz_stop`. While held the module
+  sends `POST /api/sys/ptz/cmd/keepalive` every 0.5 s (the app sends nothing to the camera for it, it only re-arms
+  its 1.5 s dead-man). A lost release stops after **PTZ max hold** (config, default 20 s); a lost connection stops
+  within the app's dead-man. Destroying or reconfiguring the connection sends a stop for every held camera.
+- **Full camera command set.** `ptz_exec`, `ptz_toggle`, `ptz_set`, `ptz_step` and `ptz_adjust` reach all 71
+  commands of the app's PTZ catalog (the bitfocus companion-module-panasonic-ptz aw_ptz / aw_cam set plus AW-UE150
+  spec additions; `src/ptz-ops.js` is generated from it by `tools/gen-ptz-ops.js`). At runtime the module reads each
+  camera's own catalog (`GET /api/sys/ptz/cameras/:id/catalog`) for its options and ranges.
+- **Button looks.** The 0.6.0 styling pass (72×72 tech-look backgrounds, fixed text size 14) now has a family per
+  system: E2 lime, PixelHue rose, ATEM gold, PTZ indigo, each with Preview / Program / selected lit states.
+  `python3 tools/make-button-styles.py` regenerates `src/styles.js`; `python3 tools/render-preview.py OUT.png`
+  renders the preview sheet.
 
 ## Install on a Mac (one line)
 
@@ -36,7 +60,7 @@ Then, in Companion 4.x or 5.x (this is Companion's supported way to add a module
 store; see the Modules page in the Companion user guide):
 1. **Modules › Import module package**, then choose the `.tgz` the script printed. In the file
    dialog, press Cmd+Shift+G and paste the path. Don't unpack the `.tgz`.
-2. **New connection:** Connections › **+ Add connection**, search **rs6-presets** (Analog Way),
+2. **New connection:** Connections › **+ Add connection**, search **PV Control Center** (Performance Video; module id rs6-presets),
    pick the version you imported, then set **App host/IP** (`127.0.0.1` if the app runs on the same
    Mac) and **App port** `8080`.
    **Existing connection:** open it, click the **pencil** next to the module version, pick the new
@@ -168,8 +192,8 @@ network.
 3. Open the **Companion launcher** window (the small window with the "Launch GUI" button), click the
    **cog** (on Companion 4.1 and later this opens a Settings window), and set **Developer modules path** to `~/companion-dev-modules`. Companion
    restarts its module host and picks the module up. It also reloads when files there change.
-4. In the Companion web UI, go to **Connections › Add connection**, search for **"RS6 Presets"**
-   (manufacturer Analog Way), and add it.
+4. In the Companion web UI, go to **Connections › Add connection**, search for **"PV Control Center"**
+   (manufacturer Performance Video), and add it.
 5. Set **App host/IP** to the Mac running the RS6 Presets app (`127.0.0.1` if it's the same machine) and
    **App port** to `8080`.
 6. Drag buttons from **Presets › rs6-presets**: Presets, Destinations and Transitions.
@@ -182,7 +206,7 @@ flag name has changed between releases.
 
 ```bash
 npm install
-npm test              # 19 unit + wiring tests (stubbed Companion host, fake app server with long-poll)
+npm test              # unit + wiring tests, and end-to-end runs against the sibling app checkout in --mock mode
 npm run package       # companion-module-build -> pkg/ and pkg.tgz
 ```
 
@@ -196,6 +220,11 @@ npm run package       # companion-module-build -> pkg/ and pkg.tgz
   - 0.3.0: combined-preset dropdowns, memory dropdowns/variables, Master memory buttons and the new
     memory routes, against `test/fixtures/app-state-0.3.0.json` (captured from app 0.3.0 `--mock`).
   - `companion-module-build` completes and produces `dist/rs6-presets`
+  - 0.6.0: `test/e2e-systems.test.js` runs the module against the real Control Center app 0.8.0 in `--mock` mode:
+    E2 (selection, recall, take, auto take, cue), PixelHue (selection, recall, cut), ATEM (buses, cut, auto, keys,
+    aux, macros, FTB) and PTZ (select, hold with keep-alives past the dead-man, stop on release, max hold, iris,
+    gain, WB, R gain / B pedestal, presets with names, tally, power, OSD menu). It checks that every request went
+    to the app. `test/fixtures/app-sys-0.8.0.json` was captured from that app.
 - **Not verified:**
   - **The module has not been loaded into a running Companion instance.**
   - It has not run against a real RS6 or the AW Simulator.

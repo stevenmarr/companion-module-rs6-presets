@@ -1,7 +1,7 @@
 {
   "name": "companion-module-rs6-presets",
-  "version": "0.5.0",
-  "description": "Bitfocus Companion 3.x module for the RS6 Presets app (E2-style presets for Analog Way Aquilon RS6).",
+  "version": "0.6.0",
+  "description": "Bitfocus Companion 3.x module for the PV Control Center app (RS6, E2, PixelHue, ATEM and Panasonic PTZ, all through the app).",
   "main": "src/main.js",
   "license": "MIT",
   "private": true,

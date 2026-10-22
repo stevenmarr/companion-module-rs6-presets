@@ -1,14 +1,18 @@
 {
   "$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
   "id": "rs6-presets",
-  "name": "rs6-presets",
+  "name": "PV Control Center",
   "shortname": "rs6presets",
-  "description": "Control the RS6 Presets app: E2-style destination presets, Take/Cut and tally for Analog Way Aquilon RS6",
-  "version": "0.5.0",
+  "description": "Control everything through the PV Control Center app: Analog Way Aquilon RS6 presets, Barco E2, PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. The module talks only to the app, never to the devices.",
+  "version": "0.6.0",
   "license": "MIT",
   "repository": "git+https://github.com/stevenmarr/companion-module-rs6-presets.git",
   "bugs": "https://github.com/stevenmarr/companion-module-rs6-presets/issues",
-  "maintainers": [{ "name": "Steven" }],
+  "maintainers": [
+    {
+      "name": "Steven"
+    }
+  ],
   "legacyIds": [],
   "runtime": {
     "type": "node18",
@@ -16,7 +20,23 @@
     "apiVersion": "0.0.0",
     "entrypoint": "../src/main.js"
   },
-  "manufacturer": "Analog Way",
-  "products": ["Aquilon RS6 via RS6 Presets app"],
-  "keywords": ["Analog Way", "Aquilon", "RS6", "presets", "E2", "switcher"]
+  "manufacturer": "Performance Video",
+  "products": [
+    "PV Control Center (Aquilon RS6, Barco E2, PixelHue, Blackmagic ATEM, Panasonic PTZ)"
+  ],
+  "keywords": [
+    "Analog Way",
+    "Aquilon",
+    "RS6",
+    "presets",
+    "E2",
+    "Barco",
+    "PixelHue",
+    "ATEM",
+    "Blackmagic",
+    "Panasonic",
+    "PTZ",
+    "switcher",
+    "control center"
+  ]
 }

@@ -1,9 +1,48 @@
-## RS6 Presets
+## PV Control Center
 
 ![Performance Video](icon.png)
 
-Controls the **RS6 Presets** web app, which gives an Analog Way Aquilon RS6 Barco E2-style
-destination presets. Companion talks to the app (default port 8080), and the app talks to the RS6.
+Controls the **PV Control Center** app (formerly RS6 Presets): Analog Way Aquilon RS6 presets, Barco E2,
+PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. **Every command goes through the app** (default port
+8080); this module never talks to a device. Remove any direct E2 / ATEM / Panasonic connections from
+Companion once your buttons use this module, so there is one path to each device.
+
+### E2, PixelHue, ATEM and PTZ (new in 0.6.0, needs Control Center app 0.8.0 / API 8)
+
+The module checks `GET /api/version` for the `sysLongpoll`, `sysViews` and `companionGateway` features and
+then follows the app's multi-system long-poll (`GET /api/sys?since=<rev>&views=all`). With an older app the
+RS6 buttons keep working and the log says to update the app. Config: **E2 / PixelHue / ATEM / PTZ** on/off
+and **PTZ max hold** (a held motion button stops by itself after this long, default 20 s).
+
+**E2 / PixelHue** (`e2_…`, `pixelhue_…`): recall preset by tile to Preview or Program, TAKE, CUT, toggle
+destination, select destinations, auto take, refresh; E2 also cue play/pause/stop and freeze. Feedbacks:
+preset on Preview/Program, destination selected, auto take, connected. Variables: tile names, last preset,
+selection, per-destination Program/Preview preset names.
+
+**ATEM** (`atem_…`): Program / Preview source, CUT, AUTO, fade to black (+ rate), transition style, mix rate,
+upstream keys on air / tie, downstream keys on air / tie / auto, aux sources, macro run / stop. Feedbacks:
+source on Program / Preview, key states, aux source, macro running, FTB, transition running, style.
+Variables: Program / Preview names, style, mix rate, FTB, aux sources, input and macro names.
+
+**Panasonic PTZ** (`ptz_…`): select camera; pan/tilt (8 directions or a signed proportional speed), zoom and
+focus **while held**: put the move on the button's press and **PTZ: stop** on its release (the button presets
+do this). While held the module re-arms the app's dead-man every 0.5 s; if the release is lost, the
+connection drops or Companion stops, the camera stops (max hold, or the app's 1.5 s dead-man). ALL STOP,
+session speeds, preset recall (with speed) / store (with name), power, red / green tally, and the camera's
+full command set from the app's catalog (the bitfocus Panasonic PTZ module's aw_ptz / aw_cam commands plus the
+AW-UE150 interface spec): one-shot commands (AWB, ABB, one-touch AF, home, OSD menu keys, step up/down),
+on/off settings (AF, auto iris, super gain, detail, colour bars, OSD menu …), list settings (gain, ND,
+shutter, WB mode, scene, gamma / knee / matrix type …, set or step up/down) and levels (iris, R/B gain,
+R/G/B/master pedestal, detail, gamma, knee, matrix, chroma, colour temperature: set, up, down, centre).
+Use "Selected camera" to drive whichever camera is selected. Feedbacks: selected, tally, power, online,
+moving, last preset, error, any on/off setting, any setting value. Variables per camera (`ptz_<id>_…` and
+`ptz_sel_…` for the selected one): name, model, power, tally, pan/tilt/zoom/focus, iris, gain, shutter, ND,
+WB, scene, last preset and preset names.
+
+**Button looks:** each system has its own family colour (E2 lime, PixelHue rose, ATEM gold, PTZ indigo),
+the same 72×72 tech-look backgrounds and fixed text size 14 as the RS6 buttons; TAKE / CUT stay red.
+
+### RS6
 
 **Config:** the app's host/IP and port, the update mode (long-poll by default, poll only as an option) and the poll interval.
 

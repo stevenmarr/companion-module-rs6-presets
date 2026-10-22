@@ -34,6 +34,11 @@ FAMILIES = {
     'audio':    ('#47183f', '#170714', '#ff4fd0'),   # audio mute: magenta
     'status':   ('#1c1c1c', '#050505', '#6b6b6b'),   # status / display buttons: black
     'utility':  ('#34383d', '#15171a', '#ffffff'),   # refresh and other utilities: grey, white strip
+    # 0.6.0 PV Control Center: one family per system (transitions keep the shared red TAKE / CUT looks)
+    'e2':       ('#2f4416', '#0e1606', '#9be23c'),   # Barco E2: lime
+    'pixelhue': ('#4c1a2a', '#19070e', '#ff5c8a'),   # PixelHue: rose
+    'atem':     ('#4a3d12', '#181304', '#ffd23f'),   # Blackmagic ATEM: gold
+    'ptz':      ('#262c55', '#0b0d1d', '#7c8cff'),   # Panasonic PTZ: indigo
 }
 # active states: (gradient top, gradient bottom, border/glow)
 STATES = {
@@ -135,7 +140,9 @@ def active(fam, state):
 # Which images the presets use (normal: one per family; active: family x state where used)
 ACTIVE = [('preset', 'pvw'), ('preset', 'pgm'), ('master', 'pvw'), ('master', 'pgm'), ('dest', 'sel'),
           ('auto', 'sel'), ('tally', 'pvw'), ('tally', 'pgm'), ('freeze', 'frozen'), ('backup', 'sel'),
-          ('audio', 'muted')]
+          ('audio', 'muted'),
+          ('e2', 'pvw'), ('e2', 'pgm'), ('e2', 'sel'), ('pixelhue', 'pvw'), ('pixelhue', 'pgm'), ('pixelhue', 'sel'),
+          ('atem', 'pvw'), ('atem', 'pgm'), ('atem', 'sel'), ('ptz', 'pvw'), ('ptz', 'pgm'), ('ptz', 'sel')]
 
 def main():
     png_dir = None

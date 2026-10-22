@@ -3,6 +3,8 @@ const { InstanceBase, InstanceStatus, Regex, runEntrypoint } = require('@compani
 const { AppApi } = require('./api');
 const L = require('./logic');
 const UpgradeScripts = require('./upgrades');
+const X = require('./sys');
+const { sysActions, sysFeedbacks } = require('./sysdefs');
 
 const FEEDBACK_IDS = ['preset_pvw', 'preset_pgm', 'dest_selected', 'auto_take_on', 'device_connected', 'input_pgm', 'input_pvw', 'dest_memory', 'master_memory', 'input_frozen', 'input_problem', 'backup_active', 'audio_muted'];
 const TRI = { type: 'dropdown', id: 'mode', label: 'Mode', default: 'toggle', choices: [{ id: 'toggle', label: 'Toggle' }, { id: 'on', label: 'On' }, { id: 'off', label: 'Off' }] };
@@ -18,26 +20,29 @@ const AUDIO_TARGET = [
   { type: 'number', id: 'channel', label: 'Channel', default: 1, min: 1, max: 64 },
 ];
 
-class RS6PresetsInstance extends InstanceBase {
+class ControlCenterInstance extends InstanceBase {
   async init(config) {
     this.config = config; this.state = null; this.sig = null; this.failures = 0;
+    this.sys = null; this.sysSig = null; this.sysFailures = 0; this.ptzCats = {}; this.catKeys = {}; this.holds = new Map();
     this.setActionDefinitions(this.actions());
     this.setFeedbackDefinitions(this.feedbacks());
     this.applyState(null, true);
     this.start();
   }
 
-  async destroy() { this.stop(); }
+  async destroy() { await this.releaseHolds(); this.stop(); }
 
-  async configUpdated(config) { this.config = config; this.stop(); this.sig = null; this.start(); }
+  async configUpdated(config) { await this.releaseHolds(); this.config = config; this.stop(); this.sig = null; this.sysSig = null; this.start(); }
 
   getConfigFields() {
     return [
-      { type: 'static-text', id: 'info', width: 12, label: 'About', value: 'Connects to the RS6 Presets app (not to the Aquilon itself). Enter the Mac running the app and its port (default 8080).' },
+      { type: 'static-text', id: 'info', width: 12, label: 'About', value: 'PV Control Center: every command goes through the Control Center app (RS6, E2, PixelHue, ATEM and Panasonic PTZ); this module never talks to a device. Enter the Mac running the app and its port (default 8080).' },
       { type: 'textinput', id: 'host', label: 'App host / IP', width: 8, default: '127.0.0.1', regex: Regex.HOSTNAME },
       { type: 'number', id: 'port', label: 'App port', width: 4, default: 8080, min: 1, max: 65535 },
       { type: 'dropdown', id: 'updates', label: 'Updates', width: 8, default: 'longpoll', choices: [{ id: 'longpoll', label: 'Long-poll (instant, app 0.2.0+; falls back to polling)' }, { id: 'poll', label: 'Poll only' }] },
       { type: 'number', id: 'poll', label: 'Poll interval (ms)', width: 4, default: 300, min: 100, max: 5000 },
+      { type: 'dropdown', id: 'systems', label: 'E2 / PixelHue / ATEM / PTZ', width: 8, default: 'on', choices: [{ id: 'on', label: 'On (app 0.8.0+, API 8)' }, { id: 'off', label: 'Off (RS6 only)' }] },
+      { type: 'number', id: 'max_hold', label: 'PTZ max hold (ms)', width: 4, default: 20000, min: 1000, max: 120000, tooltip: 'A held pan/tilt/zoom/focus button stops by itself after this long, in case the release is lost' },
     ];
   }
 
@@ -50,6 +55,12 @@ class RS6PresetsInstance extends InstanceBase {
     this.running = true; this.ctrl = new AbortController();
     this.longPoll = this.config.updates !== 'poll';
     this.loop(this.ctrl.signal);
+    this.sysStarted = false; // the multi-system loop starts once the app reports API 8+ (an older app sees no extra requests)
+  }
+
+  maybeStartSys(st) {
+    if (this.sysStarted || this.config.systems === 'off' || !this.ctrl || !(Number(st && st.apiVersion) >= L.EXPECTED_API)) return;
+    this.sysStarted = true; this.sysLoop(this.ctrl.signal);
   }
 
   stop() { this.running = false; if (this.ctrl) this.ctrl.abort(); this.ctrl = null; }
@@ -66,18 +77,20 @@ class RS6PresetsInstance extends InstanceBase {
         this.failures = 0;
         if (this.longPoll && typeof st.rev !== 'number' && !this.warnedNoRev) { this.warnedNoRev = true; this.log('info', 'App has no long-poll support (pre-0.2.0); polling instead'); }
         this.applyState(st);
+        this.maybeStartSys(st);
         // 0.5.0: say so when the app and this module don't match (log once per app version)
         const vp = L.versionProblem(st);
         const vkey = `${st.appVersion}|${st.apiVersion}`;
         if (vp && this.warnedVersion !== vkey) { this.warnedVersion = vkey; this.log('warn', vp); }
         if (!vp) this.warnedVersion = null;
-        if (vp) this.updateStatus(InstanceStatus.UnknownWarning, vp);
+        if (vp && !L.versionSoft(st)) this.updateStatus(InstanceStatus.UnknownWarning, vp);
         else if (st.connected) this.updateStatus(InstanceStatus.Ok);
+        else if (this.sysConnected().length) this.updateStatus(InstanceStatus.Ok, `RS6 not connected; ${this.sysConnected().join(', ')} connected`);
         else this.updateStatus(InstanceStatus.UnknownWarning, 'App reachable, but it is not connected to the RS6');
         if (!(this.longPoll && typeof st.rev === 'number')) await this.sleep(pollMs, signal);
       } catch (e) {
         if (signal.aborted) break;
-        if (++this.failures === 1) this.log('warn', `RS6 Presets app unreachable: ${e.message}`);
+        if (++this.failures === 1) this.log('warn', `Control Center app unreachable: ${e.message}`);
         this.updateStatus(InstanceStatus.ConnectionFailure, e.message);
         if (this.state) this.applyState(null);
         await this.sleep(pollMs, signal);
@@ -88,15 +101,120 @@ class RS6PresetsInstance extends InstanceBase {
   applyState(st, force = false) {
     this.state = st;
     const sig = `${L.presetSignature(st)}|${this.label || ''}`; // the label is in the preset button texts
-    if (force || sig !== this.sig) {
-      this.sig = sig;
-      this.setVariableDefinitions(L.variableDefinitions(st));
-      this.setPresetDefinitions(L.buttonPresets(st, this.label));
-      this.setActionDefinitions(this.actions()); // refresh destination dropdowns
-      this.setFeedbackDefinitions(this.feedbacks());
-    }
+    if (force || sig !== this.sig) { this.sig = sig; this.redefine(); }
     this.setVariableValues(L.variableValues(st));
     this.checkFeedbacks(...FEEDBACK_IDS);
+  }
+
+  // definitions for RS6 (logic.js) plus E2 / PixelHue / ATEM / PTZ (sys.js), rebuilt when either structure changes
+  redefine() {
+    this.setVariableDefinitions([...L.variableDefinitions(this.state), ...X.variableDefinitions(this.sys)]);
+    this.setPresetDefinitions({ ...L.buttonPresets(this.state, this.label), ...L.relabel(X.buttonPresets(this.sys), this.label) });
+    this.setActionDefinitions(this.actions()); // refresh dropdowns
+    this.setFeedbackDefinitions(this.feedbacks());
+  }
+
+  // ---------- 0.6.0: E2 / PixelHue / ATEM / PTZ through the app's multi-system API ----------
+  sysConnected() { return Object.keys(X.SYS_NAMES).filter((k) => k !== 'rs6' && X.connected(this.sys, k)); }
+
+  async sysLoop(signal) {
+    let rev = -1; let warned = false;
+    while (this.running && !signal.aborted) {
+      try {
+        if (rev < 0) {
+          // check once per (re)connect that the app has the multi-system API (app 0.8.0, API 8 features)
+          const v = await this.api.version({ signal });
+          if (!L.sysSupported(v)) {
+            if (!warned) { warned = true; this.log('warn', `Control Center app ${(v && v.appVersion) || ''} has no multi-system API (needs app 0.8.0, features ${L.SYS_FEATURES.join(', ')}): E2 / PixelHue / ATEM / PTZ are off, RS6 works`); }
+            if (this.sys) this.applySys(null);
+            await this.sleep(30000, signal); continue;
+          }
+        }
+        const S = await this.api.sysSince(rev, 20000, signal);
+        if (signal.aborted) break;
+        if (this.sysFailures) this.log('info', 'Control Center multi-system API reachable again');
+        this.sysFailures = 0; warned = false;
+        rev = typeof S.rev === 'number' ? S.rev : rev;
+        this.applySys(S);
+        if (typeof S.rev !== 'number') await this.sleep(Math.max(100, Number(this.config.poll) || 300), signal);
+      } catch (e) {
+        if (signal.aborted) break;
+        if (++this.sysFailures === 1) this.log('warn', `Control Center multi-system API failed: ${e.message}`);
+        rev = -1;
+        this.dropHolds(); // the app's dead-man stops a held camera on its own when the keep-alives stop
+        if (this.sys) this.applySys(null);
+        await this.sleep(Math.max(1000, Number(this.config.poll) || 300), signal);
+      }
+    }
+  }
+
+  applySys(S) {
+    // keep local optimistic PTZ values until the app reports the camera again
+    this.sys = S;
+    const sig = `${X.signature(S)}|${this.label || ''}`;
+    if (sig !== this.sysSig) { this.sysSig = sig; this.redefine(); }
+    this.setVariableValues(X.variableValues(S, this.ptzCats));
+    this.checkFeedbacks();
+    this.loadCatalogs();
+  }
+
+  // each camera's own command catalog (options and ranges for its series), fetched once per camera series
+  loadCatalogs() {
+    for (const c of X.cams(this.sys)) {
+      const key = `${c.series}|${c.model}`;
+      if (this.catKeys[c.id] === key || !c.connected) continue;
+      this.catKeys[c.id] = key;
+      this.api.ptzCatalog(c.id).then((cat) => { this.ptzCats[c.id] = cat; }).catch((e) => { delete this.catKeys[c.id]; this.log('debug', `PTZ catalog for ${c.id}: ${e.message}`); });
+    }
+  }
+
+  optimistic(cam, op, value) {
+    const c = X.camOf(this.sys, cam); if (c && c.values) c.values[op] = value;
+  }
+
+  async runSys(label, fn) {
+    if (!this.api) return undefined;
+    try { return await fn(); } catch (e) { this.log('error', `${label} failed: ${e.message}`); return undefined; }
+  }
+
+  // ---- PTZ hold-to-run: DOWN starts the motion and the keep-alives, UP (ptz_stop) ends both ----
+  async ptzHold(axis, cam, send) {
+    const id = X.camId(this.sys, cam);
+    if (!id) { this.log('warn', 'PTZ: no camera configured in the app'); return; }
+    try { await send(id); } catch (e) { this.log('error', `PTZ ${axis} failed: ${e.message}`); return; }
+    const h = this.holds.get(id) || { axes: new Set(), timer: null, since: 0 };
+    h.axes.add(axis); h.since = Date.now();
+    const max = Math.max(1000, Number(this.config.max_hold) || 20000);
+    if (!h.timer) {
+      h.timer = setInterval(() => {
+        if (Date.now() - h.since > max) { this.log('warn', `PTZ ${id}: held for more than ${max} ms, stopping`); this.ptzRelease(id, 'all'); return; }
+        this.api.ptz('keepalive', { cam: id }).catch(() => {});
+      }, 500);
+    }
+    this.holds.set(id, h);
+  }
+
+  async ptzRelease(cam, axes = 'all') {
+    // "Selected camera" stops every camera this module is holding plus the selected one (the selection may have changed mid-hold)
+    const ids = new Set(cam === 'selected' || !cam ? [...this.holds.keys(), X.camId(this.sys, 'selected')].filter(Boolean) : [String(cam)]);
+    const list = axes && axes !== 'all' ? [axes] : null;
+    await Promise.all([...ids].map(async (id) => {
+      const h = this.holds.get(id);
+      if (h) { if (list) h.axes.delete(axes); else h.axes.clear(); if (!h.axes.size) { clearInterval(h.timer); this.holds.delete(id); } }
+      try { await this.api.ptz('stop', list ? { cam: id, axes: list } : { cam: id }); } catch (e) { this.log('error', `PTZ stop ${id} failed: ${e.message}`); }
+    }));
+  }
+
+  async ptzReleaseAll() {
+    this.dropHolds();
+    try { await this.api.ptz('stopAll'); } catch (e) { this.log('error', `PTZ all stop failed: ${e.message}`); }
+  }
+
+  dropHolds() { for (const h of this.holds.values()) clearInterval(h.timer); this.holds.clear(); }
+
+  async releaseHolds() {
+    const ids = [...this.holds.keys()]; this.dropHolds();
+    if (this.api) await Promise.all(ids.map((id) => this.api.ptz('stop', { cam: id }).catch(() => {})));
   }
 
   async run(label, fn) {
@@ -119,7 +237,9 @@ class RS6PresetsInstance extends InstanceBase {
   }
 
   // ---------- actions ----------
-  actions() {
+  actions() { return { ...this.rs6Actions(), ...sysActions(this) }; }
+
+  rs6Actions() {
     return {
       recall_preset: {
         name: 'Recall preset to Preview (combined: Master + per-screen memories + Multiviewer)',
@@ -196,7 +316,9 @@ class RS6PresetsInstance extends InstanceBase {
   }
 
   // ---------- feedbacks ----------
-  feedbacks() {
+  feedbacks() { return { ...this.rs6Feedbacks(), ...sysFeedbacks(this) }; }
+
+  rs6Feedbacks() {
     const presetOpts = [
       this.presetOpt(),
       { type: 'checkbox', id: 'partial', label: 'Also light when only some of its destinations match', default: false },
@@ -272,4 +394,4 @@ class RS6PresetsInstance extends InstanceBase {
   }
 }
 
-runEntrypoint(RS6PresetsInstance, UpgradeScripts);
+runEntrypoint(ControlCenterInstance, UpgradeScripts);

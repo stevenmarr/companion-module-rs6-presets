@@ -1,0 +1,2387 @@
+{
+ "rev": 11,
+ "active": "rs6",
+ "systems": {
+  "rs6": {
+   "key": "rs6",
+   "label": "Analog Way Aquilon RS6",
+   "short": "RS6",
+   "kind": "rs6",
+   "group": "Presentation switchers",
+   "status": {
+    "connected": true,
+    "info": {
+     "model": "AQL RS6",
+     "version": {
+      "major": 6,
+      "minor": 2,
+      "patch": 79,
+      "beta": false
+     }
+    },
+    "error": null,
+    "lastSeen": 0
+   },
+   "counts": {
+    "presets": 12,
+    "destinations": 6,
+    "sources": 32
+   },
+   "capabilities": {
+    "presets": true,
+    "recallPreview": true,
+    "recallProgram": false,
+    "take": true,
+    "cut": true,
+    "destinations": true,
+    "armDestinations": false,
+    "sources": true,
+    "freeze": true,
+    "auxRoute": false,
+    "stills": false,
+    "cues": false,
+    "backups": true,
+    "destFilteredRecall": false,
+    "ownUi": true
+   },
+   "configured": true,
+   "connection": {
+    "host": "127.0.0.1",
+    "restPort": 36823,
+    "awjPort": 39891,
+    "protocol": "rest",
+    "mock": true
+   }
+  },
+  "e2": {
+   "key": "e2",
+   "label": "Barco Event Master (E2 / S3)",
+   "short": "E2",
+   "kind": "preset",
+   "group": "Presentation switchers",
+   "status": {
+    "connected": true,
+    "info": {
+     "model": "E2-Gen2",
+     "frameType": 5,
+     "name": "Mock System",
+     "version": "10.0.0 mock",
+     "frames": 1
+    },
+    "error": null,
+    "lastSeen": 0
+   },
+   "counts": {
+    "presets": 15,
+    "destinations": 7,
+    "sources": 13,
+    "cues": 4,
+    "refreshedAt": 1792640925882
+   },
+   "capabilities": {
+    "presets": true,
+    "recallPreview": true,
+    "recallProgram": true,
+    "take": true,
+    "cut": true,
+    "destinations": true,
+    "armDestinations": true,
+    "sources": true,
+    "freeze": true,
+    "auxRoute": true,
+    "stills": true,
+    "cues": true,
+    "backups": true,
+    "destFilteredRecall": false
+   },
+   "configured": true,
+   "connection": {
+    "host": "127.0.0.1",
+    "port": 39625,
+    "operatorId": "",
+    "transTime": "",
+    "mock": true
+   }
+  },
+  "pixelhue": {
+   "key": "pixelhue",
+   "label": "PixelHue (P10 / P20 / P80 / Q8)",
+   "short": "PixelHue",
+   "kind": "preset",
+   "group": "Presentation switchers",
+   "status": {
+    "connected": true,
+    "info": {
+     "model": "PixelHue",
+     "sn": "MOCKP20000000001",
+     "version": ""
+    },
+    "error": null,
+    "lastSeen": 0
+   },
+   "counts": {
+    "presets": 9,
+    "destinations": 4,
+    "sources": 8,
+    "cues": 0,
+    "refreshedAt": 1792640925861
+   },
+   "capabilities": {
+    "presets": true,
+    "recallPreview": true,
+    "recallProgram": true,
+    "take": true,
+    "cut": true,
+    "destinations": true,
+    "armDestinations": false,
+    "sources": true,
+    "freeze": false,
+    "auxRoute": false,
+    "stills": false,
+    "cues": false,
+    "backups": false,
+    "destFilteredRecall": false
+   },
+   "configured": true,
+   "connection": {
+    "host": "127.0.0.1",
+    "port": 33721,
+    "prefix": "/pixelhue",
+    "swap": true,
+    "time": "",
+    "mock": true
+   }
+  },
+  "atem": {
+   "key": "atem",
+   "label": "Blackmagic ATEM",
+   "short": "ATEM",
+   "kind": "atem",
+   "group": "Production switchers",
+   "status": {
+    "connected": true,
+    "info": {
+     "model": "ATEM Television Studio HD8 ISO",
+     "version": "2.32",
+     "modelId": 27
+    },
+    "error": null,
+    "lastSeen": 0
+   },
+   "counts": {
+    "sources": 14,
+    "macros": 4,
+    "keyers": 6,
+    "aux": 2,
+    "program": "CAM1",
+    "preview": "CAM2"
+   },
+   "capabilities": {
+    "atemSwitcher": true,
+    "atemAux": true,
+    "atemMacros": true,
+    "atem": true
+   },
+   "configured": true,
+   "connection": {
+    "host": "127.0.0.1",
+    "port": 51447,
+    "me": 1,
+    "mock": true
+   }
+  },
+  "ptz": {
+   "key": "ptz",
+   "label": "Panasonic PTZ cameras (AW-UE / AW-HE)",
+   "short": "PTZ",
+   "kind": "ptz",
+   "group": "Cameras",
+   "status": {
+    "connected": true,
+    "online": 3,
+    "total": 3,
+    "lastSeen": 0,
+    "error": null,
+    "info": {
+     "model": "3/3 cameras",
+     "version": ""
+    }
+   },
+   "counts": {
+    "cameras": 3,
+    "online": 3,
+    "tally": 0,
+    "presets": 1
+   },
+   "capabilities": {
+    "ptzCameras": true,
+    "ptzControl": true,
+    "ptzPresets": true,
+    "cameras": true,
+    "ptzCatalog": true,
+    "ptzProportional": true,
+    "ptzThumbnails": true
+   },
+   "configured": true,
+   "connection": {
+    "cameras": [
+     {
+      "id": "cam1",
+      "name": "Cam 1 Wide",
+      "host": "127.0.0.1",
+      "port": 39407
+     },
+     {
+      "id": "cam2",
+      "name": "Cam 2 Stage",
+      "host": "127.0.0.1",
+      "port": 33227
+     },
+     {
+      "id": "cam3",
+      "name": "Cam 3 Lectern",
+      "host": "127.0.0.1",
+      "port": 32971
+     }
+    ],
+    "mock": true
+   },
+   "cameras": [
+    {
+     "id": "cam1",
+     "name": "Cam 1 Wide",
+     "connected": true,
+     "tally": false,
+     "tallyGreen": false,
+     "power": "on",
+     "model": "AW-UE150"
+    },
+    {
+     "id": "cam2",
+     "name": "Cam 2 Stage",
+     "connected": true,
+     "tally": false,
+     "tallyGreen": false,
+     "power": "on",
+     "model": "AW-UE100"
+    },
+    {
+     "id": "cam3",
+     "name": "Cam 3 Lectern",
+     "connected": true,
+     "tally": false,
+     "tallyGreen": false,
+     "power": "on",
+     "model": "AW-HE130"
+    }
+   ]
+  }
+ },
+ "groups": [
+  {
+   "name": "Presentation switchers",
+   "systems": [
+    "rs6",
+    "e2",
+    "pixelhue"
+   ]
+  },
+  {
+   "name": "Production switchers",
+   "systems": [
+    "atem"
+   ]
+  },
+  {
+   "name": "Cameras",
+   "systems": [
+    "ptz"
+   ]
+  }
+ ],
+ "planned": [],
+ "migrated": {
+  "from": "0.5.0 settings.json",
+  "rs6": {
+   "host": "127.0.0.1",
+   "restPort": 36823,
+   "awjPort": 39891
+  },
+  "at": "2026-10-22T03:48:45.817Z"
+ },
+ "view": null,
+ "views": {
+  "e2": {
+   "system": "e2",
+   "label": "Barco Event Master (E2 / S3)",
+   "short": "E2",
+   "kind": "preset",
+   "capabilities": {
+    "presets": true,
+    "recallPreview": true,
+    "recallProgram": true,
+    "take": true,
+    "cut": true,
+    "destinations": true,
+    "armDestinations": true,
+    "sources": true,
+    "freeze": true,
+    "auxRoute": true,
+    "stills": true,
+    "cues": true,
+    "backups": true,
+    "destFilteredRecall": false
+   },
+   "status": {
+    "connected": true,
+    "info": {
+     "model": "E2-Gen2",
+     "frameType": 5,
+     "name": "Mock System",
+     "version": "10.0.0 mock",
+     "frames": 1
+    },
+    "error": null,
+    "lastSeen": 1792640930762
+   },
+   "connection": {
+    "host": "127.0.0.1",
+    "port": 39625,
+    "operatorId": "",
+    "transTime": "",
+    "mock": true
+   },
+   "destinations": [
+    {
+     "key": "S1",
+     "kind": "screen",
+     "id": 0,
+     "label": "Main LED",
+     "size": "3840×2160",
+     "selected": true,
+     "pvwPreset": {
+      "key": "e2:0",
+      "tile": 1,
+      "number": 1,
+      "name": "Walk-in"
+     },
+     "pgmPreset": null
+    },
+    {
+     "key": "S2",
+     "kind": "screen",
+     "id": 1,
+     "label": "IMAG Left",
+     "size": "3840×2160",
+     "selected": false,
+     "pvwPreset": {
+      "key": "e2:0",
+      "tile": 1,
+      "number": 1,
+      "name": "Walk-in"
+     },
+     "pgmPreset": null
+    },
+    {
+     "key": "S3",
+     "kind": "screen",
+     "id": 2,
+     "label": "IMAG Right",
+     "size": "3840×2160",
+     "selected": false,
+     "pvwPreset": {
+      "key": "e2:0",
+      "tile": 1,
+      "number": 1,
+      "name": "Walk-in"
+     },
+     "pgmPreset": null
+    },
+    {
+     "key": "S4",
+     "kind": "screen",
+     "id": 3,
+     "label": "Stage Floor",
+     "size": "3840×2160",
+     "selected": false,
+     "pvwPreset": {
+      "key": "e2:0",
+      "tile": 1,
+      "number": 1,
+      "name": "Walk-in"
+     },
+     "pgmPreset": null
+    },
+    {
+     "key": "A1",
+     "kind": "aux",
+     "id": 0,
+     "label": "Confidence",
+     "selected": false,
+     "pvwPreset": {
+      "key": "e2:0",
+      "tile": 1,
+      "number": 1,
+      "name": "Walk-in"
+     },
+     "pgmPreset": null
+    },
+    {
+     "key": "A2",
+     "kind": "aux",
+     "id": 1,
+     "label": "Record",
+     "selected": false,
+     "pvwPreset": null,
+     "pgmPreset": null
+    },
+    {
+     "key": "A3",
+     "kind": "aux",
+     "id": 2,
+     "label": "Stream",
+     "selected": false,
+     "pvwPreset": null,
+     "pgmPreset": null
+    }
+   ],
+   "presets": [
+    {
+     "key": "e2:0",
+     "id": 0,
+     "number": 1,
+     "sno": "1.00",
+     "name": "Walk-in",
+     "locked": false,
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "A1"
+     ],
+     "tile": 1,
+     "tally": {
+      "pvw": "full",
+      "pgm": "none"
+     },
+     "lastRecalled": true,
+     "dim": false
+    },
+    {
+     "key": "e2:1",
+     "id": 1,
+     "number": 2,
+     "sno": "2.00",
+     "name": "Keynote Full",
+     "locked": false,
+     "dests": [
+      "S1"
+     ],
+     "tile": 2,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "e2:2",
+     "id": 2,
+     "number": 3,
+     "sno": "3.00",
+     "name": "IMAG Pair",
+     "locked": false,
+     "dests": [
+      "S2",
+      "S3"
+     ],
+     "tile": 3,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": true
+    },
+    {
+     "key": "e2:3",
+     "id": 3,
+     "number": 4,
+     "sno": "4.00",
+     "name": "Panel 4-up",
+     "locked": false,
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "A1"
+     ],
+     "tile": 4,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "e2:4",
+     "id": 4,
+     "number": 5,
+     "sno": "5.00",
+     "name": "Floor Logo",
+     "locked": false,
+     "dests": [
+      "S4"
+     ],
+     "tile": 5,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": true
+    },
+    {
+     "key": "e2:5",
+     "id": 5,
+     "number": 6,
+     "sno": "6.00",
+     "name": "Conf PPT",
+     "locked": false,
+     "dests": [
+      "A1"
+     ],
+     "tile": 6,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": true
+    },
+    {
+     "key": "e2:6",
+     "id": 6,
+     "number": 7,
+     "sno": "7.00",
+     "name": "Record Clean",
+     "locked": false,
+     "dests": [
+      "A2"
+     ],
+     "tile": 7,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": true
+    },
+    {
+     "key": "e2:7",
+     "id": 7,
+     "number": 8,
+     "sno": "8.00",
+     "name": "Awards Stinger",
+     "locked": false,
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "S4"
+     ],
+     "tile": 8,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "e2:8",
+     "id": 8,
+     "number": 9,
+     "sno": "9.00",
+     "name": "Sponsor Loop",
+     "locked": false,
+     "dests": [
+      "S1",
+      "S4"
+     ],
+     "tile": 9,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "e2:9",
+     "id": 9,
+     "number": 10,
+     "sno": "10.00",
+     "name": "Q&A",
+     "locked": false,
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "A1",
+      "A2"
+     ],
+     "tile": 10,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "e2:10",
+     "id": 10,
+     "number": 11,
+     "sno": "11.00",
+     "name": "Break",
+     "locked": false,
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "A1",
+      "A2",
+      "A3"
+     ],
+     "tile": 11,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "e2:11",
+     "id": 11,
+     "number": 12,
+     "sno": "12.00",
+     "name": "Stream Program",
+     "locked": false,
+     "dests": [
+      "A3"
+     ],
+     "tile": 12,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": true
+    },
+    {
+     "key": "e2:12",
+     "id": 12,
+     "number": 12.01,
+     "sno": "12.01",
+     "name": "Stream Program alt",
+     "locked": false,
+     "dests": [
+      "A3"
+     ],
+     "tile": 13,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": true
+    },
+    {
+     "key": "e2:13",
+     "id": 13,
+     "number": 15,
+     "sno": "15.00",
+     "name": "Video Roll",
+     "locked": false,
+     "dests": [
+      "S1",
+      "A2"
+     ],
+     "tile": 15,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "e2:14",
+     "id": 14,
+     "number": 20,
+     "sno": "20.00",
+     "name": "Show Close",
+     "locked": false,
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "S4",
+      "A1",
+      "A2",
+      "A3"
+     ],
+     "tile": 20,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    }
+   ],
+   "sources": [
+    {
+     "key": "src:0",
+     "id": 0,
+     "name": "Cam 1 Wide",
+     "kind": "input",
+     "inputCfg": 0,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:1",
+     "id": 1,
+     "name": "Cam 2 Tight",
+     "kind": "input",
+     "inputCfg": 1,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:2",
+     "id": 2,
+     "name": "Cam 3 Jib",
+     "kind": "input",
+     "inputCfg": 2,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:3",
+     "id": 3,
+     "name": "PPT Main",
+     "kind": "input",
+     "inputCfg": 3,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:4",
+     "id": 4,
+     "name": "PPT Backup",
+     "kind": "input",
+     "inputCfg": 4,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:5",
+     "id": 5,
+     "name": "Playback A",
+     "kind": "input",
+     "inputCfg": 5,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:6",
+     "id": 6,
+     "name": "Playback B",
+     "kind": "input",
+     "inputCfg": 6,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:7",
+     "id": 7,
+     "name": "Walk-in Loop",
+     "kind": "input",
+     "inputCfg": 7,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:8",
+     "id": 8,
+     "name": "Zoom",
+     "kind": "input",
+     "inputCfg": 8,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "no sync",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:9",
+     "id": 9,
+     "name": "Graphics",
+     "kind": "input",
+     "inputCfg": 9,
+     "stillIndex": -1,
+     "frozen": false,
+     "status": "ok",
+     "size": "1920×1080"
+    },
+    {
+     "key": "src:10",
+     "id": 10,
+     "name": "Logo.png",
+     "kind": "still",
+     "inputCfg": -1,
+     "stillIndex": 0,
+     "frozen": false,
+     "status": "ok",
+     "size": "3840×2160"
+    },
+    {
+     "key": "src:11",
+     "id": 11,
+     "name": "Hold Slide.png",
+     "kind": "still",
+     "inputCfg": -1,
+     "stillIndex": 1,
+     "frozen": false,
+     "status": "ok",
+     "size": "3840×2160"
+    },
+    {
+     "key": "src:12",
+     "id": 12,
+     "name": "Sponsors.png",
+     "kind": "still",
+     "inputCfg": -1,
+     "stillIndex": 2,
+     "frozen": false,
+     "status": "ok",
+     "size": "3840×2160"
+    }
+   ],
+   "cues": [
+    {
+     "key": "cue:0",
+     "id": 0,
+     "name": "Show Open",
+     "number": 1
+    },
+    {
+     "key": "cue:1",
+     "id": 1,
+     "name": "Keynote Walk-up",
+     "number": 2
+    },
+    {
+     "key": "cue:2",
+     "id": 2,
+     "name": "Awards Sequence",
+     "number": 3
+    },
+    {
+     "key": "cue:3",
+     "id": 3,
+     "name": "Close",
+     "number": 4
+    }
+   ],
+   "stills": [
+    {
+     "key": "still:0",
+     "id": 0,
+     "name": "Logo.png",
+     "size": "3840×2160",
+     "state": 0,
+     "fileKB": 33177.6
+    },
+    {
+     "key": "still:1",
+     "id": 1,
+     "name": "Hold Slide.png",
+     "size": "3840×2160",
+     "state": 0,
+     "fileKB": 33177.6
+    },
+    {
+     "key": "still:2",
+     "id": 2,
+     "name": "Sponsors.png",
+     "size": "3840×2160",
+     "state": 0,
+     "fileKB": 33177.6
+    }
+   ],
+   "backups": [
+    {
+     "key": "bk:3",
+     "id": 3,
+     "name": "PPT Main",
+     "videoStatus": 1,
+     "active": -1,
+     "backups": [
+      {
+       "id": 0,
+       "inputId": 4,
+       "stillId": null,
+       "destId": null,
+       "name": "PPT Backup"
+      },
+      {
+       "id": 1,
+       "inputId": null,
+       "stillId": 1,
+       "destId": null,
+       "name": "Hold Slide.png"
+      }
+     ]
+    },
+    {
+     "key": "bk:5",
+     "id": 5,
+     "name": "Playback A",
+     "videoStatus": 1,
+     "active": -1,
+     "backups": [
+      {
+       "id": 0,
+       "inputId": 6,
+       "stillId": null,
+       "destId": null,
+       "name": "Playback B"
+      }
+     ]
+    }
+   ],
+   "errors": {},
+   "refreshedAt": 1792640925882,
+   "selection": [
+    "S1"
+   ],
+   "autoTake": false,
+   "tileCount": 48,
+   "lastRecalled": {
+    "key": "e2:0",
+    "tile": 1,
+    "number": 1,
+    "name": "Walk-in"
+   }
+  },
+  "pixelhue": {
+   "system": "pixelhue",
+   "label": "PixelHue (P10 / P20 / P80 / Q8)",
+   "short": "PixelHue",
+   "kind": "preset",
+   "capabilities": {
+    "presets": true,
+    "recallPreview": true,
+    "recallProgram": true,
+    "take": true,
+    "cut": true,
+    "destinations": true,
+    "armDestinations": false,
+    "sources": true,
+    "freeze": false,
+    "auxRoute": false,
+    "stills": false,
+    "cues": false,
+    "backups": false,
+    "destFilteredRecall": false
+   },
+   "status": {
+    "connected": true,
+    "info": {
+     "model": "PixelHue",
+     "sn": "MOCKP20000000001",
+     "version": ""
+    },
+    "error": null,
+    "lastSeen": 1792640928822
+   },
+   "connection": {
+    "host": "127.0.0.1",
+    "port": 33721,
+    "prefix": "/pixelhue",
+    "swap": true,
+    "time": "",
+    "mock": true
+   },
+   "destinations": [
+    {
+     "key": "S1",
+     "kind": "screen",
+     "id": 1,
+     "guid": "scr-1-guid",
+     "label": "LED Wall",
+     "frozen": false,
+     "selected": false,
+     "pvwPreset": null,
+     "pgmPreset": null
+    },
+    {
+     "key": "S2",
+     "kind": "screen",
+     "id": 2,
+     "guid": "scr-2-guid",
+     "label": "Left IMAG",
+     "frozen": false,
+     "selected": false,
+     "pvwPreset": null,
+     "pgmPreset": null
+    },
+    {
+     "key": "S3",
+     "kind": "screen",
+     "id": 3,
+     "guid": "scr-3-guid",
+     "label": "Right IMAG",
+     "frozen": false,
+     "selected": false,
+     "pvwPreset": null,
+     "pgmPreset": null
+    },
+    {
+     "key": "A1",
+     "kind": "aux",
+     "id": 101,
+     "guid": "scr-101-guid",
+     "label": "AUX Confidence",
+     "frozen": false,
+     "selected": false,
+     "pvwPreset": null,
+     "pgmPreset": null
+    }
+   ],
+   "presets": [
+    {
+     "key": "ph:preset-1-guid",
+     "id": "preset-1-guid",
+     "serial": 1,
+     "number": 1,
+     "name": "Opener",
+     "dests": [
+      "S1",
+      "S2",
+      "S3"
+     ],
+     "tile": 1,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "ph:preset-2-guid",
+     "id": "preset-2-guid",
+     "serial": 2,
+     "number": 2,
+     "name": "Keynote",
+     "dests": [
+      "S1"
+     ],
+     "tile": 2,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "ph:preset-3-guid",
+     "id": "preset-3-guid",
+     "serial": 3,
+     "number": 3,
+     "name": "IMAG Pair",
+     "dests": [
+      "S2",
+      "S3"
+     ],
+     "tile": 3,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "ph:preset-4-guid",
+     "id": "preset-4-guid",
+     "serial": 4,
+     "number": 4,
+     "name": "Panel",
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "A1"
+     ],
+     "tile": 4,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "ph:preset-5-guid",
+     "id": "preset-5-guid",
+     "serial": 5,
+     "number": 5,
+     "name": "Confidence PPT",
+     "dests": [
+      "A1"
+     ],
+     "tile": 5,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "ph:preset-6-guid",
+     "id": "preset-6-guid",
+     "serial": 6,
+     "number": 6,
+     "name": "Video Roll",
+     "dests": [
+      "S1"
+     ],
+     "tile": 6,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "ph:preset-7-guid",
+     "id": "preset-7-guid",
+     "serial": 7,
+     "number": 7,
+     "name": "Break",
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "A1"
+     ],
+     "tile": 7,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "ph:preset-8-guid",
+     "id": "preset-8-guid",
+     "serial": 8,
+     "number": 8,
+     "name": "Awards",
+     "dests": [
+      "S1",
+      "S2",
+      "S3"
+     ],
+     "tile": 8,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    },
+    {
+     "key": "ph:preset-10-guid",
+     "id": "preset-10-guid",
+     "serial": 10,
+     "number": 10,
+     "name": "Close",
+     "dests": [
+      "S1",
+      "S2",
+      "S3",
+      "A1"
+     ],
+     "tile": 10,
+     "tally": {
+      "pvw": "none",
+      "pgm": "none"
+     },
+     "lastRecalled": false,
+     "dim": false
+    }
+   ],
+   "sources": [
+    {
+     "key": "if:1",
+     "id": 1,
+     "name": "Cam 1",
+     "kind": "input",
+     "status": "ok",
+     "frozen": false,
+     "type": 1
+    },
+    {
+     "key": "if:2",
+     "id": 2,
+     "name": "Cam 2",
+     "kind": "input",
+     "status": "ok",
+     "frozen": false,
+     "type": 1
+    },
+    {
+     "key": "if:3",
+     "id": 3,
+     "name": "Cam 3",
+     "kind": "input",
+     "status": "ok",
+     "frozen": false,
+     "type": 1
+    },
+    {
+     "key": "if:4",
+     "id": 4,
+     "name": "Laptop 1",
+     "kind": "input",
+     "status": "ok",
+     "frozen": false,
+     "type": 2
+    },
+    {
+     "key": "if:5",
+     "id": 5,
+     "name": "Laptop 2",
+     "kind": "input",
+     "status": "ok",
+     "frozen": false,
+     "type": 2
+    },
+    {
+     "key": "if:6",
+     "id": 6,
+     "name": "Playback",
+     "kind": "input",
+     "status": "ok",
+     "frozen": false,
+     "type": 2
+    },
+    {
+     "key": "if:7",
+     "id": 7,
+     "name": "Media Server",
+     "kind": "input",
+     "status": "ok",
+     "frozen": false,
+     "type": 2
+    },
+    {
+     "key": "if:8",
+     "id": 8,
+     "name": "Spare SDI",
+     "kind": "input",
+     "status": "no signal",
+     "frozen": false,
+     "type": 2
+    }
+   ],
+   "cues": [],
+   "stills": [],
+   "backups": [],
+   "errors": {},
+   "refreshedAt": 1792640925861,
+   "selection": [],
+   "autoTake": false,
+   "tileCount": 48,
+   "lastRecalled": null
+  },
+  "atem": {
+   "system": "atem",
+   "label": "Blackmagic ATEM",
+   "short": "ATEM",
+   "kind": "atem",
+   "capabilities": {
+    "atemSwitcher": true,
+    "atemAux": true,
+    "atemMacros": true,
+    "atem": true
+   },
+   "status": {
+    "connected": true,
+    "info": {
+     "model": "ATEM Television Studio HD8 ISO",
+     "version": "2.32",
+     "modelId": 27
+    },
+    "error": null,
+    "lastSeen": 0
+   },
+   "connection": {
+    "host": "127.0.0.1",
+    "port": 51447,
+    "me": 1,
+    "mock": true
+   },
+   "topology": {
+    "mixEffects": 1,
+    "sources": 16,
+    "downstreamKeyers": 2,
+    "auxilliaries": 2,
+    "mediaPlayers": 2,
+    "superSources": 0
+   },
+   "protocol": "2.32",
+   "product": "ATEM Television Studio HD8 ISO",
+   "model": "Television Studio HD8 ISO",
+   "me": 1,
+   "bus": [
+    {
+     "id": 0,
+     "long": "Black",
+     "short": "BLK",
+     "type": 1,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 1,
+     "long": "Cam 1 Wide",
+     "short": "CAM1",
+     "type": 0,
+     "pgm": true,
+     "pvw": false
+    },
+    {
+     "id": 2,
+     "long": "Cam 2 Tight",
+     "short": "CAM2",
+     "type": 0,
+     "pgm": false,
+     "pvw": true
+    },
+    {
+     "id": 3,
+     "long": "Cam 3 Jib",
+     "short": "CAM3",
+     "type": 0,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 4,
+     "long": "Cam 4 PTZ",
+     "short": "CAM4",
+     "type": 0,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 5,
+     "long": "Playback",
+     "short": "PLAY",
+     "type": 0,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 6,
+     "long": "Laptop",
+     "short": "LAPT",
+     "type": 0,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 7,
+     "long": "Graphics",
+     "short": "GFX",
+     "type": 0,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 8,
+     "long": "Remote",
+     "short": "REMT",
+     "type": 0,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 1000,
+     "long": "Color Bars",
+     "short": "BARS",
+     "type": 2,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 2001,
+     "long": "Color 1",
+     "short": "COL1",
+     "type": 3,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 2002,
+     "long": "Color 2",
+     "short": "COL2",
+     "type": 3,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 3010,
+     "long": "Media Player 1",
+     "short": "MP1",
+     "type": 4,
+     "pgm": false,
+     "pvw": false
+    },
+    {
+     "id": 3020,
+     "long": "Media Player 2",
+     "short": "MP2",
+     "type": 4,
+     "pgm": false,
+     "pvw": false
+    }
+   ],
+   "auxSources": [
+    {
+     "id": 1,
+     "long": "Cam 1 Wide",
+     "short": "CAM1"
+    },
+    {
+     "id": 2,
+     "long": "Cam 2 Tight",
+     "short": "CAM2"
+    },
+    {
+     "id": 3,
+     "long": "Cam 3 Jib",
+     "short": "CAM3"
+    },
+    {
+     "id": 4,
+     "long": "Cam 4 PTZ",
+     "short": "CAM4"
+    },
+    {
+     "id": 5,
+     "long": "Playback",
+     "short": "PLAY"
+    },
+    {
+     "id": 6,
+     "long": "Laptop",
+     "short": "LAPT"
+    },
+    {
+     "id": 7,
+     "long": "Graphics",
+     "short": "GFX"
+    },
+    {
+     "id": 8,
+     "long": "Remote",
+     "short": "REMT"
+    },
+    {
+     "id": 3010,
+     "long": "Media Player 1",
+     "short": "MP1"
+    },
+    {
+     "id": 3020,
+     "long": "Media Player 2",
+     "short": "MP2"
+    },
+    {
+     "id": 10010,
+     "long": "Program",
+     "short": "PGM"
+    },
+    {
+     "id": 10011,
+     "long": "Preview",
+     "short": "PVW"
+    }
+   ],
+   "inputs": [
+    {
+     "id": 0,
+     "long": "Black",
+     "short": "BLK",
+     "type": 1,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 1,
+     "long": "Cam 1 Wide",
+     "short": "CAM1",
+     "type": 0,
+     "tally": {
+      "program": true,
+      "preview": false
+     }
+    },
+    {
+     "id": 2,
+     "long": "Cam 2 Tight",
+     "short": "CAM2",
+     "type": 0,
+     "tally": {
+      "program": false,
+      "preview": true
+     }
+    },
+    {
+     "id": 3,
+     "long": "Cam 3 Jib",
+     "short": "CAM3",
+     "type": 0,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 4,
+     "long": "Cam 4 PTZ",
+     "short": "CAM4",
+     "type": 0,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 5,
+     "long": "Playback",
+     "short": "PLAY",
+     "type": 0,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 6,
+     "long": "Laptop",
+     "short": "LAPT",
+     "type": 0,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 7,
+     "long": "Graphics",
+     "short": "GFX",
+     "type": 0,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 8,
+     "long": "Remote",
+     "short": "REMT",
+     "type": 0,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 1000,
+     "long": "Color Bars",
+     "short": "BARS",
+     "type": 2,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 2001,
+     "long": "Color 1",
+     "short": "COL1",
+     "type": 3,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 2002,
+     "long": "Color 2",
+     "short": "COL2",
+     "type": 3,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 3010,
+     "long": "Media Player 1",
+     "short": "MP1",
+     "type": 4,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 3020,
+     "long": "Media Player 2",
+     "short": "MP2",
+     "type": 4,
+     "tally": {
+      "program": false,
+      "preview": false
+     }
+    },
+    {
+     "id": 10010,
+     "long": "Program",
+     "short": "PGM",
+     "type": 128,
+     "tally": null
+    },
+    {
+     "id": 10011,
+     "long": "Preview",
+     "short": "PVW",
+     "type": 128,
+     "tally": null
+    }
+   ],
+   "program": 1,
+   "preview": 2,
+   "style": "MIX",
+   "nextStyle": "MIX",
+   "styles": [
+    "MIX",
+    "DIP",
+    "WIPE",
+    "DVE",
+    "STING"
+   ],
+   "nextSelection": 1,
+   "inTransition": false,
+   "remainingFrames": 0,
+   "handle": 0,
+   "mixRate": 25,
+   "ftb": {
+    "black": false,
+    "inTransition": false,
+    "remaining": 0,
+    "rate": 25
+   },
+   "keyers": [
+    {
+     "index": 0,
+     "onAir": false,
+     "tie": false
+    },
+    {
+     "index": 1,
+     "onAir": false,
+     "tie": false
+    },
+    {
+     "index": 2,
+     "onAir": false,
+     "tie": false
+    },
+    {
+     "index": 3,
+     "onAir": false,
+     "tie": false
+    }
+   ],
+   "dsk": [
+    {
+     "index": 0,
+     "onAir": false,
+     "inTransition": false,
+     "isAuto": false,
+     "remainingFrames": 0,
+     "tie": false,
+     "rate": 25
+    },
+    {
+     "index": 1,
+     "onAir": false,
+     "inTransition": false,
+     "isAuto": false,
+     "remainingFrames": 0,
+     "tie": false,
+     "rate": 25
+    }
+   ],
+   "aux": [
+    {
+     "index": 0,
+     "source": 10010
+    },
+    {
+     "index": 1,
+     "source": 1
+    }
+   ],
+   "macros": [
+    {
+     "index": 0,
+     "isUsed": true,
+     "name": "Opener roll",
+     "description": "Bars, then Cam 1"
+    },
+    {
+     "index": 1,
+     "isUsed": true,
+     "name": "Lower third in",
+     "description": ""
+    },
+    {
+     "index": 2,
+     "isUsed": true,
+     "name": "Break loop",
+     "description": ""
+    },
+    {
+     "index": 5,
+     "isUsed": true,
+     "name": "Reset keys",
+     "description": ""
+    }
+   ],
+   "macroRun": {
+    "isRunning": false,
+    "isWaiting": false,
+    "loop": false,
+    "macroIndex": 65535
+   },
+   "tally": {
+    "program": [
+     "CAM1"
+    ],
+    "preview": [
+     "CAM2"
+    ]
+   }
+  },
+  "ptz": {
+   "system": "ptz",
+   "label": "Panasonic PTZ cameras (AW-UE / AW-HE)",
+   "short": "PTZ",
+   "kind": "ptz",
+   "capabilities": {
+    "ptzCameras": true,
+    "ptzControl": true,
+    "ptzPresets": true,
+    "cameras": true,
+    "ptzCatalog": true,
+    "ptzProportional": true,
+    "ptzThumbnails": true
+   },
+   "status": {
+    "connected": true,
+    "online": 3,
+    "total": 3,
+    "lastSeen": 1792640930744,
+    "error": null,
+    "info": {
+     "model": "3/3 cameras",
+     "version": ""
+    }
+   },
+   "connection": {
+    "cameras": [
+     {
+      "id": "cam1",
+      "name": "Cam 1 Wide",
+      "host": "127.0.0.1",
+      "port": 39407
+     },
+     {
+      "id": "cam2",
+      "name": "Cam 2 Stage",
+      "host": "127.0.0.1",
+      "port": 33227
+     },
+     {
+      "id": "cam3",
+      "name": "Cam 3 Lectern",
+      "host": "127.0.0.1",
+      "port": 32971
+     }
+    ],
+    "mock": true
+   },
+   "cameras": [
+    {
+     "id": "cam1",
+     "name": "Cam 1 Wide",
+     "host": "127.0.0.1",
+     "port": 39407,
+     "connected": true,
+     "error": null,
+     "lastSeen": 0,
+     "moving": false,
+     "axes": {
+      "pt": false,
+      "z": false,
+      "f": false
+     },
+     "sent": {},
+     "model": "AW-UE150",
+     "title": "CAM-1-WIDE",
+     "version": "MOCK1.00",
+     "power": "on",
+     "tally": false,
+     "tallyGreen": false,
+     "autoFocus": true,
+     "autoIris": true,
+     "gain": "08",
+     "series": "UE150",
+     "seriesOverride": false,
+     "values": {
+      "focusMode": true,
+      "irisMode": true,
+      "iris": 26,
+      "install": "0",
+      "gain": "08",
+      "superGain": false,
+      "ndFilter": "0",
+      "shutterMode": "0",
+      "shutterStep": "100",
+      "synchro": 60,
+      "wbMode": "0",
+      "varTemp": 5600,
+      "rGain": 0,
+      "bGain": 0,
+      "masterPed": 0,
+      "rPed": 0,
+      "gPed": 0,
+      "bPed": 0,
+      "detail": true,
+      "masterDetail": 0,
+      "skinDetail": false,
+      "skinEffect": 0,
+      "gammaMode": "0",
+      "gamma": 55,
+      "kneeMode": "2",
+      "kneePoint": 93.5,
+      "kneeSlope": 48,
+      "matrixType": "0",
+      "adaptiveMatrix": false,
+      "matrixRG": 0,
+      "matrixRB": 0,
+      "matrixGR": 0,
+      "matrixGB": 0,
+      "matrixBR": 0,
+      "matrixBG": 0,
+      "chromaLevel": 0,
+      "chromaPhase": 0,
+      "scene": "1",
+      "presetScope": "0",
+      "presetSpeedMode": "0",
+      "presetSpeed": "999",
+      "presetTime": "999",
+      "power": true,
+      "tallyRed": false,
+      "tallyGreen": false,
+      "colorBars": false,
+      "colorBarsTone": "0",
+      "colorBarsType": "1",
+      "menu": false
+     },
+     "pos": {
+      "zoom": 0,
+      "focus": 25,
+      "iris": 25,
+      "pan": 0,
+      "tilt": 0,
+      "panRaw": "8000",
+      "tiltRaw": "8000"
+     },
+     "lastError": null,
+     "presetNames": {
+      "2": "Pulpit"
+     },
+     "lastPreset": 2
+    },
+    {
+     "id": "cam2",
+     "name": "Cam 2 Stage",
+     "host": "127.0.0.1",
+     "port": 33227,
+     "connected": true,
+     "error": null,
+     "lastSeen": 0,
+     "moving": false,
+     "axes": {
+      "pt": false,
+      "z": false,
+      "f": false
+     },
+     "sent": {},
+     "model": "AW-UE100",
+     "title": "CAM-2-STAGE",
+     "version": "MOCK1.00",
+     "power": "on",
+     "tally": false,
+     "tallyGreen": false,
+     "autoFocus": true,
+     "autoIris": true,
+     "gain": "08",
+     "series": "UE150",
+     "seriesOverride": false,
+     "values": {
+      "focusMode": true,
+      "irisMode": true,
+      "iris": 26,
+      "install": "0",
+      "gain": "08",
+      "superGain": false,
+      "ndFilter": "0",
+      "shutterMode": "0",
+      "shutterStep": "100",
+      "synchro": 60,
+      "wbMode": "0",
+      "varTemp": 5600,
+      "rGain": 0,
+      "bGain": 0,
+      "masterPed": 0,
+      "rPed": 0,
+      "gPed": 0,
+      "bPed": 0,
+      "detail": true,
+      "masterDetail": 0,
+      "skinDetail": false,
+      "skinEffect": 0,
+      "gammaMode": "0",
+      "gamma": 55,
+      "kneeMode": "2",
+      "kneePoint": 93.5,
+      "kneeSlope": 48,
+      "matrixType": "0",
+      "adaptiveMatrix": false,
+      "matrixRG": 0,
+      "matrixRB": 0,
+      "matrixGR": 0,
+      "matrixGB": 0,
+      "matrixBR": 0,
+      "matrixBG": 0,
+      "chromaLevel": 0,
+      "chromaPhase": 0,
+      "scene": "1",
+      "presetScope": "0",
+      "presetSpeedMode": "0",
+      "presetSpeed": "999",
+      "presetTime": "999",
+      "power": true,
+      "tallyRed": false,
+      "tallyGreen": false,
+      "colorBars": false,
+      "colorBarsTone": "0",
+      "colorBarsType": "1",
+      "menu": false
+     },
+     "pos": {
+      "zoom": 0,
+      "focus": 25,
+      "iris": 25,
+      "pan": 0,
+      "tilt": 0,
+      "panRaw": "8000",
+      "tiltRaw": "8000"
+     },
+     "lastError": null,
+     "presetNames": {},
+     "lastPreset": null
+    },
+    {
+     "id": "cam3",
+     "name": "Cam 3 Lectern",
+     "host": "127.0.0.1",
+     "port": 32971,
+     "connected": true,
+     "error": null,
+     "lastSeen": 0,
+     "moving": false,
+     "axes": {
+      "pt": false,
+      "z": false,
+      "f": false
+     },
+     "sent": {},
+     "model": "AW-HE130",
+     "title": "CAM-3-LECTERN",
+     "version": "MOCK1.00",
+     "power": "on",
+     "tally": false,
+     "tallyGreen": false,
+     "autoFocus": true,
+     "autoIris": true,
+     "gain": "08",
+     "series": "AW-HE130",
+     "seriesOverride": false,
+     "values": {
+      "focusMode": true,
+      "irisMode": true,
+      "iris": 26,
+      "install": "0",
+      "gain": "08",
+      "ndFilter": "0",
+      "shutter": "0",
+      "pedestal": "0",
+      "colorTemp": "0",
+      "presetScope": "0",
+      "presetSpeed": "999",
+      "power": true,
+      "tallyRed": false,
+      "colorBars": false,
+      "colorBarsSetup": false
+     },
+     "pos": {
+      "zoom": 0,
+      "focus": 25,
+      "iris": 25,
+      "pan": 0,
+      "tilt": 0,
+      "panRaw": "8000",
+      "tiltRaw": "8000"
+     },
+     "lastError": null,
+     "presetNames": {},
+     "lastPreset": null
+    }
+   ],
+   "selected": "cam1",
+   "speeds": {
+    "pt": 25,
+    "zoom": 25,
+    "focus": 15
+   },
+   "presetCount": 100,
+   "gains": [
+    [
+     "80",
+     "Auto"
+    ],
+    [
+     "08",
+     "0 dB"
+    ],
+    [
+     "09",
+     "1 dB"
+    ],
+    [
+     "0A",
+     "2 dB"
+    ],
+    [
+     "0B",
+     "3 dB"
+    ],
+    [
+     "0C",
+     "4 dB"
+    ],
+    [
+     "0D",
+     "5 dB"
+    ],
+    [
+     "0E",
+     "6 dB"
+    ],
+    [
+     "0F",
+     "7 dB"
+    ],
+    [
+     "10",
+     "8 dB"
+    ],
+    [
+     "11",
+     "9 dB"
+    ],
+    [
+     "12",
+     "10 dB"
+    ],
+    [
+     "13",
+     "11 dB"
+    ],
+    [
+     "14",
+     "12 dB"
+    ],
+    [
+     "15",
+     "13 dB"
+    ],
+    [
+     "16",
+     "14 dB"
+    ],
+    [
+     "17",
+     "15 dB"
+    ],
+    [
+     "18",
+     "16 dB"
+    ],
+    [
+     "19",
+     "17 dB"
+    ],
+    [
+     "1A",
+     "18 dB"
+    ],
+    [
+     "1B",
+     "19 dB"
+    ],
+    [
+     "1C",
+     "20 dB"
+    ],
+    [
+     "1D",
+     "21 dB"
+    ],
+    [
+     "1E",
+     "22 dB"
+    ],
+    [
+     "1F",
+     "23 dB"
+    ],
+    [
+     "20",
+     "24 dB"
+    ],
+    [
+     "21",
+     "25 dB"
+    ],
+    [
+     "22",
+     "26 dB"
+    ],
+    [
+     "23",
+     "27 dB"
+    ],
+    [
+     "24",
+     "28 dB"
+    ],
+    [
+     "25",
+     "29 dB"
+    ],
+    [
+     "26",
+     "30 dB"
+    ],
+    [
+     "27",
+     "31 dB"
+    ],
+    [
+     "28",
+     "32 dB"
+    ],
+    [
+     "29",
+     "33 dB"
+    ],
+    [
+     "2A",
+     "34 dB"
+    ],
+    [
+     "2B",
+     "35 dB"
+    ],
+    [
+     "2C",
+     "36 dB"
+    ],
+    [
+     "2D",
+     "37 dB"
+    ],
+    [
+     "2E",
+     "38 dB"
+    ],
+    [
+     "2F",
+     "39 dB"
+    ],
+    [
+     "30",
+     "40 dB"
+    ],
+    [
+     "31",
+     "41 dB"
+    ],
+    [
+     "32",
+     "42 dB"
+    ]
+   ],
+   "shutters": [
+    [
+     "0",
+     "Off"
+    ],
+    [
+     "2",
+     "1/60"
+    ],
+    [
+     "3",
+     "1/100"
+    ],
+    [
+     "4",
+     "1/120"
+    ],
+    [
+     "5",
+     "1/250"
+    ],
+    [
+     "6",
+     "1/500"
+    ],
+    [
+     "7",
+     "1/1000"
+    ],
+    [
+     "8",
+     "1/2000"
+    ],
+    [
+     "9",
+     "1/4000"
+    ],
+    [
+     "A",
+     "1/10000"
+    ],
+    [
+     "B",
+     "Synchro scan"
+    ],
+    [
+     "C",
+     "ELC"
+    ]
+   ],
+   "whiteBalances": [
+    [
+     "0",
+     "ATW"
+    ],
+    [
+     "1",
+     "AWC A"
+    ],
+    [
+     "2",
+     "AWC B"
+    ]
+   ],
+   "series": [
+    "UE150",
+    "AW-HE130"
+   ],
+   "seriesList": [
+    "Other",
+    "HE40",
+    "HE42",
+    "UE70",
+    "UE150",
+    "AW-HE2",
+    "AW-HE50",
+    "AW-HE60",
+    "AW-HE120",
+    "AW-HE130",
+    "AW-HR140",
+    "AW-HEF5",
+    "AW-UE4",
+    "AW-SHU01",
+    "AK-UB300",
+    "CX350"
+   ],
+   "moving": false
+  }
+ }
+}
