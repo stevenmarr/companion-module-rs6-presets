@@ -8,9 +8,23 @@ const { COLORS } = L;
 
 const TRI = { type: 'dropdown', id: 'mode', label: 'Mode', default: 'toggle', choices: [{ id: 'toggle', label: 'Toggle' }, { id: 'on', label: 'On' }, { id: 'off', label: 'Off' }] };
 const triOf = (mode, cur) => (mode === 'on' ? true : mode === 'off' ? false : !cur);
+// 0.7.0 knobs: the fork passes the signed detent count as $(this:delta) (variables are parsed by Companion)
+const DELTA = { type: 'textinput', id: 'delta', label: 'Turn (detents, signed; $(this:delta) on a knob)', default: '$(this:delta)', useVariables: true };
+const FALLBACK = { type: 'number', id: 'fallback', label: 'When the turn is empty (no $(this:delta)): use', default: 1, min: -49, max: 49 };
 const dd = (id, label, choices, extra = {}) => ({ type: 'dropdown', id, label, default: choices[0] ? choices[0].id : '', choices, ...extra });
 
 function sysActions(inst) {
+  // 0.7.0 knobs: the signed turn. Companion usually hands the option over with $(this:delta) already filled in;
+  // otherwise it is parsed here, and an empty or unparsable turn uses the fallback (+1 / -1 on the knob presets)
+  const turn = async (a, ctx) => {
+    let v = a.options.delta;
+    if (typeof v === 'string' && v.includes('$(') && ctx && typeof ctx.parseVariablesInString === 'function') {
+      try { v = await ctx.parseVariablesInString(v); } catch (e) { v = ''; }
+    }
+    const d = X.deltaOf(v, a.options.fallback);
+    inst.log('debug', `${a.actionId || 'knob'}: turn "${a.options.delta}" -> ${JSON.stringify(v)} -> ${d}`);
+    return d;
+  };
   const S = inst.sys; const out = {};
   const run = (label, fn) => inst.runSys(label, fn);
   out.sys_set_active = {
@@ -140,6 +154,51 @@ function sysActions(inst) {
         const v = m === 'set' ? n : m === 'centre' ? ((o && o.range && o.range.centre) ?? 0) : X.stepRange(o, c, m === 'dec' ? -n : n);
         inst.optimistic(a.options.cam, a.options.op, v);
         return pr(a.options.op, 'op', { cam: X.camId(inst.sys, a.options.cam), op: a.options.op, value: v });
+      },
+    },
+    // ---- 0.7.0 knobs (Stream Deck + / + XL). `delta` is the fork's signed $(this:delta); `fallback` is used when it is empty ----
+    ptz_lens_delta: {
+      name: 'PTZ: zoom / focus by a knob turn (runs for a moment per detent, then stops)',
+      options: [camOpt, dd('axis', 'Lens', [{ id: 'zoom', label: 'Zoom (+ = tele)' }, { id: 'focus', label: 'Focus (+ = far)' }]), DELTA, FALLBACK,
+        { type: 'number', id: 'step', label: 'Speed per detent (1-49)', default: 8, min: 1, max: 49 }, { type: 'number', id: 'pulse', label: 'Run time after the last detent (ms)', default: 250, min: 50, max: 2000 }],
+      callback: async (a, ctx) => {
+        const d = await turn(a, ctx); if (!d) return undefined;
+        const axis = a.options.axis === 'focus' ? 'focus' : 'zoom'; const speed = X.clampSpeed(Math.abs(d) * (Number(a.options.step) || 8));
+        return inst.ptzPulse(axis, a.options.cam, (cam) => inst.api.ptz(axis, { cam, dir: Math.sign(d) * speed, speed: true }), Number(a.options.pulse) || 250);
+      },
+    },
+    ptz_level_delta: {
+      name: 'PTZ: camera level by a knob turn (iris, R/B gain, pedestal, detail …)',
+      options: [camOpt, dd('op', 'Level', X.opChoices(['range'])), DELTA, FALLBACK, { type: 'number', id: 'scale', label: 'Steps per detent', default: 1, min: 1, max: 1000 }],
+      callback: async (a, ctx) => {
+        const d = await turn(a, ctx); if (!d) return undefined;
+        const o = op(a.options.cam, a.options.op); const v = X.stepRange(o, cur(a.options.cam, a.options.op), d * (Number(a.options.scale) || 1));
+        inst.optimistic(a.options.cam, a.options.op, v);
+        return pr(a.options.op, 'op', { cam: X.camId(inst.sys, a.options.cam), op: a.options.op, value: v });
+      },
+    },
+    ptz_list_delta: {
+      name: 'PTZ: camera list setting by a knob turn (gain, ND, shutter mode …; one entry per turn)',
+      options: [camOpt, dd('op', 'Setting', X.opChoices(['list'])), DELTA, FALLBACK],
+      callback: async (a, ctx) => {
+        const d = await turn(a, ctx); if (!d) return undefined;
+        const o = op(a.options.cam, a.options.op); const v = X.stepList(o, cur(a.options.cam, a.options.op), d);
+        if (v === undefined) { inst.log('warn', `PTZ ${a.options.op}: no values known for this camera`); return undefined; }
+        inst.optimistic(a.options.cam, a.options.op, v);
+        return pr(a.options.op, 'op', { cam: X.camId(inst.sys, a.options.cam), op: a.options.op, value: v });
+      },
+    },
+    ptz_speed_delta: {
+      name: 'PTZ: session speed by a knob turn, or set it (pan/tilt, zoom, focus)',
+      options: [dd('which', 'Speed', [{ id: 'pt', label: 'Pan / tilt' }, { id: 'zoom', label: 'Zoom' }, { id: 'focus', label: 'Focus' }]), DELTA, FALLBACK,
+        dd('mode', 'Mode', [{ id: 'delta', label: 'Change by the turn' }, { id: 'set', label: 'Set to the value' }])],
+      callback: async (a, ctx) => {
+        const which = ['pt', 'zoom', 'focus'].includes(a.options.which) ? a.options.which : 'pt';
+        const speeds = (inst.sys && inst.sys.views && inst.sys.views.ptz && inst.sys.views.ptz.speeds) || {};
+        const d = await turn(a, ctx); if (!d) return undefined;
+        const v = X.clampSpeed(a.options.mode === 'set' ? d : (Number(speeds[which]) || 25) + d);
+        if (inst.sys && inst.sys.views && inst.sys.views.ptz) inst.sys.views.ptz.speeds = { ...speeds, [which]: v };
+        return pr('speeds', 'speeds', { [which]: v });
       },
     },
     ptz_refresh: { name: 'PTZ: re-read the camera', options: [camOpt], callback: (a) => pr('refresh', 'refresh', { cam: X.camId(inst.sys, a.options.cam) }) },

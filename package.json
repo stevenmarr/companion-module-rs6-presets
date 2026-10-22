@@ -1,11 +1,13 @@
 {
   "name": "companion-module-rs6-presets",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Bitfocus Companion 3.x module for the PV Control Center app (RS6, E2, PixelHue, ATEM and Panasonic PTZ, all through the app).",
   "main": "src/main.js",
   "license": "MIT",
   "private": true,
-  "engines": { "node": ">=18.12" },
+  "engines": {
+    "node": ">=18.12"
+  },
   "scripts": {
     "test": "node --test test/*.test.js",
     "package": "companion-module-build"
@@ -16,5 +18,8 @@
   "devDependencies": {
     "@companion-module/tools": "~2.0.0"
   },
-  "repository": { "type": "git", "url": "git+https://github.com/stevenmarr/companion-module-rs6-presets.git" }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stevenmarr/companion-module-rs6-presets.git"
+  }
 }

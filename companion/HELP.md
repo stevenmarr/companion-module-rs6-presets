@@ -7,6 +7,30 @@ PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. **Every command goes throug
 8080); this module never talks to a device. Remove any direct E2 / ATEM / Panasonic connections from
 Companion once your buttons use this module, so there is one path to each device.
 
+### Stream Deck pages and knobs (new in 0.7.0)
+
+The Control Center app (0.9.0+, SYSTEMS › COMPANION PAGES) makes ready-made pages for Stream Deck XL, MK.2,
++ and + XL as a `.companionconfig` file. Their buttons are **linked** to this module's presets, so they keep up
+with the app (names, tally, new presets) without editing anything in Companion.
+
+New presets per camera (category *PTZ: &lt;camera&gt; keys* and *… knobs (Stream Deck +)*), each with a stable id:
+
+- `ptz_<cam>_move_up/down/left/right`, `_tele`, `_wide`, `_near`, `_far` (hold), `_home`, `_otaf`, `_af`,
+  `_iris_auto`, `_stop`, `_readout`
+- knobs `ptz_<cam>_enc_<knob>` and their touch-strip readouts `ptz_<cam>_lcd_<knob>`, for
+  `zoom` (push: stop), `focus` (push: one-touch AF), `iris` (push: auto/manual), `ptspeed` and
+  `zoomspeed` (session speed; push: back to 25), `gain` (push: 0 dB)
+
+New actions for knobs: **PTZ: zoom / focus by a knob turn**, **PTZ: camera level by a knob turn**,
+**PTZ: camera list setting by a knob turn** and **PTZ: session speed by a knob turn, or set it**. Each takes
+the turn as `$(this:delta)` (signed detents) when Companion fills it in, and otherwise uses the *fallback*
+(+1 on a right turn, -1 on a left turn in the presets), so every Companion version turns the right way.
+A zoom or focus turn runs the lens for a moment and stops by itself (each detent re-arms the stop).
+
+The feedback **Generated pages: fill in linked buttons** is internal: the generated buttons carry it so that,
+right after an import, this connection publishes its presets again and the buttons fill in. It never
+changes a button's look.
+
 ### E2, PixelHue, ATEM and PTZ (new in 0.6.0, needs Control Center app 0.8.0 / API 8)
 
 The module checks `GET /api/version` for the `sysLongpoll`, `sysViews` and `companionGateway` features and
