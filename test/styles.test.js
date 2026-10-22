@@ -1,5 +1,5 @@
 'use strict';
-// 0.6.0: button look. Every preset uses one fixed text size, a family background image (png64), and lit
+// 0.7.1: every preset uses one text size (auto, so long names shrink instead of clipping), a family background image (png64), and lit
 // feedback states that swap in their own image; action and feedback ids are unchanged.
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -10,7 +10,7 @@ const L = require('../src/logic');
 const fixture = () => JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'app-state-0.3.0.json'), 'utf8'));
 const isPng72 = (b64) => { const b = Buffer.from(b64, 'base64'); return b.slice(1, 4).toString() === 'PNG' && b.readUInt32BE(16) === 72 && b.readUInt32BE(20) === 72; };
 
-test('0.6.0 styles: same fixed text size and a 72x72 background on every button', () => {
+test('0.7.1 styles: same text size and a 72x72 background on every button', () => {
   const p = L.buttonPresets(fixture());
   assert.ok(Object.keys(p).length > 20);
   for (const [id, b] of Object.entries(p)) {

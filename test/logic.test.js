@@ -110,3 +110,32 @@ test('0.4.0 backup group name variables use the label from the device', () => {
   assert.ok(ids.includes('backup_group_1_name')); assert.ok(!ids.includes('backup_group_2_name'));
   assert.notEqual(L.presetSignature(st), L.presetSignature({ live: { backup: { groups: [{ group: 1, label: 'RENAMED' }] } } }));
 });
+
+test('backup buttons name the source, the live state, and the groups', () => {
+  const st = { live: { inputs: [{ number: 4, label: 'PPT Main' }, { number: 9, label: 'PPT Main Bkp' }],
+    backup: { inputs: [{ number: 4, label: 'PPT Main', slots: { 1: 'LIVE_9', 2: 'STILL_1' }, selected: '1', active: true, auto: false }],
+      backgrounds: [{ screen: 'S1', set: 1, slots: { 1: 'NATIVE_2', 2: 'NONE' }, selected: 'NONE', auto: true, active: false }],
+      groups: [{ group: 2, label: 'MEDIA BU', selected: '2', active: true, auto: false, members: [{ label: 'IN 4 PPT Main' }] }] } } };
+  const v = L.variableValues(st);
+  assert.equal(L.backupSourceName(st, 'LIVE_9'), 'PPT Main Bkp');
+  assert.equal(v.bk_in_4_name, 'PPT Main');
+  assert.equal(v.bk_in_4_src1, 'PPT Main Bkp');
+  assert.equal(v.bk_in_4_src2, 'Still 1');
+  assert.equal(v.bk_in_4_state, 'BKP 1');
+  assert.equal(v.bk_bg_S1_1_src1, 'Native 2');
+  assert.equal(v.bk_bg_S1_1_state, 'PRIMARY AUTO');
+  assert.equal(v.backup_group_2_name, 'MEDIA BU');
+  assert.equal(v.bk_grp_2_state, 'BKP 2');
+  assert.equal(v.bk_grp_2_members, 'IN 4 PPT Main');
+  const p = L.buttonPresets(st);
+  assert.equal(p.input_backup_4_1.style.text, '$(rs6presets:bk_in_4_name)\nBKP 1 $(rs6presets:bk_in_4_src1)\n$(rs6presets:bk_in_4_state)');
+  assert.equal(p.input_backup_4_NONE.style.text, '$(rs6presets:bk_in_4_name)\nPRIMARY\n$(rs6presets:bk_in_4_state)');
+  assert.equal(p.bg_backup_S1_1_1.style.text, '$(rs6presets:bk_bg_S1_1_name)\nBKP 1 $(rs6presets:bk_bg_S1_1_src1)\n$(rs6presets:bk_bg_S1_1_state)');
+  assert.match(p.group_backup_2_2.style.text, /backup_group_2_name/);
+  assert.match(p.group_backup_2_2.style.text, /bk_grp_2_state/);
+  assert.match(p.group_backup_2_2.style.text, /bk_grp_2_members/);
+  assert.equal(p.input_backup_4_1.style.size, 'auto');
+  assert.equal(p.group_backup_2_2.steps[0].down[0].options.kind, 'group');
+  assert.equal(p.bg_backup_S1_1_NONE.steps[0].down[0].options.id, 'S1/1');
+  assert.equal(p.group_backup_2_1.feedbacks[0].options.slot, '1');
+});

@@ -107,7 +107,7 @@ test('0.3.1 buttons: preset name (live variable, number as fallback), Master nam
   s.presets.push({ number: 12, name: '  ', destinations: ['S1'], memories: { S1: 1 }, master: null, mvMemories: {}, tally: { pvw: 'none', pgm: 'none' } });
   s.transitionTargets = ['S1', 'A1'];
   const p = L.buttonPresets(s);
-  assert.equal(p.preset_10.style.text, '$(rs6presets:preset_10_name)'); assert.equal(p.preset_10.style.size, '14'); // 0.6.0: one fixed size on every button
+  assert.equal(p.preset_10.style.text, '$(rs6presets:preset_10_name)'); assert.equal(p.preset_10.style.size, L.TEXT_SIZE);
   const v = L.variableValues(s);
   assert.equal(v.preset_10_name, 'Panel Master + MV'); assert.equal(v.preset_12_name, '12');
   assert.equal(p.master_mem_4.style.text, '$(rs6presets:master_mem_4_name)');

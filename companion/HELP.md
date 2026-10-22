@@ -64,7 +64,9 @@ moving, last preset, error, any on/off setting, any setting value. Variables per
 WB, scene, last preset and preset names.
 
 **Button looks:** each system has its own family colour (E2 lime, PixelHue rose, ATEM gold, PTZ indigo),
-the same 72×72 tech-look backgrounds and fixed text size 14 as the RS6 buttons; TAKE / CUT stay red.
+the same 72×72 tech-look backgrounds as the RS6 buttons. Text size is `auto` (Companion shrinks it to
+fit the key). TAKE / CUT stay red. The legacy style Companion 3.4 understands cannot set a font or a
+weight, and a fixed point size does not shrink, so long names used to run off the key.
 
 ### RS6
 
@@ -79,7 +81,9 @@ the same 72×72 tech-look backgrounds and fixed text size 14 as the RS6 buttons;
 - Auto take (toggle, on or off)
 - Input freeze
 - Backup: select primary, backup 1 or backup 2 for an input, a background set (written `S1/2`) or a
-  backup group
+  backup group. The button shows the source it protects, the backup source that slot switches to
+  (an input label, `Still n` or `Native n`, not the raw `LIVE_` / `STILL_` / `NATIVE_` token) and the
+  live state (`PRIMARY`, `BKP 1` or `BKP 2`, plus `AUTO`). Group buttons also list the members.
 - Backup: automatic or manual mode
 - Audio channel mute
 
@@ -99,7 +103,7 @@ the same 72×72 tech-look backgrounds and fixed text size 14 as the RS6 buttons;
 
 **Variables:** `$(rs6presets:last_preset_number)`, `$(rs6presets:last_preset_name)`,
 `$(rs6presets:program_presets)`, `$(rs6presets:selection)`, `$(rs6presets:auto_take)`,
-`$(rs6presets:device_connected)`, and `$(rs6presets:preset_N_name)` for each tile (1 to the app's tile count, or the highest used; "N (empty)" for an empty tile). Swapping or moving tiles in the app (0.4.0) swaps the numbers, so buttons follow the tile. `$(rs6presets:backup_group_G_name)` holds each backup group's device name.
+`$(rs6presets:device_connected)`, and `$(rs6presets:preset_N_name)` for each tile (1 to the app's tile count, or the highest used; "N (empty)" for an empty tile). Swapping or moving tiles in the app (0.4.0) swaps the numbers, so buttons follow the tile. `$(rs6presets:backup_group_G_name)` holds each backup group's device name. `$(rs6presets:bk_in_N_name)` is the input a backup protects, `bk_in_N_src1` / `bk_in_N_src2` are the backup sources, and `bk_in_N_state` is `PRIMARY` or `BKP n` (with `AUTO` when automatic). Background sets use `bk_bg_<screen>_<set>_…`. Groups add `bk_grp_G_state` and `bk_grp_G_members`.
 New in 0.5.0: the tiles follow the app's tile count (24/48/72/96), with button presets in pages of 24.
 `$(rs6presets:app_version)`, `$(rs6presets:app_api_version)`, `$(rs6presets:show_name)` and `$(rs6presets:tile_count)`
 are new. If the app version doesn't match, the connection shows a warning and the log says what to update.
