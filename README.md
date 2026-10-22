@@ -1,14 +1,23 @@
 # companion-module-rs6-presets: PV Control Center
 
-A Bitfocus **Companion** module (3.4 and later, including 4.x and 5.x) for the **PV Control Center** app
+A Bitfocus **Companion** module for the **PV Control Center** app
 (formerly RS6 Presets). It controls an Analog Way Aquilon RS6 (Barco E2-style destination presets), a Barco E2,
 a PixelHue, a Blackmagic ATEM and Panasonic PTZ cameras, **all through the app's HTTP API** (default port 8080).
 The module never connects to a device directly. The module id stays `rs6-presets` (shortname `rs6presets`), so
 existing connections and buttons keep working; only the display name is now "PV Control Center".
 
-Built on `@companion-module/base` ~1.10 (node18 runtime) in plain JavaScript, with no TypeScript build.
+**0.7.3 needs Companion with the layered button editor** (module-base 2.2, the graphics overhaul on
+`feat/lcars-gui`). Stock Companion 3.x will not load this build. Import the `.tgz` on the Connections
+page of that Companion.
+
+Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, with no TypeScript build.
 
 ![icon](companion/icon.png)
+
+## New in 0.7.3
+
+- **Buttons are layered, so the type fits.** Each preset is a background, the family art, and a text element inset off the bezel. Text Size is 46% / 34% / 28% / 24% of that element for 1 / 2 / 3 / 4+ lines — not the 100% that `auto` became — with Shrink to fit on, bold weight, and a soft outline (black on light text, white on the amber keys that use black text). Long names shrink; short ones stay the size you picked. Feedbacks restyle those same elements (lit art, text colour, outline). A host that cannot draw layers still receives the old style. Action, feedback and preset ids are unchanged.
+- **Requires the graphics overhaul.** `@companion-module/base` is ~2.2. Import this `.tgz` into the Companion that has layered buttons. Stock Companion 3.x will refuse the module. Buttons already on a deck keep the look they were dragged with; drag the preset again (or re-import a generated page) to pick up the new type.
 
 ## New in 0.7.2
 
@@ -168,7 +177,7 @@ memory actions return the app's 404.
 | **Actions** | Recall preset to Preview (dropdown of combined presets, **0.3.0**) · **Load Screen / Master / Multiviewer memory** and **Refresh memories** (**0.3.0**) · TAKE · CUT · Toggle destination (S1…, A1…) · Auto take (toggle/on/off) · **Input freeze** (toggle/on/off) · **Backup: select primary / backup 1 / backup 2** for an input, background set (`S1/2`) or backup group · **Backup: automatic/manual mode** · **Audio channel mute** (input rx / output tx; toggle/on/off) |
 | **Feedbacks** | Preset on Preview (green) and Preset on Program (red), each with an optional "partial" match · Destination selected (amber) · Auto take ON · App connected to the RS6 · **Input on Program (red)** and **Input on Preview (green)** from the device, with an input dropdown built from the device's input labels and optionally limited to one destination · **Destination last Screen memory is X** (PGM or PVW) · **Last Master memory is X** · **Input frozen** (blue) · **Input unavailable / disabled** · **Backup active** (any slot, or a specific one) · **Audio channel muted** (red) |
 | **Variables** | `last_preset_number`, `last_preset_name`, `program_presets`, `selection`, `auto_take`, `device_connected`, `preset_<N>_name`. **New in 0.2.0:** `input_<N>_label`; `<S1>_pgm_memory_number`, `<S1>_pgm_memory_name`, `<S1>_pvw_memory_number` and `<S1>_pvw_memory_name` for every destination; `master_pgm_number`, `master_pgm_name`, `master_pvw_number` and `master_pvw_name`; `<S1>_pgm_layer1` (label of the Program layer-1 source); `live_mode`. **New in 0.3.0:** `screen_mem_<N>_name`, `master_mem_<N>_name`, `mv_mem_<N>_name`, `preset_<N>_summary`, `memories_imported`. **New in 0.4.0:** `backup_group_<G>_name`; preset variables exist for every tile 1..max(24, highest). **New in 0.7.1:** `bk_in_<N>_name`, `bk_in_<N>_src1`, `bk_in_<N>_src2`, `bk_in_<N>_state` (and `bk_bg_<S>_<set>_…` for a background set); `bk_grp_<G>_state`, `bk_grp_<G>_members` |
-| **Presets** | One button per app preset (recall plus PVW/PGM tally), one per destination (toggle plus selected feedback), TAKE, CUT, AUTO TAKE, and "last recalled" and "last Master" displays. **New:** *Input tally* (one per input: label, PVW green, PGM red, yellow text when unavailable or disabled); *Input freeze* (one per input: toggle, blue when frozen); *Backups* (PRIMARY / BKP 1 / BKP 2 for each input with backups, the source name and the live state); *Backup groups* and *Background backups* (same three slots). *Audio inputs mute* and *Audio outputs mute* (one per channel). **0.3.0:** *Master memories*, *Refresh memories*, logo button. **0.7.1:** text size `auto` (shrink to fit). Presets regenerate when presets, inputs, channels, backup sets or labels change. |
+| **Presets** | One button per app preset (recall plus PVW/PGM tally), one per destination (toggle plus selected feedback), TAKE, CUT, AUTO TAKE, and "last recalled" and "last Master" displays. **New:** *Input tally* (one per input: label, PVW green, PGM red, yellow text when unavailable or disabled); *Input freeze* (one per input: toggle, blue when frozen); *Backups* (PRIMARY / BKP 1 / BKP 2 for each input with backups, the source name and the live state); *Backup groups* and *Background backups* (same three slots). *Audio inputs mute* and *Audio outputs mute* (one per channel). **0.3.0:** *Master memories*, *Refresh memories*, logo button. **0.7.3:** layered text (comfortable size, shrink to fit, bold, outline). Presets regenerate when presets, inputs, channels, backup sets or labels change. |
 
 ### How it stays up to date
 

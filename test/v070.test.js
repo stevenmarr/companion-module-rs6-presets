@@ -109,7 +109,7 @@ test('0.7.0 cc_pages_refresh: subscribing publishes the presets again (once per 
   const { ControlCenterInstance } = loadMain();
   const calls = [];
   const inst = Object.create(ControlCenterInstance.prototype);
-  Object.assign(inst, { state: null, sys: fixture(), ptzCats: {}, holds: new Map(), log() {}, setPresetDefinitions: (p) => calls.push(Object.keys(p).length) });
+  Object.assign(inst, { state: null, sys: fixture(), ptzCats: {}, holds: new Map(), log() {}, setPresetDefinitions: (structure, presets) => calls.push(Object.keys(presets || structure).length) });
   Object.defineProperty(inst, 'label', { value: 'rs6presets' });
   const fb = inst.feedbacks().cc_pages_refresh;
   assert.equal(fb.type, 'boolean'); assert.equal(fb.callback(), false); assert.deepEqual(fb.defaultStyle, {});

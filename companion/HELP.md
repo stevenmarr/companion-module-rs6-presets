@@ -63,10 +63,14 @@ moving, last preset, error, any on/off setting, any setting value. Variables per
 `ptz_sel_…` for the selected one): name, model, power, tally, pan/tilt/zoom/focus, iris, gain, shutter, ND,
 WB, scene, last preset and preset names.
 
-**Button looks:** each system has its own family colour (E2 lime, PixelHue rose, ATEM gold, PTZ indigo),
-the same 72×72 tech-look backgrounds as the RS6 buttons. Text size is `auto` (Companion shrinks it to
-fit the key). TAKE / CUT stay red. The legacy style Companion 3.4 understands cannot set a font or a
-weight, and a fixed point size does not shrink, so long names used to run off the key.
+**Button looks (0.7.3):** each system has its own family colour (E2 lime, PixelHue rose, ATEM gold, PTZ indigo),
+the same 72×72 tech-look backgrounds as the RS6 buttons. The label is a layered text element, inset so it
+clears the corner brackets and the top accent: **Text Size** is 46 / 34 / 28 / 24 percent of that element
+for 1 / 2 / 3 / 4+ lines (not 100, which is what the old `auto` size became), **Shrink to fit** is on,
+**Weight** is bold, **Font** is the default, and a soft **Outline** (black on light text, white on dark
+text) keeps the glyphs readable on the art. TAKE / CUT stay red. A host that cannot draw layers still
+gets the previous style. This needs Companion with the layered button editor (module-base 2.2); stock
+Companion 3 will not load this build.
 
 ### RS6
 

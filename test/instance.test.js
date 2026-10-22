@@ -13,7 +13,7 @@ function stubBase() {
     updateStatus(s, m) { this.calls.status.push([s, m]); }
     setVariableDefinitions(d) { this.calls.varDefs = d; }
     setVariableValues(v) { Object.assign(this.calls.vars, v); }
-    setPresetDefinitions(p) { this.calls.presets = p; }
+    setPresetDefinitions(structure, presets) { this.calls.presetStructure = structure; this.calls.presets = presets || structure; }
     setActionDefinitions(a) { this.calls.actions = a; }
     setFeedbackDefinitions(f) { this.calls.feedbacks = f; }
     checkFeedbacks() { this.calls.checked++; }
@@ -64,6 +64,8 @@ test('module instance polls the app, exposes variables/feedbacks/presets and sen
     const c = inst.calls;
     assert.equal(c.vars.last_preset_name, 'Panel'); assert.equal(c.vars.last_preset_number, 3);
     assert.ok(c.presets.preset_3 && c.presets.take && c.presets.dest_A1);
+    assert.equal(c.presets.preset_3.type, 'alternatives');
+    assert.equal(c.presets.preset_3.variants[0].type, 'layered');
     assert.ok(c.status.some(([s]) => s === 'ok'));
     assert.equal(c.feedbacks.preset_pvw.callback({ options: { preset: 3, partial: false } }), true);
     assert.equal(c.feedbacks.preset_pgm.callback({ options: { preset: 3, partial: false } }), false);

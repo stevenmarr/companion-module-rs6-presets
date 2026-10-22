@@ -17,7 +17,7 @@ function loadInstance() {
     updateStatus(s, m) { this.calls.status.push([s, m]); }
     setVariableDefinitions(d) { this.calls.varDefs = d; }
     setVariableValues(v) { Object.assign(this.calls.vars, v); }
-    setPresetDefinitions(p) { this.calls.presets = p; }
+    setPresetDefinitions(structure, presets) { this.calls.presets = presets || structure; }
     setActionDefinitions(a) { this.calls.actions = a; }
     setFeedbackDefinitions(f) { this.calls.feedbacks = f; }
     checkFeedbacks() {}

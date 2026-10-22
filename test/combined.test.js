@@ -72,7 +72,7 @@ test('instance: preset recall/feedback dropdowns list combined presets; memory a
   const captured = {};
   class InstanceBase { constructor() { this.calls = { vars: {}, actions: {}, feedbacks: {}, presets: {}, status: [], logs: [] }; }
     updateStatus(s) { this.calls.status.push(s); } setVariableDefinitions() {} setVariableValues(v) { Object.assign(this.calls.vars, v); }
-    setPresetDefinitions(p) { this.calls.presets = p; } setActionDefinitions(a) { this.calls.actions = a; } setFeedbackDefinitions(f) { this.calls.feedbacks = f; } checkFeedbacks() {} log(l, m) { this.calls.logs.push([l, m]); } }
+    setPresetDefinitions(structure, presets) { this.calls.presets = presets || structure; } setActionDefinitions(a) { this.calls.actions = a; } setFeedbackDefinitions(f) { this.calls.feedbacks = f; } checkFeedbacks() {} log(l, m) { this.calls.logs.push([l, m]); } }
   const stub = { InstanceBase, InstanceStatus: { Ok: 'ok', Connecting: 'c', ConnectionFailure: 'f', BadConfig: 'b', UnknownWarning: 'w' }, Regex: { HOSTNAME: '' }, runEntrypoint: (C) => { captured.C = C; } };
   const orig = Module._load; Module._load = function (r, ...a) { return r === '@companion-module/base' ? stub : orig.call(this, r, ...a); };
   delete require.cache[require.resolve('../src/main.js')]; require('../src/main.js'); Module._load = orig;

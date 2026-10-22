@@ -115,7 +115,7 @@ function loadInstance() {
     updateStatus(s, m) { this.calls.status.push([s, m]); }
     setVariableDefinitions(d) { this.calls.varDefs = d; }
     setVariableValues(v) { Object.assign(this.calls.vars, v); }
-    setPresetDefinitions(p) { this.calls.presets = p; }
+    setPresetDefinitions(structure, presets) { this.calls.presets = presets || structure; }
     setActionDefinitions(a) { this.calls.actions = a; }
     setFeedbackDefinitions(f) { this.calls.feedbacks = f; }
     checkFeedbacks() { this.calls.checked++; }
@@ -138,6 +138,7 @@ function fakeApp({ longPoll = true } = {}) {
   const srv = http.createServer((req, res) => {
     let b = ''; req.on('data', (c) => (b += c));
     req.on('end', () => {
+      if (req.method === 'GET' && (req.url === '/' || req.url === '/favicon.ico')) { res.writeHead(404); res.end(); return; }
       const u = new URL(req.url, 'http://x'); reqs.push(req.method + ' ' + req.url);
       if (req.method === 'POST') {
         if (u.pathname === '/api/inputs/1/freeze') { const i = state.live.inputs[0]; i.freeze = !i.freeze; state.rev++; }
