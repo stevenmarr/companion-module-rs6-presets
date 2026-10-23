@@ -60,7 +60,7 @@ class ControlCenterInstance extends InstanceBase {
   }
 
   maybeStartSys(st) {
-    if (this.sysStarted || this.config.systems === 'off' || !this.ctrl || !(Number(st && st.apiVersion) >= L.EXPECTED_API)) return;
+    if (this.sysStarted || this.config.systems === 'off' || !this.ctrl || !(Number(st && st.apiVersion) >= L.SYS_API)) return;
     this.sysStarted = true; this.sysLoop(this.ctrl.signal);
   }
 

@@ -48,6 +48,19 @@ upstream keys on air / tie, downstream keys on air / tie / auto, aux sources, ma
 source on Program / Preview, key states, aux source, macro running, FTB, transition running, style.
 Variables: Program / Preview names, style, mix rate, FTB, aux sources, input and macro names.
 
+**ATEM, new in 0.8.0 (needs Control Center app 0.10.0 / API 9):** *route a source to an output* (any aux / SDI
+output, M/E program / preview, multiviewer window; output keys `aux:<n>`, `me:<n>:program|preview`, `mv:<n>:<w>`,
+0-based), *audio input mute* (toggle / on / off), *audio input fader up / down* and *audio master fader up / down*
+(dB steps), *upstream key on air / tie* now take an **M/E** (saved buttons without one stay on M/E 1),
+*SuperSource box source*, *SuperSource box on / off* and *SuperSource layout recall* (the app's built-in and
+saved layouts; tick "also recall the box sources" to change sources too). Feedbacks: *output source is*,
+*audio input muted*, *SuperSource box on / shows a source*, and *upstream key* per M/E. Variables:
+`atem_out_<output>` per output, `atem_audio_<id>_fader` / `_mix`, `atem_audio_master_fader`,
+`atem_ssN_boxM`. Presets (ATEM gold): *Router* (one per output and source, up to 24 sources per output, and
+a status key per output; they replace the old aux grid against app 0.10.0), *audio* (mute plus ±1 dB per input,
+master ±1 dB), *keys M/E 2…* and *SuperSource* (box on / off, box ← input 1–8, one per layout). With app 0.9.x
+(API 8) everything else keeps working and the log says to update the app for these.
+
 **Panasonic PTZ** (`ptz_…`): select camera; pan/tilt (8 directions or a signed proportional speed), zoom and
 focus **while held**: put the move on the button's press and **PTZ: stop** on its release (the button presets
 do this). While held the module re-arms the app's dead-man every 0.5 s; if the release is lost, the

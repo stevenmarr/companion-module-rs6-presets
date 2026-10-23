@@ -40,14 +40,15 @@ function serve(state) {
 }
 
 test('version check: warns (log once + status) when the app is older or newer than the module expects', async () => {
-  // 0.6.0 (PV Control Center): the module expects app 0.8.0 (API 8); apps with API 5..7 still run the RS6 controls
-  assert.equal(L.EXPECTED_API, 8); assert.equal(L.MIN_API, 5);
-  assert.equal(L.versionProblem({ appVersion: '0.8.0', apiVersion: 8 }), null);
+  // 0.8.0: the module expects app 0.10.0 (API 9); API 8 runs every system but the new ATEM controls (soft); API 5..7 the RS6 controls
+  assert.equal(L.EXPECTED_API, 9); assert.equal(L.SYS_API, 8); assert.equal(L.MIN_API, 5);
+  assert.equal(L.versionProblem({ appVersion: '0.10.0', apiVersion: 9 }), null);
+  assert.match(L.versionProblem({ appVersion: '0.9.8', apiVersion: 8 }), /ATEM router .* need app 0\.10\.0/);
   assert.match(L.versionProblem({ appVersion: '0.5.0', apiVersion: 5 }), /RS6 controls work.*need app 0\.8\.0/);
-  assert.equal(L.versionSoft({ apiVersion: 5 }), true); assert.equal(L.versionSoft({ apiVersion: 8 }), false); assert.equal(L.versionSoft({ apiVersion: 4 }), false);
+  assert.equal(L.versionSoft({ apiVersion: 5 }), true); assert.equal(L.versionSoft({ apiVersion: 8 }), true); assert.equal(L.versionSoft({ apiVersion: 9 }), false); assert.equal(L.versionSoft({ apiVersion: 4 }), false);
   assert.match(L.versionProblem({ appVersion: '0.4.0' }), /0\.4\.0 is older.*update the app/);
-  assert.match(L.versionProblem({ appVersion: '0.9.0', apiVersion: 9 }), /newer than this module.*update the Companion module/);
-  assert.match(L.versionProblem({ appVersion: '0.4.9', apiVersion: 4 }), /API 4.*expects 8.*update the app/);
+  assert.match(L.versionProblem({ appVersion: '0.11.0', apiVersion: 10 }), /newer than this module.*update the Companion module/);
+  assert.match(L.versionProblem({ appVersion: '0.4.9', apiVersion: 4 }), /API 4.*expects 9.*update the app/);
   let st = { appVersion: '0.4.0', connected: true, rev: 1, presets: [] };
   const srv = await serve(() => st);
   const inst = loadInstance();

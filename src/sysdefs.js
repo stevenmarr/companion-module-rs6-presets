@@ -72,6 +72,13 @@ function sysActions(inst) {
   const bus = X.atemBusChoices(S); const ar = (name, body, label) => run(`ATEM ${label || name}`, () => inst.api.atem(name, body));
   const a0 = () => (inst.sys && inst.sys.views && inst.sys.views.atem) || {};
   const keyState = (list, k, f) => { const e = (a0()[list] || []).find((x) => x.index === Number(k)); return !!(e && e[f]); };
+  // 0.8.0 (app 0.10.0, API 9). Older saved key actions have no M/E option: M/E 1.
+  const ME = dd('me', 'M/E', X.atemMeChoices(S));
+  const uskState = (o, f) => { const m = (a0().mixEffects || [])[X.meOf(o) - 1]; const e = m ? (m.keyers || []).find((x) => x.index === Number(o.key)) : (a0().keyers || []).find((x) => x.index === Number(o.key)); return !!(e && e[f]); };
+  const ssOpt = dd('ss', 'SuperSource', X.atemSsChoices(S)); const boxOpt = dd('box', 'Box', X.atemBoxChoices(S));
+  const audOpt = dd('input', 'Audio input', X.atemAudioChoices(S), { allowCustom: true, regex: '/^\\d+$/' });
+  const dbOpt = { type: 'number', id: 'db', label: 'Change (dB, + up / - down)', default: 1, min: -20, max: 20, step: 0.5 };
+  const srcOpt = dd('source', 'Source', X.atemSourceChoices(S), { allowCustom: true, regex: '/^\\d+$/' });
   Object.assign(out, {
     atem_program: { name: 'ATEM: Program source', options: [dd('source', 'Source', bus, { allowCustom: true, regex: '/^\\d+$/' })], callback: (a) => ar('program', { source: Number(a.options.source) }) },
     atem_preview: { name: 'ATEM: Preview source', options: [dd('source', 'Source', bus, { allowCustom: true, regex: '/^\\d+$/' })], callback: (a) => ar('preview', { source: Number(a.options.source) }) },
@@ -81,14 +88,24 @@ function sysActions(inst) {
     atem_ftb_rate: { name: 'ATEM: fade to black rate', options: [{ type: 'number', id: 'rate', label: 'Frames (1-250)', default: 25, min: 1, max: 250 }], callback: (a) => ar('ftbRate', { rate: a.options.rate }) },
     atem_style: { name: 'ATEM: transition style', options: [dd('style', 'Style', X.ATEM_STYLES.map((s) => ({ id: s, label: s })))], callback: (a) => ar('style', { style: a.options.style }) },
     atem_mix_rate: { name: 'ATEM: mix rate', options: [{ type: 'number', id: 'rate', label: 'Frames (1-250)', default: 25, min: 1, max: 250 }], callback: (a) => ar('mixRate', { rate: a.options.rate }) },
-    atem_usk_onair: { name: 'ATEM: upstream key on air', options: [dd('key', 'Key', X.atemKeyChoices(S)), TRI], callback: (a) => ar('uskOnAir', { key: Number(a.options.key), on: triOf(a.options.mode, keyState('keyers', a.options.key, 'onAir')) }, 'key on air') },
-    atem_usk_tie: { name: 'ATEM: upstream key in the next transition (tie)', options: [dd('key', 'Key', X.atemKeyChoices(S)), TRI], callback: (a) => ar('uskTie', { key: Number(a.options.key), on: triOf(a.options.mode, keyState('keyers', a.options.key, 'tie')) }, 'key tie') },
+    atem_usk_onair: { name: 'ATEM: upstream key on air', options: [ME, dd('key', 'Key', X.atemKeyChoices(S)), TRI], callback: (a) => ar('uskOnAir', { me: X.meOf(a.options), key: Number(a.options.key), on: triOf(a.options.mode, uskState(a.options, 'onAir')) }, 'key on air') },
+    atem_usk_tie: { name: 'ATEM: upstream key in the next transition (tie)', options: [ME, dd('key', 'Key', X.atemKeyChoices(S)), TRI], callback: (a) => ar('uskTie', { me: X.meOf(a.options), key: Number(a.options.key), on: triOf(a.options.mode, uskState(a.options, 'tie')) }, 'key tie') },
     atem_dsk_onair: { name: 'ATEM: downstream key on air', options: [dd('key', 'DSK', X.atemDskChoices(S)), TRI], callback: (a) => ar('dskOnAir', { key: Number(a.options.key), on: triOf(a.options.mode, keyState('dsk', a.options.key, 'onAir')) }, 'DSK on air') },
     atem_dsk_tie: { name: 'ATEM: downstream key tie', options: [dd('key', 'DSK', X.atemDskChoices(S)), TRI], callback: (a) => ar('dskTie', { key: Number(a.options.key), on: triOf(a.options.mode, keyState('dsk', a.options.key, 'tie')) }, 'DSK tie') },
     atem_dsk_auto: { name: 'ATEM: downstream key AUTO', options: [dd('key', 'DSK', X.atemDskChoices(S))], callback: (a) => ar('dskAuto', { key: Number(a.options.key) }, 'DSK auto') },
     atem_aux: { name: 'ATEM: aux output source', options: [dd('aux', 'Aux', X.atemAuxChoices(S)), dd('source', 'Source', X.atemAuxSourceChoices(S), { allowCustom: true, regex: '/^\\d+$/' })], callback: (a) => ar('aux', { aux: Number(a.options.aux), source: Number(a.options.source) }) },
     atem_macro_run: { name: 'ATEM: run macro', options: [dd('macro', 'Macro', X.atemMacroChoices(S), { allowCustom: true, regex: '/^\\d+$/' })], callback: (a) => ar('macroRun', { macro: Number(a.options.macro) }, 'macro run') },
     atem_macro_stop: { name: 'ATEM: stop macro', options: [], callback: () => ar('macroStop', {}, 'macro stop') },
+    atem_route_output: { name: 'ATEM: route a source to an output (aux / M/E / multiviewer window)', options: [dd('output', 'Output', X.atemOutputChoices(S), { allowCustom: true, regex: '/^(aux:\\d+|me:\\d+:(program|preview)|mv:\\d+:\\d+)$/' }), srcOpt],
+      callback: (a) => ar('route', { output: String(a.options.output), source: Number(a.options.source) }, 'route') },
+    atem_audio_mute: { name: 'ATEM: audio input mute', options: [audOpt, TRI], callback: (a) => ar('audioMute', { input: Number(a.options.input), mute: a.options.mode === 'toggle' ? 'toggle' : a.options.mode === 'on' }, 'audio mute') },
+    atem_audio_fader_nudge: { name: 'ATEM: audio input fader up / down', options: [audOpt, dbOpt], callback: (a) => ar('audioNudge', { input: Number(a.options.input), delta: Number(a.options.db) }, 'audio fader') },
+    atem_audio_master_nudge: { name: 'ATEM: audio master fader up / down', options: [dbOpt], callback: (a) => ar('audioMasterNudge', { delta: Number(a.options.db) }, 'audio master') },
+    atem_ss_box_source: { name: 'ATEM: SuperSource box source', options: [ssOpt, boxOpt, srcOpt], callback: (a) => ar('ssBox', { ss: Number(a.options.ss), box: Number(a.options.box), source: Number(a.options.source) }, 'SuperSource box') },
+    atem_ss_box_enable: { name: 'ATEM: SuperSource box on / off', options: [ssOpt, boxOpt, TRI],
+      callback: (a) => { const ss = (a0().superSources || []).find((x) => x.index === Number(a.options.ss)); const b = ss && (ss.boxes || []).find((x) => x.index === Number(a.options.box)); return ar('ssBox', { ss: Number(a.options.ss), box: Number(a.options.box), enabled: triOf(a.options.mode, !!(b && b.enabled)) }, 'SuperSource box'); } },
+    atem_ss_layout_recall: { name: 'ATEM: SuperSource layout recall', options: [ssOpt, dd('layout', 'Layout', X.atemSsLayoutChoices(S), { allowCustom: true }), { type: 'checkbox', id: 'withSources', label: 'Also recall the box sources saved with the layout', default: false }],
+      callback: (a) => ar('ssLayoutRecall', { ss: Number(a.options.ss), layout: String(a.options.layout), withSources: !!a.options.withSources }, 'SuperSource layout') },
   });
   // ---- PTZ ----
   const camOpt = dd('cam', 'Camera', X.camChoices(S), { allowCustom: true, regex: '/^[\\w-]+$/' });
@@ -224,12 +241,15 @@ function sysFeedbacks(inst) {
     atem_connected: bool('ATEM: app connected to the ATEM', GREEN, [], () => X.connected(g(), 'atem')),
     atem_program_is: bool('ATEM: source on Program', RED, [dd('source', 'Source', bus, { allowCustom: true })], (f) => X.atemFeedback(g(), 'program', f.options)),
     atem_preview_is: bool('ATEM: source on Preview', GREEN, [dd('source', 'Source', bus, { allowCustom: true })], (f) => X.atemFeedback(g(), 'preview', f.options)),
-    atem_usk: bool('ATEM: upstream key on air / tied', RED, [dd('key', 'Key', X.atemKeyChoices(S)), dd('what', 'State', [{ id: 'onair', label: 'On air' }, { id: 'tie', label: 'In the next transition' }])], (f) => X.atemFeedback(g(), 'usk', f.options)),
+    atem_usk: bool('ATEM: upstream key on air / tied', RED, [dd('me', 'M/E', X.atemMeChoices(S)), dd('key', 'Key', X.atemKeyChoices(S)), dd('what', 'State', [{ id: 'onair', label: 'On air' }, { id: 'tie', label: 'In the next transition' }])], (f) => X.atemFeedback(g(), 'usk', f.options)),
     atem_dsk: bool('ATEM: downstream key on air / tied / in transition', RED, [dd('key', 'DSK', X.atemDskChoices(S)), dd('what', 'State', [{ id: 'onair', label: 'On air' }, { id: 'tie', label: 'Tied' }, { id: 'transition', label: 'In transition' }])], (f) => X.atemFeedback(g(), 'dsk', f.options)),
     atem_aux_is: bool('ATEM: aux output source is', AMBER, [dd('aux', 'Aux', X.atemAuxChoices(S)), dd('source', 'Source', X.atemAuxSourceChoices(S), { allowCustom: true })], (f) => X.atemFeedback(g(), 'aux', f.options)),
     atem_macro_running: bool('ATEM: macro running', AMBER, [dd('macro', 'Macro', [{ id: 'any', label: 'Any macro' }, ...X.atemMacroChoices(S)])], (f) => X.atemFeedback(g(), 'macro', f.options)),
     atem_ftb_active: bool('ATEM: fade to black active', RED, [], () => X.atemFeedback(g(), 'ftb')),
     atem_in_transition: bool('ATEM: transition running', RED, [], () => X.atemFeedback(g(), 'transition')),
+    atem_output_is: bool('ATEM: output source is (aux / M/E / multiviewer window)', AMBER, [dd('output', 'Output', X.atemOutputChoices(S), { allowCustom: true }), dd('source', 'Source', X.atemSourceChoices(S), { allowCustom: true })], (f) => X.atemFeedback(g(), 'output', f.options)),
+    atem_audio_muted: bool('ATEM: audio input muted (mix off)', RED, [dd('input', 'Audio input', X.atemAudioChoices(S), { allowCustom: true })], (f) => X.atemFeedback(g(), 'muted', f.options)),
+    atem_ss_box: bool('ATEM: SuperSource box on / shows a source', AMBER, [dd('ss', 'SuperSource', X.atemSsChoices(S)), dd('box', 'Box', X.atemBoxChoices(S)), dd('what', 'State', [{ id: 'source', label: 'Shows the source' }, { id: 'enabled', label: 'Box is on' }]), dd('source', 'Source', X.atemSourceChoices(S), { allowCustom: true })], (f) => X.atemFeedback(g(), 'ssBox', f.options)),
     atem_style_is: bool('ATEM: next transition style is', AMBER, [dd('style', 'Style', X.ATEM_STYLES.map((s) => ({ id: s, label: s })))], (f) => X.atemFeedback(g(), 'style', f.options)),
   });
   const camOpt = dd('cam', 'Camera', X.camChoices(S), { allowCustom: true });

@@ -217,18 +217,21 @@ function presetSlots(state) {
 }
 
 // ---------- app / module version check ----------
-// 0.6.0 (PV Control Center): the module talks to the Control Center app 0.8.0 (API 8) for E2, PixelHue, ATEM
-// and PTZ. RS6 controls keep working from API 5 (app 0.5.0) up; the other systems need API 8.
-const EXPECTED_API = 8; // app 0.8.0
+// 0.6.0 (PV Control Center): the module talks to the Control Center app's API for E2, PixelHue, ATEM and PTZ.
+// 0.8.0: it expects app 0.10.0 (API 9: ATEM router, audio, keys per M/E, SuperSource). API 8 apps still run every
+// system except those ATEM controls (a soft warning); RS6 controls keep working from API 5 (app 0.5.0) up.
+const EXPECTED_API = 9; // app 0.10.0
+const SYS_API = 8; // app 0.8.0: the multi-system API (E2 / PixelHue / ATEM / PTZ)
 const MIN_API = 5; // oldest app whose RS6 API this module still speaks
 // null = fine; otherwise a short warning for the log and the connection status
 function versionProblem(state) {
   if (!state) return null;
   const app = state.appVersion || 'unknown';
   const api = Number(state.apiVersion);
-  if (!api) return `Control Center app ${app} is older than this module expects (app 0.8.0, API ${EXPECTED_API}): update the app; tile moves, tile counts and shows need it`;
+  if (!api) return `Control Center app ${app} is older than this module expects (app 0.10.0, API ${EXPECTED_API}): update the app; tile moves, tile counts and shows need it`;
   if (api < MIN_API) return `Control Center app ${app} has API ${api}, this module expects ${EXPECTED_API}: update the app`;
-  if (api < EXPECTED_API) return `Control Center app ${app} has API ${api}, this module expects ${EXPECTED_API}: RS6 controls work, E2 / PixelHue / ATEM / PTZ need app 0.8.0: update the app`;
+  if (api < SYS_API) return `Control Center app ${app} has API ${api}, this module expects ${EXPECTED_API}: RS6 controls work, E2 / PixelHue / ATEM / PTZ need app 0.8.0: update the app`;
+  if (api < EXPECTED_API) return `Control Center app ${app} has API ${api}, this module expects ${EXPECTED_API}: everything works except the ATEM router / audio / M/E keys / SuperSource controls, which need app 0.10.0: update the app`;
   if (api > EXPECTED_API) return `Control Center app ${app} has API ${api}, newer than this module (API ${EXPECTED_API}): update the Companion module`;
   return null;
 }
@@ -526,6 +529,6 @@ module.exports = {
   rgb, COLORS, findPreset, presetTally, destSelected, presetTargets, selectionToApply, variableDefinitions, variableValues, presetSignature, buttonPresets,
   presetSummary, presetChoices, memoryChoices, mvChoices, memLabel, memItems, LOGO_PNG64,
   inputChoices, inputTally, destMemoryIs, masterIs, inputFrozen, inputProblem, backupEntry, backupActive, audioMuted, findInput,
-  presetSlots, backupGroups, tileCount, versionProblem, EXPECTED_API, MIN_API, SYS_FEATURES, sysSupported, versionSoft, TEXT_SIZE, BG, look, lit, relabel,
+  presetSlots, backupGroups, tileCount, versionProblem, EXPECTED_API, SYS_API, MIN_API, SYS_FEATURES, sysSupported, versionSoft, TEXT_SIZE, BG, look, lit, relabel,
   backupSourceName, backupStateText, masterCover, masterSelection,
 };

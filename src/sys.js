@@ -46,12 +46,31 @@ const atemDskChoices = (S) => one(((atem(S) && atem(S).dsk) || []).map((k) => ({
 const atemAuxChoices = (S) => one(((atem(S) && atem(S).aux) || []).map((k) => ({ id: k.index, label: `Aux ${k.index + 1}` })), { id: 0, label: 'Aux 1' });
 const atemMacroChoices = (S) => one(((atem(S) && atem(S).macros) || []).map((m) => ({ id: m.index, label: `${m.index + 1} ${m.name || ''}`.trim() })), { id: 0, label: 'Macro 1' });
 const ATEM_STYLES = ['MIX', 'DIP', 'WIPE', 'DVE', 'STING'];
+// 0.8.0 (app 0.10.0, API 9): router outputs, every source, audio inputs, M/Es, SuperSource boxes and layouts
+const atemSrcLabel = (S, id) => { const a = atem(S); const i = a && (a.sources || a.inputs || []).find((x) => x.id === Number(id)); return i ? i.long || i.short || String(id) : String(id); };
+const atemOutputs = (S) => (atem(S) && atem(S).outputs) || [];
+const atemOutputChoices = (S) => one(atemOutputs(S).map((o) => ({ id: o.key, label: `${o.group === 'aux' ? '' : o.group === 'me' ? 'M/E · ' : 'MV · '}${o.label}` })), { id: 'aux:0', label: 'Aux 1' });
+const atemSourceChoices = (S) => one(((atem(S) && (atem(S).sources || atem(S).auxSources)) || []).map((i) => ({ id: i.id, label: `${i.id} ${i.long || i.short}` })), { id: 1, label: '1 Input 1' });
+const atemAudioInputs = (S) => ((atem(S) && atem(S).audio && atem(S).audio.inputs) || []);
+const atemAudioChoices = (S) => one(atemAudioInputs(S).map((i) => ({ id: i.id, label: `${i.name || i.id}${i.port ? ` (${i.port})` : ''}` })), { id: 1, label: 'Input 1' });
+const atemMeChoices = (S) => one(((atem(S) && atem(S).mixEffects) || []).map((m) => ({ id: m.index + 1, label: `M/E ${m.index + 1}` })), { id: 1, label: 'M/E 1' });
+const atemSsChoices = (S) => one(((atem(S) && atem(S).superSources) || []).map((x) => ({ id: x.index, label: `SuperSource ${x.index + 1}` })), { id: 0, label: 'SuperSource 1' });
+const atemBoxChoices = (S) => { const ss = ((atem(S) && atem(S).superSources) || [])[0]; const n = (ss && ss.boxes && ss.boxes.length) || 4; return Array.from({ length: n }, (_, i) => ({ id: i, label: `Box ${i + 1}` })); };
+const atemSsLayoutChoices = (S) => one(((atem(S) && atem(S).ssLayouts) || []).map((l) => ({ id: l.id, label: l.name })), { id: 'quad', label: 'Quad' });
+const meOf = (o) => Math.max(1, Number(o && o.me) || 1); // older saved actions have no M/E: M/E 1
+const meKeyer = (a, o) => { const m = (a.mixEffects || [])[meOf(o) - 1]; return m ? (m.keyers || []).find((x) => x.index === Number(o.key)) : (meOf(o) === 1 ? (a.keyers || []).find((x) => x.index === Number(o.key)) : null); };
+const atemMuted = (S, id) => { const i = atemAudioInputs(S).find((x) => x.id === Number(id)); return !!(i && (i.muted || i.mix === 'off')); };
+const ssBoxOf = (a, o) => { const ss = (a.superSources || []).find((x) => x.index === Number(o.ss || 0)); return ss ? (ss.boxes || []).find((b) => b.index === Number(o.box)) : null; };
+
 function atemFeedback(S, kind, o = {}) {
   const a = atem(S); if (!a) return false;
   switch (kind) {
     case 'program': return a.program === Number(o.source);
     case 'preview': return a.preview === Number(o.source);
-    case 'usk': { const k = (a.keyers || []).find((x) => x.index === Number(o.key)); return !!(k && (o.what === 'tie' ? k.tie : k.onAir)); }
+    case 'usk': { const k = meKeyer(a, o); return !!(k && (o.what === 'tie' ? k.tie : k.onAir)); }
+    case 'output': { const x = (a.outputs || []).find((q) => q.key === String(o.output)); return !!(x && x.source === Number(o.source)); }
+    case 'muted': return atemMuted(S, o.input);
+    case 'ssBox': { const b = ssBoxOf(a, o); return !!(b && (o.what === 'enabled' ? b.enabled : b.enabled && b.source === Number(o.source))); }
     case 'dsk': { const k = (a.dsk || []).find((x) => x.index === Number(o.key)); return !!(k && (o.what === 'tie' ? k.tie : o.what === 'transition' ? k.inTransition : k.onAir)); }
     case 'aux': { const k = (a.aux || []).find((x) => x.index === Number(o.aux)); return !!(k && k.source === Number(o.source)); }
     case 'macro': { const r = a.macroRun || {}; return !!r.isRunning && (o.macro === 'any' || r.macroIndex === Number(o.macro)); }
@@ -163,6 +182,11 @@ function variableDefinitions(S) {
     for (const x of a.aux || []) d.push({ variableId: `atem_aux_${x.index + 1}`, name: `ATEM: Aux ${x.index + 1} source (short name)` });
     for (const i of a.bus || []) d.push({ variableId: `atem_input_${i.id}_name`, name: `ATEM: source ${i.id} short name` });
     for (const m of a.macros || []) d.push({ variableId: `atem_macro_${m.index + 1}_name`, name: `ATEM: macro ${m.index + 1} name` });
+    // 0.8.0: every router output, audio input levels, SuperSource boxes
+    for (const o of atemOutputs(S)) d.push({ variableId: `atem_out_${safeId(o.key)}`, name: `ATEM: ${o.label} source (short name)` });
+    for (const i of atemAudioInputs(S)) d.push({ variableId: `atem_audio_${i.id}_fader`, name: `ATEM audio: ${i.name || i.id} fader (dB)` }, { variableId: `atem_audio_${i.id}_mix`, name: `ATEM audio: ${i.name || i.id} mix (on/off/afv)` });
+    if (a.audio) d.push({ variableId: 'atem_audio_master_fader', name: 'ATEM audio: master fader (dB)' });
+    for (const x of a.superSources || []) for (const b of x.boxes || []) d.push({ variableId: `atem_ss${x.index + 1}_box${b.index + 1}`, name: `ATEM: SuperSource ${x.index + 1} box ${b.index + 1} source (short name)` });
   }
   if (ptz(S)) {
     d.push({ variableId: 'ptz_selected', name: 'PTZ: selected camera id' }, { variableId: 'ptz_selected_name', name: 'PTZ: selected camera name' },
@@ -228,6 +252,12 @@ function variableValues(S, cats = {}) {
     for (const x of a.aux || []) v[`atem_aux_${x.index + 1}`] = atemName(S, x.source);
     for (const i of a.bus || []) v[`atem_input_${i.id}_name`] = i.short || i.long || String(i.id);
     for (const m of a.macros || []) v[`atem_macro_${m.index + 1}_name`] = m.name || `Macro ${m.index + 1}`;
+    const sh = (id) => { const i = (a.sources || a.inputs || []).find((x) => x.id === Number(id)); return i ? i.short || i.long || String(id) : id === undefined || id === null ? '' : String(id); };
+    const db = (x) => (Number.isFinite(x) ? (x <= -100 ? '-inf' : (Math.round(x * 10) / 10).toFixed(1)) : '');
+    for (const o of atemOutputs(S)) v[`atem_out_${safeId(o.key)}`] = o.sourceShort || sh(o.source);
+    for (const i of atemAudioInputs(S)) { v[`atem_audio_${i.id}_fader`] = db(i.fader); v[`atem_audio_${i.id}_mix`] = i.mix || ''; }
+    if (a.audio) v.atem_audio_master_fader = db(a.audio.master && a.audio.master.fader);
+    for (const x of a.superSources || []) for (const b of x.boxes || []) v[`atem_ss${x.index + 1}_box${b.index + 1}`] = b.enabled ? sh(b.source) : 'off';
   }
   const z = ptz(S);
   if (z) {
@@ -359,7 +389,8 @@ function buttonPresets(S) {
       out[`atem_dsk_${k.index}_auto`] = btn('ATEM: keys', `ATEM DSK ${k.index + 1} auto`, look('atem', `DSK ${k.index + 1}\\nAUTO`), [A('atem_dsk_auto', { key: k.index })], [],
         [{ feedbackId: 'atem_dsk', options: { key: k.index, what: 'transition' }, style: lit('atem_pgm', COLORS.red) }]);
     }
-    for (const x of a.aux || []) {
+    // apps before 0.10.0 have no router outputs: the 0.6.0 aux buttons (0.10.0 gets the router buttons below)
+    for (const x of atemOutputs(S).length ? [] : a.aux || []) {
       for (const i of a.auxSources || []) {
         out[`atem_aux_${x.index}_${i.id}`] = btn(`ATEM: Aux ${x.index + 1}`, `ATEM Aux ${x.index + 1} ← ${i.long || i.short}`, look('atem', `AUX ${x.index + 1}\\n${i.short || i.long}`), [A('atem_aux', { aux: x.index, source: i.id })], [],
           [{ feedbackId: 'atem_aux_is', options: { aux: x.index, source: i.id }, style: lit('atem_sel', COLORS.amber, COLORS.black) }]);
@@ -370,6 +401,50 @@ function buttonPresets(S) {
         [{ feedbackId: 'atem_macro_running', options: { macro: m.index }, style: lit('atem_sel', COLORS.amber, COLORS.black) }]);
     }
     out.atem_macro_stop = btn('ATEM: macros', 'ATEM macro stop', look('atem', 'MACRO\\nSTOP'), [A('atem_macro_stop')]);
+    // 0.8.0 (app 0.10.0): router, audio, keyers per M/E, SuperSource
+    const GOLD = (img = 'atem_sel') => lit(img, COLORS.amber, COLORS.black);
+    // sources the output accepts (the aux list for aux / SDI outputs, the M/E bus otherwise), at most 24 per output
+    const routable = (o) => ((o.group === 'aux' ? a.auxSources : a.bus) || []).slice(0, 24);
+    for (const o of atemOutputs(S).filter((x) => x.group !== 'mv')) {
+      const k = safeId(o.key);
+      out[`atem_out_${k}_status`] = btn(`ATEM: Router ${o.label}`, `ATEM ${o.label} (shows its source)`, look('status', `${o.label.toUpperCase()}\\n${T(`atem_out_${k}`)}`, COLORS.white, COLORS.black), []);
+      for (const i of routable(o)) {
+        out[`atem_route_${k}_${i.id}`] = btn(`ATEM: Router ${o.label}`, `ATEM ${o.label} ← ${i.long || i.short}`, look('atem', `${o.label.toUpperCase()}\\n${i.short || i.long}`), [A('atem_route_output', { output: o.key, source: i.id })], [],
+          [{ feedbackId: 'atem_output_is', options: { output: o.key, source: i.id }, style: GOLD() }]);
+      }
+    }
+    for (const i of atemAudioInputs(S)) {
+      const nm = String(i.name || i.id).toUpperCase();
+      out[`atem_audio_${i.id}_mute`] = btn('ATEM: audio', `ATEM audio ${i.name} mute`, look('atem', `${nm}\\nMUTE`), [A('atem_audio_mute', { input: i.id, mode: 'toggle' })], [],
+        [{ feedbackId: 'atem_audio_muted', options: { input: i.id }, style: lit('atem_pgm', COLORS.red) }]);
+      out[`atem_audio_${i.id}_up`] = btn('ATEM: audio faders', `ATEM audio ${i.name} +1 dB`, look('atem', `${nm}\\n+1 dB\\n${T(`atem_audio_${i.id}_fader`)}`), [A('atem_audio_fader_nudge', { input: i.id, db: 1 })]);
+      out[`atem_audio_${i.id}_down`] = btn('ATEM: audio faders', `ATEM audio ${i.name} -1 dB`, look('atem', `${nm}\\n-1 dB\\n${T(`atem_audio_${i.id}_fader`)}`), [A('atem_audio_fader_nudge', { input: i.id, db: -1 })]);
+    }
+    if (a.audio) {
+      out.atem_audio_master_up = btn('ATEM: audio faders', 'ATEM audio master +1 dB', look('atem', `MASTER\\n+1 dB\\n${T('atem_audio_master_fader')}`), [A('atem_audio_master_nudge', { db: 1 })]);
+      out.atem_audio_master_down = btn('ATEM: audio faders', 'ATEM audio master -1 dB', look('atem', `MASTER\\n-1 dB\\n${T('atem_audio_master_fader')}`), [A('atem_audio_master_nudge', { db: -1 })]);
+    }
+    for (const m of (a.mixEffects || []).filter((x) => x.index > 0)) {
+      for (const k of m.keyers || []) {
+        out[`atem_me${m.index + 1}_usk_${k.index}_air`] = btn(`ATEM: keys M/E ${m.index + 1}`, `ATEM M/E ${m.index + 1} key ${k.index + 1} on air`, look('atem', `M/E ${m.index + 1}\\nKEY ${k.index + 1}\\nON AIR`), [A('atem_usk_onair', { me: m.index + 1, key: k.index, mode: 'toggle' })], [],
+          [{ feedbackId: 'atem_usk', options: { me: m.index + 1, key: k.index, what: 'onair' }, style: lit('atem_pgm', COLORS.red) }]);
+      }
+    }
+    const ins = (a.sources || []).filter((i) => i.kind === 'input').slice(0, 8);
+    for (const x of a.superSources || []) {
+      const n = x.index + 1;
+      for (const b of x.boxes || []) {
+        out[`atem_ss${n}_box${b.index + 1}_on`] = btn(`ATEM: SuperSource ${n}`, `ATEM SuperSource ${n} box ${b.index + 1} on / off`, look('atem', `SS${n} BOX ${b.index + 1}\\n${T(`atem_ss${n}_box${b.index + 1}`)}`), [A('atem_ss_box_enable', { ss: x.index, box: b.index, mode: 'toggle' })], [],
+          [{ feedbackId: 'atem_ss_box', options: { ss: x.index, box: b.index, what: 'enabled', source: 0 }, style: GOLD() }]);
+        for (const i of ins) {
+          out[`atem_ss${n}_box${b.index + 1}_${i.id}`] = btn(`ATEM: SuperSource ${n}`, `ATEM SuperSource ${n} box ${b.index + 1} ← ${i.long || i.short}`, look('atem', `SS${n} BOX ${b.index + 1}\\n${i.short || i.long}`), [A('atem_ss_box_source', { ss: x.index, box: b.index, source: i.id })], [],
+            [{ feedbackId: 'atem_ss_box', options: { ss: x.index, box: b.index, what: 'source', source: i.id }, style: GOLD() }]);
+        }
+      }
+      for (const l of a.ssLayouts || []) {
+        out[`atem_ss${n}_layout_${safeId(l.id)}`] = btn(`ATEM: SuperSource ${n} layouts`, `ATEM SuperSource ${n} layout ${l.name}`, look('atem', `SS${n} LAYOUT\\n${String(l.name).toUpperCase().slice(0, 16)}`), [A('atem_ss_layout_recall', { ss: x.index, layout: l.id, withSources: false })]);
+      }
+    }
     out.atem_status = btn('ATEM: transitions', 'ATEM Program / Preview', look('status', `PGM ${T('atem_program')}\\nPVW ${T('atem_preview')}`, COLORS.white, COLORS.black), []);
   }
   // PTZ
@@ -439,7 +514,8 @@ module.exports = {
   PRESET_SYS, SYS_NAMES, OPS, OP_BY_ID, PTZ_PRESET_BUTTONS, DIRS, DIR_CHOICES, ATEM_STYLES,
   view, connected, configured, safeId,
   xPresets, xFind, xDests, xPresetChoices, xDestChoices, xCueChoices, xTally, xDestSelected,
-  atemName, atemBusChoices, atemAuxSourceChoices, atemKeyChoices, atemDskChoices, atemAuxChoices, atemMacroChoices, atemFeedback,
+  atemName, atemSrcLabel, atemOutputs, atemOutputChoices, atemSourceChoices, atemAudioInputs, atemAudioChoices, atemMeChoices, atemSsChoices, atemBoxChoices, atemSsLayoutChoices, atemMuted, meOf,
+  atemBusChoices, atemAuxSourceChoices, atemKeyChoices, atemDskChoices, atemAuxChoices, atemMacroChoices, atemFeedback,
   cams, selectedCam, camId, camOf, camChoices, opsOfType, opChoices, opFor, fmtValue, stepRange, stepList, moveBody, lensBody, ptzFeedback, presetName,
   variableDefinitions, variableValues, signature, buttonPresets, camDeckPresets, CAM_KNOBS, KNOB_IDS, deltaOf, clampSpeed,
 };

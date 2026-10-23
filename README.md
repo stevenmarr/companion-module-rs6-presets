@@ -6,13 +6,29 @@ a PixelHue, a Blackmagic ATEM and Panasonic PTZ cameras, **all through the app's
 The module never connects to a device directly. The module id stays `rs6-presets` (shortname `rs6presets`), so
 existing connections and buttons keep working; only the display name is now "PV Control Center".
 
-**0.7.3 needs Companion with the layered button editor** (module-base 2.2, the graphics overhaul on
+**0.7.3 and later need Companion with the layered button editor** (module-base 2.2, the graphics overhaul on
 `feat/lcars-gui`). Stock Companion 3.x will not load this build. Import the `.tgz` on the Connections
 page of that Companion.
 
 Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, with no TypeScript build.
 
 ![icon](companion/icon.png)
+
+## New in 0.8.0
+
+- **ATEM router, audio, keys per M/E and SuperSource** (Control Center app 0.10.0, API 9). New actions:
+  `atem_route_output`, `atem_audio_mute`, `atem_audio_fader_nudge`, `atem_audio_master_nudge`, `atem_ss_box_source`,
+  `atem_ss_box_enable` and `atem_ss_layout_recall`. `atem_usk_onair` and `atem_usk_tie` take an M/E option; saved
+  buttons without one stay on M/E 1.
+- **New feedbacks:** `atem_output_is`, `atem_audio_muted` and `atem_ss_box`. `atem_usk` now has an M/E option.
+- **New variables:** `atem_out_<output>`, `atem_audio_<id>_fader` / `_mix`, `atem_audio_master_fader` and
+  `atem_ssN_boxM`.
+- **New presets** in the ATEM gold family: router (output × source, plus a status key per output), audio mute and
+  ±1 dB, M/E 2+ keys, SuperSource boxes and layouts. Against app 0.10.0 the router presets replace the old
+  aux × source grid. The `atem_aux` action and the `atem_aux_is` feedback are unchanged.
+- **Version check:** the module expects API 9. App 0.8.x–0.9.x (API 8) still runs every system, and a log line asks
+  you to update the app for the new ATEM controls. The module sends every command to the app; it never talks to the
+  switcher.
 
 ## New in 0.7.3
 
