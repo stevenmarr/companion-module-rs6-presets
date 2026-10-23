@@ -105,7 +105,7 @@ test('0.7.0 knob actions: zoom runs then stops by itself, levels and lists step,
   assert.deepEqual(sent.shift(), ['speeds', { pt: 49 }]);
 });
 
-test('0.7.0 cc_pages_refresh: subscribing publishes the presets again (once per burst), and never lights', async () => {
+test('0.7.0 / 0.8.1 cc_pages_refresh: evaluating publishes the presets again (once per burst), and never lights', async () => {
   const { ControlCenterInstance } = loadMain();
   const calls = [];
   const inst = Object.create(ControlCenterInstance.prototype);
@@ -113,7 +113,8 @@ test('0.7.0 cc_pages_refresh: subscribing publishes the presets again (once per 
   Object.defineProperty(inst, 'label', { value: 'rs6presets' });
   const fb = inst.feedbacks().cc_pages_refresh;
   assert.equal(fb.type, 'boolean'); assert.equal(fb.callback(), false); assert.deepEqual(fb.defaultStyle, {});
-  for (let i = 0; i < 20; i++) fb.subscribe({});
+  assert.equal(fb.subscribe, undefined, 'module-base 2 has no subscribe');
+  for (let i = 0; i < 20; i++) assert.equal(fb.callback({}), false);
   await new Promise((r) => setTimeout(r, 400));
   assert.equal(calls.length, 1); assert.ok(calls[0] > 100);
   if (inst.republishTimer) clearTimeout(inst.republishTimer);

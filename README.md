@@ -14,6 +14,19 @@ Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, wit
 
 ![icon](companion/icon.png)
 
+## New in 0.8.1
+
+- **Loads on Companion with module-base 2.** 0.7.3 and 0.8.0 called `runEntrypoint()`, which `@companion-module/base`
+  2.x no longer has, so Companion stopped them at start-up (`runEntrypoint is not a function`). `src/main.js` now
+  exports the class (and its `UpgradeScripts`) the way base 2 expects. E2 / PixelHue / ATEM / PTZ feedback updates
+  now name their feedback ids, because base 2 refuses a bare `checkFeedbacks()`. `cc_pages_refresh` refreshes from
+  its callback, because base 2 dropped `subscribe`.
+- **Text styling.** Every line of a label is its own text element (font, weight, underline / strikethrough,
+  outline), styled by what the key does: source, take, hold, mode, step or readout. Each kind of line has one size
+  on every key of a type (a percent of the key, not of the element), so the text is the same size across a page.
+  The family colours are unchanged. See `companion/HELP.md` → *Button looks*. Action, feedback and preset ids are
+  unchanged. Drag a preset again, or re-import a generated page, to pick up the new look.
+
 ## New in 0.8.0
 
 - **ATEM router, audio, keys per M/E and SuperSource** (Control Center app 0.10.0, API 9). New actions:

@@ -76,14 +76,24 @@ moving, last preset, error, any on/off setting, any setting value. Variables per
 `ptz_sel_…` for the selected one): name, model, power, tally, pan/tilt/zoom/focus, iris, gain, shutter, ND,
 WB, scene, last preset and preset names.
 
-**Button looks (0.7.3):** each system has its own family colour (E2 lime, PixelHue rose, ATEM gold, PTZ indigo),
-the same 72×72 tech-look backgrounds as the RS6 buttons. The label is a layered text element, inset so it
-clears the corner brackets and the top accent: **Text Size** is 46 / 34 / 28 / 24 percent of that element
-for 1 / 2 / 3 / 4+ lines (not 100, which is what the old `auto` size became), **Shrink to fit** is on,
-**Weight** is bold, **Font** is the default, and a soft **Outline** (black on light text, white on dark
-text) keeps the glyphs readable on the art. TAKE / CUT stay red. A host that cannot draw layers still
-gets the previous style. This needs Companion with the layered button editor (module-base 2.2); stock
-Companion 3 will not load this build.
+**Button looks (0.8.1):** each system keeps its family colour (E2 lime, PixelHue rose, ATEM gold, PTZ indigo,
+RS6 blue / violet / teal …) on the same 72×72 tech-look art. Each line of a label is its own layered text element,
+styled by what the key does, and each kind of line has one size on every key of that type:
+
+- **Source** keys (tiles, memories, bus / router / SuperSource crosspoints, cameras, cues): a small mono caption top
+  left in the family accent (`PGM`, `AUX 1`, `IN 3`), the name in bold sans below it.
+- **Take** keys (TAKE, CUT, AUTO, FTB, STOP): the verb large in bold sans, the system or selection in mono.
+- **Hold** keys (pan / tilt, zoom, focus): the arrow or the move (`TELE`, `NEAR`, in mono bold), what it moves below it.
+- **Mode** keys (keys on air / tie, styles, mute, freeze, auto take, white balance): a centred mono caption over a
+  hairline, then the state.
+- **Step** keys (audio ±1 dB, iris / gain ±): caption, the step, and the live value in mono.
+- **Readouts** (status, camera readouts, Stream Deck + strips and knobs, backups): mono throughout, left aligned,
+  the header bold and underlined.
+
+Feedbacks change the art and recolour every line. A yellow warning (input without signal, camera offline) also
+strikes the name through, and black text on an amber key has no outline. Shrink to fit stays on, so it only
+takes over when a name is too long. A host that cannot draw layers still gets the classic style. This needs
+the Companion fork with the layered button editor (module-base 2.2).
 
 ### RS6
 
