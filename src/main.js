@@ -5,6 +5,7 @@ const L = require('./logic');
 const UpgradeScripts = require('./upgrades');
 const X = require('./sys');
 const { sysActions, sysFeedbacks } = require('./sysdefs');
+const Deck = require('./deck');
 const G = require('./graphics');
 
 const FEEDBACK_IDS = ['preset_pvw', 'preset_pgm', 'dest_selected', 'auto_take_on', 'device_connected', 'input_pgm', 'input_pvw', 'dest_memory', 'master_memory', 'input_frozen', 'input_problem', 'backup_active', 'audio_muted'];
@@ -24,14 +25,14 @@ const AUDIO_TARGET = [
 class ControlCenterInstance extends InstanceBase {
   async init(config) {
     this.config = config; this.state = null; this.sig = null; this.failures = 0;
-    this.sys = null; this.sysSig = null; this.sysFailures = 0; this.ptzCats = {}; this.catKeys = {}; this.holds = new Map();
+    this.sys = null; this.sysSig = null; this.sysFailures = 0; this.ptzCats = {}; this.catKeys = {}; this.holds = new Map(); this.deck = new Deck.DeckRuntime(this);
     this.setActionDefinitions(this.actions());
     this.setFeedbackDefinitions(this.feedbacks());
     this.applyState(null, true);
     this.start();
   }
 
-  async destroy() { if (this.republishTimer) clearTimeout(this.republishTimer); await this.releaseHolds(); this.stop(); }
+  async destroy() { if (this.republishTimer) clearTimeout(this.republishTimer); if (this.deck) this.deck.stopAll(); await this.releaseHolds(); this.stop(); }
 
   async configUpdated(config) { await this.releaseHolds(); this.config = config; this.stop(); this.sig = null; this.sysSig = null; this.start(); }
 
@@ -170,7 +171,7 @@ class ControlCenterInstance extends InstanceBase {
     this.sys = S;
     const sig = `${X.signature(S)}|${this.label || ''}`;
     if (sig !== this.sysSig) { this.sysSig = sig; this.redefine(); }
-    this.setVariableValues(X.variableValues(S, this.ptzCats));
+    this.setVariableValues({ ...X.variableValues(S, this.ptzCats), ...(this.deck ? this.deck.vars() : {}) });
     // module-base 2 refuses a bare checkFeedbacks(): name the E2 / PixelHue / ATEM / PTZ feedbacks
     if (!this.sysFeedbackIds) this.sysFeedbackIds = Object.keys(sysFeedbacks(this));
     if (this.sysFeedbackIds.length) this.checkFeedbacks(...this.sysFeedbackIds);
@@ -242,7 +243,7 @@ class ControlCenterInstance extends InstanceBase {
     try { await this.api.ptz('stopAll'); } catch (e) { this.log('error', `PTZ all stop failed: ${e.message}`); }
   }
 
-  dropHolds() { for (const h of this.holds.values()) clearInterval(h.timer); this.holds.clear(); if (this.pulses) { for (const t of this.pulses.values()) clearTimeout(t); this.pulses.clear(); } }
+  dropHolds() { for (const h of this.holds.values()) clearInterval(h.timer); this.holds.clear(); if (this.pulses) { for (const t of this.pulses.values()) clearTimeout(t); this.pulses.clear(); } if (this.deck) this.deck.stopAll(); }
 
   async releaseHolds() {
     const ids = [...this.holds.keys()]; this.dropHolds();

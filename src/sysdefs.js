@@ -3,6 +3,7 @@
 // Control Center app's HTTP API (src/api.js); nothing talks to a device. `inst` is the Companion instance (src/main.js).
 // New ids are prefixed by system (e2_, pixelhue_, atem_, ptz_, sys_); the RS6 ids in main.js are unchanged.
 const X = require('./sys');
+const Deck = require('./deck');
 const L = require('./logic');
 const { COLORS } = L;
 
@@ -219,6 +220,7 @@ function sysActions(inst) {
       },
     },
     ptz_refresh: { name: 'PTZ: re-read the camera', options: [camOpt], callback: (a) => pr('refresh', 'refresh', { cam: X.camId(inst.sys, a.options.cam) }) },
+    ...Deck.deckActions(inst),
   });
   return out;
 }
@@ -263,6 +265,7 @@ function sysFeedbacks(inst) {
     ptz_error: bool('PTZ: camera reported an error', { bgcolor: COLORS.yellow, color: COLORS.black }, [camOpt], (f) => X.ptzFeedback(g(), 'error', f.options)),
     ptz_on: bool('PTZ: camera on/off setting is ON (AF, auto iris, bars, OSD menu …)', AMBER, [camOpt, dd('op', 'Setting', X.opChoices(['toggle']))], (f) => X.ptzFeedback(g(), 'on', f.options)),
     ptz_value: bool('PTZ: camera setting equals (gain, ND, WB mode, scene …)', AMBER, [camOpt, dd('op', 'Setting', X.opChoices(['list', 'range'])), { type: 'textinput', id: 'value', label: 'Value (list code or number)', default: '' }], (f) => X.ptzFeedback(g(), 'value', f.options)),
+    ...Deck.deckFeedbacks(inst),
   });
   return out;
 }

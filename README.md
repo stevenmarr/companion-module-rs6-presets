@@ -14,6 +14,20 @@ Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, wit
 
 ![icon](companion/icon.png)
 
+## New in 0.9.0
+
+- **Stream Deck as the primary live camera surface** (Control Center app **0.12.0**, features `ptzLiveGuard` and
+  `ptzDeckFunctions`). Brand-styled keys (black/#121212, white/#F5F5F5, red #C42020 for tally/ON) for LIVE,
+  PAINT, FUNCTIONS and MOVE. Design: `../research/notes/10-streamdeck-ptz.md`.
+- **Guarded preset recall** on a red-tally camera: app setting OFF / HOLD (default 600 ms) / LOCK, enforced by
+  the app (HTTP 423). Deck action `deck_recall` (DOWN/UP).
+- **Paint and functions** for the selected UE150: iris A/M and ±, gain, shutter, ND, WB mode cycle, AWB, R/B
+  gain and ped, master ped, detail, gamma/knee, matrix/saturation; toggles for tally, power, AF, push AF, OIS,
+  bars, D.EXT, freeze during preset, DRS, night, auto iris, preset speed, live guard. Hold-to-repeat on ± keys;
+  dials with fine/coarse and strip taps on the + / + XL; speed-ramped hold for pan/tilt/zoom/focus.
+- New actions `deck_*`, feedbacks `ptz_active` / `deck_*`, and paint/function variables. Regenerated `src/ptz-ops.js`
+  includes DRS, day/night and freeze-during-preset from the app catalog.
+
 ## New in 0.8.1
 
 - **Loads on Companion with module-base 2.** 0.7.3 and 0.8.0 called `runEntrypoint()`, which `@companion-module/base`

@@ -200,6 +200,8 @@ function variableDefinitions(S) {
       }
       if (c.id !== 'sel') for (let n = 1; n <= PTZ_PRESET_BUTTONS; n++) d.push({ variableId: `${p}_preset_${n}_name`, name: `PTZ ${c.name}: preset ${n} name ("P${n}" when unnamed)` });
     }
+    const Deck = require('./deck');
+    for (const x of Deck.variableDefinitions(S)) d.push(x);
   }
   return d;
 }
@@ -268,6 +270,7 @@ function variableValues(S, cats = {}) {
       const p = `ptz_${safeId(c.id)}`; ptzVars(S, cats, c, p, v);
       for (let n = 1; n <= PTZ_PRESET_BUTTONS; n++) v[`${p}_preset_${n}_name`] = presetName(c, n) || `P${n}`;
     }
+    Object.assign(v, require('./deck').variableValues(S, cats));
   }
   return v;
 }
@@ -507,6 +510,7 @@ function buttonPresets(S) {
     for (const c of cams(S)) Object.assign(out, camDeckPresets(c));
     out.ptz_status = btn('PTZ: system (selected camera)', 'Selected camera readout', look('status', `${T('ptz_sel_name')}\\nZ ${T('ptz_sel_zoom')}\\nI ${T('ptz_sel_iris')}`, COLORS.white, COLORS.black), []);
   }
+  Object.assign(out, require('./deck').presets(S));
   return out;
 }
 
@@ -516,6 +520,6 @@ module.exports = {
   xPresets, xFind, xDests, xPresetChoices, xDestChoices, xCueChoices, xTally, xDestSelected,
   atemName, atemSrcLabel, atemOutputs, atemOutputChoices, atemSourceChoices, atemAudioInputs, atemAudioChoices, atemMeChoices, atemSsChoices, atemBoxChoices, atemSsLayoutChoices, atemMuted, meOf,
   atemBusChoices, atemAuxSourceChoices, atemKeyChoices, atemDskChoices, atemAuxChoices, atemMacroChoices, atemFeedback,
-  cams, selectedCam, camId, camOf, camChoices, opsOfType, opChoices, opFor, fmtValue, stepRange, stepList, moveBody, lensBody, ptzFeedback, presetName,
+  ptz, cams, selectedCam, camId, camOf, camChoices, opsOfType, opChoices, opFor, fmtValue, stepRange, stepList, moveBody, lensBody, ptzFeedback, presetName,
   variableDefinitions, variableValues, signature, buttonPresets, camDeckPresets, CAM_KNOBS, KNOB_IDS, deltaOf, clampSpeed,
 };

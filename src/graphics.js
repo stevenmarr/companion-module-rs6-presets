@@ -103,6 +103,7 @@ const SOURCE_CATEGORY = /preset tiles|destinations|cues|camera select| presets$|
 //   mode   - toggles or picks a setting (keys, styles, mute, freeze, auto take, white balance, menu ...)
 //   lcd    - shows values (status, readouts, Stream Deck + strips and knobs, backups)
 function roleOf(id, classic) {
+  if (classic && classic.role) return classic.role;
   const style = classic.style || {};
   const fam = familyOf(style);
   const cat = String(classic.category || '');
@@ -230,6 +231,88 @@ function overridesOf(style, els, role) {
   return o;
 }
 
+
+// ---------- 0.9.0 brand keys (src/deck.js: classic.brand) ----------
+// Black / #121212 keys, #F5F5F5 text, red #C42020 as the only accent (tally / ON). Selected = a white frame,
+// offline = grey strikethrough. companion-mono captions and values, companion-sans names, the house sizes.
+const BRAND_BG = 0x121212; const BRAND_TEXT = 0xf5f5f5; const CLEAR = 0xff000000;
+function brandElements(b, style) {
+  const bg = b.bg !== undefined ? b.bg : (style && style.bgcolor !== undefined ? style.bgcolor : BRAND_BG);
+  const main = BRAND_TEXT; const cap = withAlpha(BRAND_TEXT, 0.72); const mono = 'companion-mono';
+  const els = [
+    { id: 'bg', type: 'box', name: 'Background', x: 0, y: 0, width: 100, height: 100, color: bg, cornerRadius: 0 },
+    { id: 'frame', type: 'box', name: 'Frame', x: 0, y: 0, width: 100, height: 100, color: CLEAR, cornerRadius: 0, borderWidth: 7, borderColor: CLEAR, borderPosition: 'inside' },
+  ];
+  const o = { outline: NO_OUTLINE };
+  const capEl = (t, y = 10) => textEl('tag', 'Caption', t, { x: 8, y, w: 84, h: 17 }, SIZE.tag, { ...o, font: mono, weight: 'bold', color: cap });
+  const valEl = (t) => textEl('detail', 'Value', t, { x: 7, y: 71, w: 86, h: 19 }, SIZE.detail, { ...o, font: mono, weight: 'bold', color: cap });
+  switch (b.kind) {
+    case 'lcd': {
+      els.push(textEl('tag', 'Header', b.cap || '', { x: 9, y: 10, w: 82, h: 20 }, SIZE.lcd, { ...o, font: mono, weight: 'bold', styles: ['underline'], color: main, halign: 'left', valign: 'top' }));
+      els.push(textEl('label', 'Readout', b.main || '', { x: 9, y: 34, w: 82, h: 30 }, SIZE.lcd, { ...o, font: mono, weight: 'bold', color: main, halign: 'left', valign: 'top' }));
+      if (b.value) els.push(textEl('detail', 'Mode', b.value, { x: 9, y: 70, w: 82, h: 20 }, SIZE.detail, { ...o, font: mono, color: cap, halign: 'left', valign: 'top' }));
+      return els;
+    }
+    case 'step': case 'move': {
+      if (b.cap) els.push(capEl(b.cap));
+      els.push(textEl('label', b.kind === 'step' ? 'Step' : 'Move', b.main, { x: 5, y: b.cap ? 26 : 12, w: 90, h: b.value ? (b.cap ? 44 : 58) : 76 }, SIZE.verb, { ...o, weight: 'bold', color: main }));
+      if (b.value) els.push(valEl(b.value));
+      return els;
+    }
+    case 'take':
+      els.push(textEl('label', 'Verb', b.main, { x: 5, y: 12, w: 90, h: 76 }, SIZE.name, { ...o, weight: 'bold', color: main }));
+      return els;
+    case 'value': case 'exec': {
+      // caption over a hairline, the state / verb below it
+      if (b.cap) {
+        els.push(capEl(b.cap));
+        els.push({ id: 'rule', type: 'line', name: 'Rule', fromX: 22, fromY: 30, toX: 78, toY: 30, borderWidth: 1.5, borderColor: withAlpha(BRAND_TEXT, 0.4), borderPosition: 'center' });
+      }
+      els.push(textEl('label', 'State', b.main, { x: 6, y: b.cap ? 33 : 12, w: 88, h: b.value ? 36 : (b.cap ? 55 : 76) }, SIZE.name, { ...o, weight: 'bold', color: main }));
+      if (b.value) els.push(valEl(b.value));
+      return els;
+    }
+    default: { // cam, preset, nav: caption top left, the name, the state under it
+      if (b.cap) els.push(textEl('tag', 'Caption', b.cap, { x: 9, y: 9, w: 82, h: 17 }, SIZE.tag, { ...o, font: mono, weight: 'bold', color: cap, halign: 'left' }));
+      els.push(textEl('label', 'Name', b.main, { x: 6, y: 27, w: 88, h: 44 }, SIZE.name, { ...o, weight: 'bold', color: main }));
+      if (b.value) els.push(valEl(b.value));
+      return els;
+    }
+  }
+}
+// feedback style keys: bgcolor, color (every text; captions at 85 %), frame (border colour), strike (main text)
+function brandOverrides(style, els) {
+  const o = [];
+  if (!style) return o;
+  if (style.bgcolor !== undefined) o.push({ elementId: 'bg', elementProperty: 'color', override: style.bgcolor });
+  if (style.frame !== undefined) o.push({ elementId: 'frame', elementProperty: 'borderColor', override: style.frame });
+  for (const e of els) {
+    if (e.type !== 'text') continue;
+    const isMain = e.id === 'label';
+    if (style.color !== undefined) o.push({ elementId: e.id, elementProperty: 'color', override: isMain ? style.color : withAlpha(rgbOf(style.color), 0.85) });
+    if (style.strike && isMain) o.push({ elementId: e.id, elementProperty: 'styles', override: [...new Set([...(e.styles || []), 'strikethrough'])] });
+  }
+  return o;
+}
+function brandLayered(classic) {
+  const elements = brandElements(classic.brand, classic.style);
+  const feedbacks = [];
+  for (const f of classic.feedbacks || []) {
+    const styleOverrides = brandOverrides(f.style, elements);
+    if (!styleOverrides.length) continue;
+    const entry = { feedbackId: f.feedbackId, options: f.options || {}, styleOverrides };
+    if (f.isInverted) entry.isInverted = true;
+    feedbacks.push(entry);
+  }
+  const preset = { type: 'layered', name: classic.name, elements, canvas: { decoration: 'none' }, feedbacks, steps: stepsOf(classic.steps) };
+  if (classic.options && classic.options.stepAutoProgress === false) preset.options = { stepAutoProgress: false };
+  return preset;
+}
+// the classic fallback cannot draw a frame or strike: it keeps the colours only
+function classicFeedbacks(list) {
+  return (list || []).map((f) => { const { frame, strike, ...st } = f.style || {}; return { ...f, style: frame !== undefined && !Object.keys(st).length ? { color: frame } : st }; });
+}
+
 function stepsOf(steps) {
   return (steps || []).map((s) => {
     const out = { down: s.down || [], up: s.up || [] };
@@ -241,6 +324,7 @@ function stepsOf(steps) {
 }
 
 function layeredOf(classic, id) {
+  if (classic.brand) return brandLayered(classic);
   const style = classic.style || {};
   const role = roleOf(id || '', classic);
   const elements = elementsOf(style, role);
@@ -267,7 +351,7 @@ function layeredOf(classic, id) {
 // Fallback for a host that speaks the new preset API but not layered graphics.
 // type 'button' is the old one-argument API; the new one calls this 'simple'.
 function simpleOf(classic) {
-  const preset = { type: 'simple', name: classic.name, style: classic.style, steps: classic.steps, feedbacks: classic.feedbacks || [] };
+  const preset = { type: 'simple', name: classic.name, style: classic.style, steps: classic.steps, feedbacks: classic.brand ? classicFeedbacks(classic.feedbacks) : (classic.feedbacks || []) };
   if (classic.options && classic.options.stepAutoProgress === false) preset.options = { stepAutoProgress: false };
   return preset;
 }
@@ -307,6 +391,6 @@ function variableObject(defs) {
 }
 
 module.exports = {
-  publishPresets, variableObject, fontSize, outlineFor, colorAlpha, dataUrl, linesOf, roleOf, layeredOf, withAlpha,
+  publishPresets, variableObject, brandElements, brandLayered, fontSize, outlineFor, colorAlpha, dataUrl, linesOf, roleOf, layeredOf, withAlpha,
   TEXT, FONTSIZE, OUTLINE_DARK, OUTLINE_LIGHT, NO_OUTLINE, SIZE, ACCENT, WARN,
 };
