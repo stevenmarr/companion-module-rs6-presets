@@ -120,19 +120,23 @@ function roleOf(id, classic) {
 
 // One text element. size is a percent of the key; Text Size is that as a percent of this element.
 function textEl(id, name, text, box, size, o) {
-  return {
+  const el = {
     id, type: 'text', name, x: box.x, y: box.y, width: box.w, height: box.h,
     text,
     fontsize: Math.min(100, Math.round((size / box.h) * 1000) / 10),
     fontsizeAllowShrink: true,
     font: o.font || 'companion-sans',
-    weight: o.weight || 'normal',
+    weight: o.weight || 'bold',
     styles: o.styles || [],
     color: o.color,
     outlineColor: o.outline === undefined ? outlineFor(o.color) : o.outline,
     halign: o.halign || 'center',
     valign: o.valign || 'center',
+    letterSpacing: o.letterSpacing === undefined ? 0 : o.letterSpacing,
+    lineHeight: o.lineHeight === undefined ? 100 : o.lineHeight,
+    textTransform: o.textTransform || 'none',
   };
+  return el;
 }
 
 // The text elements for a key (and the role, for the feedbacks). Element ids: tag (caption above), label (the
@@ -232,75 +236,151 @@ function overridesOf(style, els, role) {
 }
 
 
-// ---------- 0.9.0 brand keys (src/deck.js: classic.brand) ----------
-// Visual language mirrors Control Center PTZ RCP panels (quiet dark void, inset chip/tile, paint-strip
-// readouts). Colours: void/panel #121212 / #161C23, text #F5F5F5, tally/ON red #C42020 only.
-// Selected = white frame on the chip. Offline = grey strikethrough. companion-mono captions/values,
-// companion-sans names. Fork fonts only (no Montserrat). cornerRadius/borderWidth are UI percents
-// (ConvertGraphicsElements scales by 0.01).
-const BRAND_BG = 0x121212; // key void (matches app --bg / panel stack)
-const BRAND_PANEL = 0x161c23; // inset chip fill (app --rcp2)
-const BRAND_LINE = 0x2a313b; // chip edge (app --line)
-const BRAND_TEXT = 0xf5f5f5; const BRAND_RED = 0xc42020; const CLEAR = 0xff000000;
-const CHIP_RADIUS = 18; // ~app 10px radius on a 72px key
-const CHIP = { x: 4, y: 4, w: 92, h: 92 }; // inset so the void reads around the tile
+// ---------- Dark theme brand keys (PVLLC T-Bar / style guide) ----------
+// Tokens from 08-display-themes.md + Performance Video software style guide (Dark first).
+// Red fill = PGM/LIVE only. Feature ON = outline + ON tag (not red fill). ALL STOP = danger outline + HOLD.
+// Fonts (fork feat/lcars-gui): companion-sans Bold labels, companion-mono Bold values,
+// companion-brand (Space Grotesk Bold) HOME/section headers, companion-condensed when Arimo overflows.
+// HOME mark: flat --text T-Bar (c-t-bar/icon_mark_*), never marketing red live slot.
+const THEME = {
+  bg: 0x101012,       // --bg
+  panel: 0x18181b,    // --panel
+  panel2: 0x222226,   // --panel2 (idle chip)
+  line: 0x34343a,     // --line
+  text: 0xe6e6e8,     // --text (not pure white on Dark)
+  dim: 0x9a9aa2,      // --dim
+  pgm: 0xc42020,      // --pgm
+  onPgm: 0xffffff,    // --on-pgm
+  pvw: 0x137a3a,      // --pvw
+  onPvw: 0xffffff,
+  armed: 0xe0a000,    // --armed
+  onArmed: 0x101012,  // --on-armed
+  focus: 0x7fb2ff,    // --focus
+  danger: 0xc42020,   // --danger-outline
+};
+// Back-compat aliases used elsewhere in this file / deck.js via exports
+const BRAND_BG = THEME.bg;
+const BRAND_PANEL = THEME.panel2;
+const BRAND_LINE = THEME.line;
+const BRAND_TEXT = THEME.text;
+const BRAND_DIM = THEME.dim;
+const BRAND_RED = THEME.pgm;
+const BRAND_PVW = THEME.pvw;
+const BRAND_ARMED = THEME.armed;
+const CLEAR = 0xff000000;
+const CHIP_RADIUS = 18;
+const CHIP = { x: 4, y: 4, w: 92, h: 92 };
+const HOME_MARK_PNG64 = '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';
+const FONT_SANS = 'companion-sans';
+const FONT_MONO = 'companion-mono';
+const FONT_BRAND = 'companion-brand';
+
 function brandElements(b, style) {
-  // Lit / danger keys (ALL STOP, ON): the chip fills red; the void stays quiet dark.
-  const lit = b.bg !== undefined ? b.bg : (style && style.bgcolor !== undefined && style.bgcolor !== BRAND_BG ? style.bgcolor : undefined);
-  const chipFill = lit !== undefined ? lit : BRAND_PANEL;
-  const voidFill = BRAND_BG;
-  const main = BRAND_TEXT; const cap = withAlpha(BRAND_TEXT, 0.62); const mono = 'companion-mono';
+  const kind = b.kind || 'value';
+  // PGM/LIVE may set b.bg = THEME.pgm. Feature ON and ALL STOP must NOT use solid red fill.
+  const lit = b.bg !== undefined ? b.bg : undefined;
+  const isPgm = lit === THEME.pgm || lit === 0xc42020;
+  const isPvw = lit === THEME.pvw || lit === 0x137a3a;
+  const isArmed = lit === THEME.armed || lit === 0xe0a000;
+  const chipFill = lit !== undefined ? lit : THEME.panel2;
+  const voidFill = THEME.bg;
+  let main = THEME.text;
+  let cap = THEME.dim;
+  if (isPgm) { main = THEME.onPgm; cap = withAlpha(THEME.onPgm, 0.85); }
+  else if (isPvw) { main = THEME.onPvw; cap = withAlpha(THEME.onPvw, 0.85); }
+  else if (isArmed) { main = THEME.onArmed; cap = withAlpha(THEME.onArmed, 0.85); }
+
+  const danger = !!b.danger; // ALL STOP / destructive hold
+  const featureOn = !!b.featureOn; // idle chrome for a key that can show ON via feedback
   const els = [
     { id: 'bg', type: 'box', name: 'Void', x: 0, y: 0, width: 100, height: 100, color: voidFill, cornerRadius: 0 },
     { id: 'chip', type: 'box', name: 'Chip', x: CHIP.x, y: CHIP.y, width: CHIP.w, height: CHIP.h, color: chipFill, cornerRadius: CHIP_RADIUS,
-      borderWidth: 1.2, borderColor: lit !== undefined ? withAlpha(BRAND_TEXT, 0.18) : BRAND_LINE, borderPosition: 'inside' },
+      borderWidth: danger ? 4.5 : 1.2,
+      borderColor: danger ? THEME.danger : (lit !== undefined ? withAlpha(main, 0.18) : THEME.line),
+      borderPosition: 'inside' },
+    // Selected = thick white ring (feedback sets frame). Idle frame is clear.
     { id: 'frame', type: 'box', name: 'Frame', x: CHIP.x, y: CHIP.y, width: CHIP.w, height: CHIP.h, color: CLEAR, cornerRadius: CHIP_RADIUS, borderWidth: 6, borderColor: CLEAR, borderPosition: 'inside' },
   ];
   const o = { outline: NO_OUTLINE };
-  // Paint-strip caption: left, dim mono (app .rcp-read small / .pc-t)
-  const capEl = (t, y = 8) => textEl('tag', 'Caption', t, { x: 10, y, w: 80, h: 16 }, SIZE.tag, { ...o, font: mono, weight: 'bold', color: cap, halign: 'left', valign: 'top' });
-  const valEl = (t) => textEl('detail', 'Value', t, { x: 10, y: 72, w: 80, h: 18 }, SIZE.detail, { ...o, font: mono, weight: 'bold', color: withAlpha(BRAND_TEXT, 0.82), halign: 'left' });
-  switch (b.kind) {
+  const capEl = (txt, y = 8) => textEl('tag', 'Caption', txt, { x: 10, y, w: 80, h: 16 }, SIZE.tag, { ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: 2 });
+  const valEl = (txt) => textEl('detail', 'Value', txt, { x: 10, y: 72, w: 80, h: 18 }, SIZE.detail, { ...o, font: FONT_MONO, weight: 'bold', color: withAlpha(main, 0.9), halign: 'left', letterSpacing: 1 });
+  const nameEl = (txt, box, size) => textEl('label', 'Name', txt, box, size, { ...o, font: FONT_SANS, weight: 'bold', color: main, letterSpacing: 0 });
+
+  if (kind === 'home') {
+    // T-Bar mark (flat --text) + HOME in companion-brand Bold
+    els.push({
+      id: 'mark', type: 'image', name: 'T-Bar', x: 22, y: 10, width: 56, height: 48,
+      base64Image: dataUrl(HOME_MARK_PNG64), fillMode: 'fit', halign: 'center', valign: 'center',
+    });
+    els.push(textEl('label', 'Home', b.main || 'HOME', { x: 8, y: 60, w: 84, h: 26 }, SIZE.tag + 2, {
+      ...o, font: FONT_BRAND, weight: 'bold', color: main, letterSpacing: -1, textTransform: 'uppercase',
+    }));
+    return els;
+  }
+
+  switch (kind) {
     case 'lcd': {
-      // App RCP readout strip: header · value · mode, all left mono
-      els.push(textEl('tag', 'Header', b.cap || '', { x: 10, y: 10, w: 80, h: 16 }, SIZE.lcd, { ...o, font: mono, weight: 'bold', color: cap, halign: 'left', valign: 'top' }));
-      els.push(textEl('label', 'Readout', b.main || '', { x: 10, y: 30, w: 80, h: 34 }, SIZE.name, { ...o, font: mono, weight: 'bold', color: main, halign: 'left', valign: 'top' }));
-      if (b.value) els.push(textEl('detail', 'Mode', b.value, { x: 10, y: 70, w: 80, h: 18 }, SIZE.detail, { ...o, font: mono, color: cap, halign: 'left', valign: 'top' }));
+      els.push(textEl('tag', 'Header', b.cap || '', { x: 10, y: 10, w: 80, h: 16 }, SIZE.lcd, { ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: 2 }));
+      els.push(textEl('label', 'Readout', b.main || '', { x: 10, y: 30, w: 80, h: 34 }, SIZE.name, { ...o, font: FONT_MONO, weight: 'bold', color: main, halign: 'left', valign: 'top', letterSpacing: 1 }));
+      if (b.value) els.push(textEl('detail', 'Mode', b.value, { x: 10, y: 70, w: 80, h: 18 }, SIZE.detail, { ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top' }));
       return els;
     }
     case 'step': case 'move': {
-      // Paint strip step: label top-left, glyph centred, live value bottom-left
       if (b.cap) els.push(capEl(b.cap));
-      els.push(textEl('label', b.kind === 'step' ? 'Step' : 'Move', b.main, { x: 8, y: b.cap ? 26 : 12, w: 84, h: b.value ? (b.cap ? 42 : 56) : 72 }, SIZE.verb, { ...o, weight: 'bold', color: main }));
+      els.push(textEl('label', kind === 'step' ? 'Step' : 'Move', b.main, { x: 8, y: b.cap ? 26 : 12, w: 84, h: b.value ? (b.cap ? 42 : 56) : 72 }, SIZE.verb, { ...o, font: FONT_SANS, weight: 'bold', color: main }));
       if (b.value) els.push(valEl(b.value));
       return els;
     }
-    case 'take':
-      els.push(textEl('label', 'Verb', b.main, { x: 8, y: 14, w: 84, h: 72 }, SIZE.name, { ...o, weight: 'bold', color: main }));
+    case 'take': {
+      // ALL STOP / destructive: idle chip + danger outline (already on chip) + HOLD tag
+      els.push(textEl('label', 'Verb', b.main, { x: 8, y: danger ? 22 : 14, w: 84, h: danger ? 44 : 72 }, SIZE.name, { ...o, font: FONT_SANS, weight: 'bold', color: main, letterSpacing: 1, textTransform: 'uppercase' }));
+      if (danger) els.push(textEl('tag', 'Hold', 'HOLD', { x: 10, y: 68, w: 80, h: 16 }, SIZE.tag, { ...o, font: FONT_MONO, weight: 'bold', color: THEME.danger, letterSpacing: 3, textTransform: 'uppercase' }));
       return els;
+    }
     case 'value': case 'exec': {
-      // Mode / cycle chip: caption top-left, large state (no busy hairline — app chips do not use one)
       if (b.cap) els.push(capEl(b.cap));
-      els.push(textEl('label', 'State', b.main, { x: 8, y: b.cap ? 28 : 12, w: 84, h: b.value ? 38 : (b.cap ? 56 : 72) }, SIZE.name, { ...o, weight: 'bold', color: main }));
+      els.push(nameEl(b.main, { x: 8, y: b.cap ? 28 : 12, w: 84, h: b.value ? 38 : (b.cap ? 56 : 72) }, SIZE.name));
       if (b.value) els.push(valEl(b.value));
+      // ON tag slot for feature toggles (feedback sets text/color; never red fill)
+      els.push(textEl('on', 'OnTag', '', { x: 62, y: 8, w: 26, h: 12 }, 12, { ...o, font: FONT_MONO, weight: 'bold', color: CLEAR, letterSpacing: 1, textTransform: 'uppercase' }));
       return els;
     }
-    default: { // cam, preset, nav — app cam-strip / preset tile hierarchy
-      if (b.cap) els.push(textEl('tag', 'Caption', b.cap, { x: 10, y: 8, w: 80, h: 16 }, SIZE.tag, { ...o, font: mono, weight: 'bold', color: cap, halign: 'left', valign: 'top' }));
-      els.push(textEl('label', 'Name', b.main, { x: 8, y: 26, w: 84, h: 42 }, SIZE.name, { ...o, weight: 'bold', color: main, halign: 'left' }));
+    default: { // cam, preset, nav
+      if (b.cap) els.push(textEl('tag', 'Caption', b.cap, { x: 10, y: 8, w: 80, h: 16 }, SIZE.tag, { ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: 2 }));
+      els.push(textEl('label', 'Name', b.main, { x: 8, y: 26, w: 84, h: 42 }, SIZE.name, { ...o, font: FONT_SANS, weight: 'bold', color: main, halign: 'left' }));
       if (b.value) els.push(valEl(b.value));
+      // Corner tally tags (empty until feedback / lit fill); redundant coding with fill + ring
+      const pgmTxt = (isPgm || b.tag === 'PGM') ? 'PGM' : '';
+      const pvwTxt = (isPvw || b.tag === 'PVW') ? 'PVW' : '';
+      els.push(textEl('pgm', 'PgmTag', pgmTxt, { x: 58, y: 8, w: 30, h: 14 }, 12, { ...o, font: FONT_MONO, weight: 'bold', color: pgmTxt ? THEME.onPgm : CLEAR, letterSpacing: 1, textTransform: 'uppercase' }));
+      els.push(textEl('pvw', 'PvwTag', pvwTxt, { x: 58, y: 8, w: 30, h: 14 }, 12, { ...o, font: FONT_MONO, weight: 'bold', color: pvwTxt ? THEME.onPvw : CLEAR, letterSpacing: 1, textTransform: 'uppercase' }));
       return els;
     }
   }
 }
-// feedback style keys: bgcolor (fills the chip), color (every text; captions at 85 %), frame (chip border), strike
+// feedback style keys: bgcolor (fills the chip), color (text), frame (selected ring), strike, onTag
 function brandOverrides(style, els) {
   const o = [];
   if (!style) return o;
   if (style.bgcolor !== undefined) {
     o.push({ elementId: 'chip', elementProperty: 'color', override: style.bgcolor });
-    // keep the void quiet; soft edge on a lit chip
-    o.push({ elementId: 'chip', elementProperty: 'borderColor', override: style.bgcolor === BRAND_RED || style.bgcolor === 0xc42020 ? withAlpha(BRAND_TEXT, 0.18) : BRAND_LINE });
+    const isPgm = style.bgcolor === THEME.pgm || style.bgcolor === 0xc42020;
+    const isArmed = style.bgcolor === THEME.armed || style.bgcolor === 0xe0a000;
+    const isPvw = style.bgcolor === THEME.pvw || style.bgcolor === 0x137a3a;
+    o.push({ elementId: 'chip', elementProperty: 'borderColor', override: isPgm || isPvw || isArmed ? withAlpha(0xffffff, 0.18) : THEME.line });
+    if (isPgm) {
+      const has = els.some((e) => e.id === 'pgm');
+      if (has) o.push({ elementId: 'pgm', elementProperty: 'text', override: 'PGM' }, { elementId: 'pgm', elementProperty: 'color', override: THEME.onPgm });
+    }
+  }
+  // Feature ON: keep panel2 fill; show ON tag + focus/outline — never red fill
+  if (style.featureOn) {
+    o.push({ elementId: 'chip', elementProperty: 'borderColor', override: THEME.focus });
+    o.push({ elementId: 'chip', elementProperty: 'borderWidth', override: 2.5 });
+    if (els.some((e) => e.id === 'on')) {
+      o.push({ elementId: 'on', elementProperty: 'text', override: 'ON' });
+      o.push({ elementId: 'on', elementProperty: 'color', override: THEME.text });
+    }
   }
   if (style.frame !== undefined) o.push({ elementId: 'frame', elementProperty: 'borderColor', override: style.frame });
   for (const e of els) {
@@ -317,13 +397,9 @@ function brandLayered(classic) {
   for (const f of classic.feedbacks || []) {
     const styleOverrides = brandOverrides(f.style, elements);
     if (!styleOverrides.length) continue;
-    const entry = { feedbackId: f.feedbackId, options: f.options || {}, styleOverrides };
-    if (f.isInverted) entry.isInverted = true;
-    feedbacks.push(entry);
+    feedbacks.push({ feedbackId: f.feedbackId, options: f.options, isInverted: f.isInverted, styleOverrides });
   }
-  const preset = { type: 'layered', name: classic.name, elements, canvas: { decoration: 'none' }, feedbacks, steps: stepsOf(classic.steps) };
-  if (classic.options && classic.options.stepAutoProgress === false) preset.options = { stepAutoProgress: false };
-  return preset;
+  return { type: 'layered', name: classic.name, canvas: { decoration: false, showStatusIcons: false }, elements, feedbacks };
 }
 // the classic fallback cannot draw a frame or strike: it keeps the colours only
 function classicFeedbacks(list) {
@@ -408,6 +484,6 @@ function variableObject(defs) {
 }
 
 module.exports = {
-  publishPresets, variableObject, brandElements, brandLayered, fontSize, outlineFor, colorAlpha, dataUrl, linesOf, roleOf, layeredOf, withAlpha,
+  publishPresets, variableObject, THEME, BRAND_BG, BRAND_PANEL, BRAND_LINE, BRAND_TEXT, BRAND_DIM, BRAND_RED, BRAND_PVW, BRAND_ARMED, brandElements, brandLayered, fontSize, outlineFor, colorAlpha, dataUrl, linesOf, roleOf, layeredOf, withAlpha,
   TEXT, FONTSIZE, OUTLINE_DARK, OUTLINE_LIGHT, NO_OUTLINE, SIZE, ACCENT, WARN,
 };

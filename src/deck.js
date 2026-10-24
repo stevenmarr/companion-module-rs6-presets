@@ -7,7 +7,15 @@
 const X = require('./sys');
 
 // ---------- brand ----------
-const BRAND = { bg: 0x121212, black: 0x000000, text: 0xf5f5f5, red: 0xc42020, grey: 0x6e6e6e, dim: 0x9a9a9a };
+const BRAND = {
+  // Dark theme tokens (08-display-themes / PVLLC style guide). Red = PGM/LIVE only.
+  bg: 0x101012, panel: 0x18181b, panel2: 0x222226, line: 0x34343a,
+  text: 0xe6e6e8, dim: 0x9a9aa2, grey: 0x6e6e6e, black: 0x000000,
+  red: 0xc42020, pgm: 0xc42020, onPgm: 0xffffff,
+  pvw: 0x137a3a, onPvw: 0xffffff,
+  armed: 0xe0a000, onArmed: 0x101012,
+  focus: 0x7fb2ff, danger: 0xc42020,
+};
 const T = (s) => `$(rs6presets:${s})`;
 const A = (actionId, options = {}) => ({ actionId, options });
 
@@ -370,32 +378,40 @@ function deckFeedbacks(inst) {
   const g = () => inst.sys; const S = g();
   const dd = (id, label, choices, extra = {}) => ({ type: 'dropdown', id, label, default: choices[0] && choices[0].id, choices, ...extra });
   const camOpt = dd('cam', 'Camera', X.camChoices(S), { allowCustom: true });
-  const RED = { bgcolor: BRAND.red, color: BRAND.text };
+  // Feature ON: outline + ON tag (graphics brandOverrides.featureOn) — never solid red.
+  const FEATURE_ON = { featureOn: true, color: BRAND.text };
+  const PGM = { bgcolor: BRAND.pgm, color: BRAND.onPgm };
+  const ARMED = { bgcolor: BRAND.armed, color: BRAND.onArmed };
   const bool = (name, defaultStyle, options, callback) => ({ type: 'boolean', name, defaultStyle, options, callback });
   return {
-    ptz_active: bool('PTZ deck: function is ON (on/off setting on, or a list setting not OFF: DRS, D.EXT …)', RED,
+    ptz_active: bool('PTZ deck: function is ON (on/off setting on, or a list setting not OFF: DRS, D.EXT …)', FEATURE_ON,
       [camOpt, dd('op', 'Setting', X.opChoices(['toggle', 'list']).concat([{ id: 'tallyRed', label: 'Red tally' }, { id: 'power', label: 'Power' }]))], (f) => isActive(g(), inst.ptzCats, f.options.cam, f.options.op)),
-    deck_live_guarded: bool('PTZ deck: camera is live and the recall guard is on', { color: BRAND.red }, [camOpt], (f) => { const c = X.camOf(g(), f.options.cam); return !!(c && c.tally) && guardOf(g()).mode !== 'off'; }),
-    deck_arming: bool('PTZ deck: this preset key is being held to recall', RED, [camOpt, { type: 'number', id: 'preset', label: 'Preset', default: 1, min: 1, max: 100 }], (f) => inst.deck.isArming(f.options.cam, f.options.preset)),
-    deck_guard_is: bool('PTZ deck: live recall guard is', RED, [dd('mode', 'Mode', [{ id: 'hold', label: 'HOLD' }, { id: 'lock', label: 'LOCK' }, { id: 'off', label: 'OFF' }, { id: 'on', label: 'HOLD or LOCK' }])], (f) => { const m = guardOf(g()).mode; return f.options.mode === 'on' ? m !== 'off' : m === f.options.mode; }),
-    deck_fine: bool('PTZ deck: dial is in COARSE', { color: BRAND.red }, [dd('dial', 'Dial', DIAL_IDS.map((k) => ({ id: k, label: DIALS[k].long })))], (f) => inst.deck.fine[f.options.dial] === false),
+    deck_live_guarded: bool('PTZ deck: camera is live and the recall guard is on', { frame: BRAND.armed }, [camOpt], (f) => { const c = X.camOf(g(), f.options.cam); return !!(c && c.tally) && guardOf(g()).mode !== 'off'; }),
+    deck_arming: bool('PTZ deck: this preset key is being held to recall', ARMED, [camOpt, { type: 'number', id: 'preset', label: 'Preset', default: 1, min: 1, max: 100 }], (f) => inst.deck.isArming(f.options.cam, f.options.preset)),
+    deck_guard_is: bool('PTZ deck: live recall guard is', FEATURE_ON, [dd('mode', 'Mode', [{ id: 'hold', label: 'HOLD' }, { id: 'lock', label: 'LOCK' }, { id: 'off', label: 'OFF' }, { id: 'on', label: 'HOLD or LOCK' }])], (f) => { const m = guardOf(g()).mode; return f.options.mode === 'on' ? m !== 'off' : m === f.options.mode; }),
+    deck_fine: bool('PTZ deck: dial is in COARSE', { color: BRAND.focus }, [dd('dial', 'Dial', DIAL_IDS.map((k) => ({ id: k, label: DIALS[k].long })))], (f) => inst.deck.fine[f.options.dial] === false),
   };
 }
 
 // ---------- presets (brand) ----------
 // classic.brand drives graphics.js (brandLayered): kind, cap, main, value; feedback styles may carry frame / strike
-const SEL_FRAME = { frame: BRAND.text };
+const SEL_FRAME = { frame: 0xffffff }; // thick white selected ring
 const OFFLINE = { color: BRAND.grey, strike: true };
+const PGM_FILL = { bgcolor: BRAND.pgm, color: BRAND.onPgm };
+const FEATURE_ON = { featureOn: true, color: BRAND.text };
+const ARMED_FILL = { bgcolor: BRAND.armed, color: BRAND.onArmed };
 function key(category, name, brand, down, up = [], feedbacks = [], extra = {}) {
   const text = [brand.cap, brand.main, brand.value].filter((x) => x !== undefined && x !== null && x !== '').join('\\n');
   return { type: 'button', category, name, brand, style: { text, size: 'auto', color: BRAND.text, bgcolor: BRAND.bg }, steps: [{ down, up }], feedbacks, ...extra };
 }
 const fb = (feedbackId, options, style) => ({ feedbackId, options, style });
-const camFbs = (cam) => [fb('ptz_tally', { cam, color: 'red' }, { bgcolor: BRAND.red, color: BRAND.text }), fb('ptz_selected', { cam }, SEL_FRAME), fb('ptz_online', { cam, invert: true }, OFFLINE)];
+const camFbs = (cam) => [fb('ptz_tally', { cam, color: 'red' }, PGM_FILL), fb('ptz_selected', { cam }, SEL_FRAME), fb('ptz_online', { cam, invert: true }, OFFLINE)];
 
 function presets(S) {
   const out = {}; if (!X.ptz(S)) return out;
   const sel = 'selected'; const P = 'ptz_sel';
+  // Systems HOME: T-Bar mark (flat --text) on panel2. App page sets wire the press to systems home.
+  out.deck_nav_home = key('PTZ deck: nav', 'HOME — systems / surface home (T-Bar)', { kind: 'home', main: 'HOME' }, []);
   // camera select row
   X.cams(S).forEach((c, i) => {
     const id = X.safeId(c.id); const p = `ptz_${id}`;
@@ -405,7 +421,7 @@ function presets(S) {
       out[`deck_${id}_preset_${n}`] = key(`PTZ deck: ${c.name} presets`, `${c.name} preset ${n} (guarded)`,
         { kind: 'preset', cap: `${c.name.length <= 8 ? c.name.toUpperCase() : `CAM ${i + 1}`} · ${n}`, main: T(`${p}_preset_${n}_name`), value: T(`${p}_recall_hint`) },
         [A('deck_recall', { cam: c.id, preset: n, phase: 'down' })], [A('deck_recall', { cam: c.id, preset: n, phase: 'up' })],
-        [fb('deck_live_guarded', { cam: c.id }, { frame: BRAND.red }), fb('ptz_last_preset', { cam: c.id, preset: n }, SEL_FRAME), fb('deck_arming', { cam: c.id, preset: n }, { bgcolor: BRAND.red, color: BRAND.text })], { role: 'source' });
+        [fb('deck_live_guarded', { cam: c.id }, { frame: BRAND.armed }), fb('ptz_last_preset', { cam: c.id, preset: n }, SEL_FRAME), fb('deck_arming', { cam: c.id, preset: n }, ARMED_FILL)], { role: 'source' });
     }
   });
   out.deck_cam_next = key('PTZ deck: cameras', 'Next camera', { kind: 'nav', cap: 'CAMERA', main: 'NEXT ▸', value: T('ptz_selected_name') }, [A('deck_select_next', { dir: 'next' })]);
@@ -416,7 +432,7 @@ function presets(S) {
     out[`deck_sel_preset_${n}`] = key('PTZ deck: selected camera presets', `Selected camera preset ${n} (guarded)`,
       { kind: 'preset', cap: `PRESET ${n}`, main: T(`${P}_preset_${n}_name`), value: T(`${P}_recall_hint`) },
       [A('deck_recall', { cam: sel, preset: n, phase: 'down' })], [A('deck_recall', { cam: sel, preset: n, phase: 'up' })],
-      [fb('deck_live_guarded', { cam: sel }, { frame: BRAND.red }), fb('ptz_last_preset', { cam: sel, preset: n }, SEL_FRAME), fb('deck_arming', { cam: sel, preset: n }, { bgcolor: BRAND.red, color: BRAND.text })], { role: 'source' });
+      [fb('deck_live_guarded', { cam: sel }, { frame: BRAND.armed }), fb('ptz_last_preset', { cam: sel, preset: n }, SEL_FRAME), fb('deck_arming', { cam: sel, preset: n }, ARMED_FILL)], { role: 'source' });
   }
   // paint: -/+ pairs
   for (const [k, [op, long, short, v]] of Object.entries(PAINT_PAIRS)) {
@@ -429,20 +445,20 @@ function presets(S) {
   for (const [k, [op, long, short, v]] of Object.entries(PAINT_CYCLES)) {
     out[`deck_${k}`] = key('PTZ deck: paint', `${long.toLowerCase()}: next (selected camera)`, { kind: 'value', cap: pick(long, short, 15, 1), main: T(`${P}_${v}`) }, [A('deck_cycle', { cam: sel, op, values: '' })]);
   }
-  out.deck_iris_auto = key('PTZ deck: paint', 'Auto iris on/off (selected camera)', { kind: 'value', cap: 'IRIS', main: T(`${P}_iris_mode`) }, [A('ptz_toggle', { cam: sel, op: 'irisMode', mode: 'toggle' })], [], [fb('ptz_active', { cam: sel, op: 'irisMode' }, { bgcolor: BRAND.red, color: BRAND.text })]);
-  out.deck_detail_on = key('PTZ deck: paint', 'Detail on/off (selected camera)', { kind: 'value', cap: 'DETAIL', main: T(`${P}_detail`) }, [A('ptz_toggle', { cam: sel, op: 'detail', mode: 'toggle' })], [], [fb('ptz_active', { cam: sel, op: 'detail' }, { bgcolor: BRAND.red, color: BRAND.text })]);
+  out.deck_iris_auto = key('PTZ deck: paint', 'Auto iris on/off (selected camera)', { kind: 'value', cap: 'IRIS', main: T(`${P}_iris_mode`) }, [A('ptz_toggle', { cam: sel, op: 'irisMode', mode: 'toggle' })], [], [fb('ptz_active', { cam: sel, op: 'irisMode' }, FEATURE_ON)]);
+  out.deck_detail_on = key('PTZ deck: paint', 'Detail on/off (selected camera)', { kind: 'value', cap: 'DETAIL', main: T(`${P}_detail`) }, [A('ptz_toggle', { cam: sel, op: 'detail', mode: 'toggle' })], [], [fb('ptz_active', { cam: sel, op: 'detail' }, FEATURE_ON)]);
   out.deck_awb = key('PTZ deck: paint', 'AWB execute (selected camera)', { kind: 'exec', cap: 'WHITE BAL', main: 'AWB', value: T(`${P}_wb`) }, [A('ptz_exec', { cam: sel, op: 'awb' })]);
   out.deck_abb = key('PTZ deck: paint', 'ABB execute (selected camera)', { kind: 'exec', cap: 'BLACK BAL', main: 'ABB' }, [A('ptz_exec', { cam: sel, op: 'abb' })]);
   // functions
   for (const [k, [op, long, short, kind]] of Object.entries(FUNCS)) {
     const cap = pick(long, short, 15, 1); const v = { tallyRed: 'tally', power: 'power', focusMode: 'focus_mode', irisMode: 'iris_mode', ois: 'ois', colorBars: 'bars', dExtender: 'dext', freezePreset: 'freeze', presetSpeed: 'preset_speed', drs: 'drs', dayNight: 'night' }[op];
     const down = kind === 'exec' ? [A('ptz_exec', { cam: sel, op })] : kind === 'speed' ? [A('deck_cycle', { cam: sel, op, values: PRESET_SPEEDS.join(',') })] : [A('deck_cycle', { cam: sel, op, values: '' })];
-    const fbs = kind === 'exec' || kind === 'speed' ? [] : [fb('ptz_active', { cam: sel, op }, { bgcolor: BRAND.red, color: BRAND.text })];
-    out[`deck_fn_${k}`] = key('PTZ deck: functions', `${long.toLowerCase()} (selected camera${kind === 'exec' ? '' : ', red = ON'})`,
+    const fbs = kind === 'exec' || kind === 'speed' ? [] : [fb('ptz_active', { cam: sel, op }, FEATURE_ON)];
+    out[`deck_fn_${k}`] = key('PTZ deck: functions', `${long.toLowerCase()} (selected camera${kind === 'exec' ? '' : ', ON = outline + tag'})`,
       kind === 'exec' ? { kind: 'exec', cap: 'FOCUS', main: 'PUSH AF' } : { kind: 'value', cap, main: T(`${P}_${v}`) }, down, [], fbs);
   }
   out.deck_guard = key('PTZ deck: functions', 'Live recall guard: OFF → HOLD → LOCK (app setting, every deck)', { kind: 'value', cap: 'LIVE GUARD', main: T('deck_guard') }, [A('deck_guard', { mode: 'cycle' })], [],
-    [fb('deck_guard_is', { mode: 'on' }, { bgcolor: BRAND.red, color: BRAND.text })]);
+    [fb('deck_guard_is', { mode: 'on' }, FEATURE_ON)]);
   out.deck_msg = key('PTZ deck: functions', 'Deck message (HOLD TO RECALL, LOCKED …)', { kind: 'lcd', cap: 'DECK', main: T('deck_msg') }, []);
   // move: ramped holds, home, all stop
   for (const [d, g] of Object.entries({ up: '▲', down: '▼', left: '◀', right: '▶', upLeft: '◤', upRight: '◥', downLeft: '◣', downRight: '◢' })) {
@@ -453,7 +469,7 @@ function presets(S) {
     out[`deck_${d}`] = key('PTZ deck: move', `${cap.toLowerCase()} ${d} while held (ramps)`, { kind: 'move', cap, main, value: T(`${P}_${axis}`) }, [A('deck_ramp', { cam: sel, axis, dir: d, phase: 'down' })], [A('deck_ramp', { cam: sel, axis, dir: d, phase: 'up' })], [], { role: 'motion' });
   }
   out.deck_home = key('PTZ deck: move', 'Camera home (selected camera)', { kind: 'exec', cap: 'CAMERA', main: 'HOME' }, [A('ptz_exec', { cam: sel, op: 'home' })]);
-  out.deck_stop_all = key('PTZ deck: move', 'ALL STOP (every camera)', { kind: 'take', main: 'ALL STOP', bg: BRAND.red }, [A('ptz_stop_all')]);
+  out.deck_stop_all = key('PTZ deck: move', 'ALL STOP (every camera) — hold; red outline, not PGM fill', { kind: 'take', main: 'ALL STOP', danger: true }, [A('ptz_stop_all')]);
   // dials and their strip cells (paired bias dials show the active axis label + value)
   for (const k of DIAL_IDS) {
     const dl = DIALS[k];
@@ -470,12 +486,12 @@ function presets(S) {
     }
     const stepLine = dl.axes ? `${T(`deck_${k}_axis`)} ${T(`deck_${k}_fine`)}` : T(`deck_${k}_fine`);
     out[`deck_dial_${k}`] = {
-      ...key('PTZ deck: dials (Stream Deck + / + XL)', `${dl.long.toLowerCase()} dial (${pushHint})`, { kind: 'lcd', cap, main: val, value: stepLine }, [A('deck_fine', { dial: k, mode: 'toggle' })], [], [fb('deck_fine', { dial: k }, { color: BRAND.red })]),
+      ...key('PTZ deck: dials (Stream Deck + / + XL)', `${dl.long.toLowerCase()} dial (${pushHint})`, { kind: 'lcd', cap, main: val, value: stepLine }, [A('deck_fine', { dial: k, mode: 'toggle' })], [], [fb('deck_fine', { dial: k }, { color: BRAND.focus })]),
       options: { rotaryActions: true },
     };
     out[`deck_dial_${k}`].steps[0].rotate_left = [A('deck_dial', { cam: sel, dial: k, delta: '$(this:delta)', fallback: -1 })];
     out[`deck_dial_${k}`].steps[0].rotate_right = [A('deck_dial', { cam: sel, dial: k, delta: '$(this:delta)', fallback: 1 })];
-    out[`deck_strip_${k}`] = key('PTZ deck: dials (Stream Deck + / + XL)', `${dl.long.toLowerCase()} strip (tap: ${dl.tapLabel.toLowerCase()})`, { kind: 'lcd', cap, main: val, value: `${stepLine} · ${dl.tapLabel}` }, dl.tap(sel), [], [fb('deck_fine', { dial: k }, { color: BRAND.red })]);
+    out[`deck_strip_${k}`] = key('PTZ deck: dials (Stream Deck + / + XL)', `${dl.long.toLowerCase()} strip (tap: ${dl.tapLabel.toLowerCase()})`, { kind: 'lcd', cap, main: val, value: `${stepLine} · ${dl.tapLabel}` }, dl.tap(sel), [], [fb('deck_fine', { dial: k }, { color: BRAND.focus })]);
   }
   return out;
 }
