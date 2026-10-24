@@ -233,58 +233,75 @@ function overridesOf(style, els, role) {
 
 
 // ---------- 0.9.0 brand keys (src/deck.js: classic.brand) ----------
-// Black / #121212 keys, #F5F5F5 text, red #C42020 as the only accent (tally / ON). Selected = a white frame,
-// offline = grey strikethrough. companion-mono captions and values, companion-sans names, the house sizes.
-const BRAND_BG = 0x121212; const BRAND_TEXT = 0xf5f5f5; const CLEAR = 0xff000000;
+// Visual language mirrors Control Center PTZ RCP panels (quiet dark void, inset chip/tile, paint-strip
+// readouts). Colours: void/panel #121212 / #161C23, text #F5F5F5, tally/ON red #C42020 only.
+// Selected = white frame on the chip. Offline = grey strikethrough. companion-mono captions/values,
+// companion-sans names. Fork fonts only (no Montserrat). cornerRadius/borderWidth are UI percents
+// (ConvertGraphicsElements scales by 0.01).
+const BRAND_BG = 0x121212; // key void (matches app --bg / panel stack)
+const BRAND_PANEL = 0x161c23; // inset chip fill (app --rcp2)
+const BRAND_LINE = 0x2a313b; // chip edge (app --line)
+const BRAND_TEXT = 0xf5f5f5; const BRAND_RED = 0xc42020; const CLEAR = 0xff000000;
+const CHIP_RADIUS = 18; // ~app 10px radius on a 72px key
+const CHIP = { x: 4, y: 4, w: 92, h: 92 }; // inset so the void reads around the tile
 function brandElements(b, style) {
-  const bg = b.bg !== undefined ? b.bg : (style && style.bgcolor !== undefined ? style.bgcolor : BRAND_BG);
-  const main = BRAND_TEXT; const cap = withAlpha(BRAND_TEXT, 0.72); const mono = 'companion-mono';
+  // Lit / danger keys (ALL STOP, ON): the chip fills red; the void stays quiet dark.
+  const lit = b.bg !== undefined ? b.bg : (style && style.bgcolor !== undefined && style.bgcolor !== BRAND_BG ? style.bgcolor : undefined);
+  const chipFill = lit !== undefined ? lit : BRAND_PANEL;
+  const voidFill = BRAND_BG;
+  const main = BRAND_TEXT; const cap = withAlpha(BRAND_TEXT, 0.62); const mono = 'companion-mono';
   const els = [
-    { id: 'bg', type: 'box', name: 'Background', x: 0, y: 0, width: 100, height: 100, color: bg, cornerRadius: 0 },
-    { id: 'frame', type: 'box', name: 'Frame', x: 0, y: 0, width: 100, height: 100, color: CLEAR, cornerRadius: 0, borderWidth: 7, borderColor: CLEAR, borderPosition: 'inside' },
+    { id: 'bg', type: 'box', name: 'Void', x: 0, y: 0, width: 100, height: 100, color: voidFill, cornerRadius: 0 },
+    { id: 'chip', type: 'box', name: 'Chip', x: CHIP.x, y: CHIP.y, width: CHIP.w, height: CHIP.h, color: chipFill, cornerRadius: CHIP_RADIUS,
+      borderWidth: 1.2, borderColor: lit !== undefined ? withAlpha(BRAND_TEXT, 0.18) : BRAND_LINE, borderPosition: 'inside' },
+    { id: 'frame', type: 'box', name: 'Frame', x: CHIP.x, y: CHIP.y, width: CHIP.w, height: CHIP.h, color: CLEAR, cornerRadius: CHIP_RADIUS, borderWidth: 6, borderColor: CLEAR, borderPosition: 'inside' },
   ];
   const o = { outline: NO_OUTLINE };
-  const capEl = (t, y = 10) => textEl('tag', 'Caption', t, { x: 8, y, w: 84, h: 17 }, SIZE.tag, { ...o, font: mono, weight: 'bold', color: cap });
-  const valEl = (t) => textEl('detail', 'Value', t, { x: 7, y: 71, w: 86, h: 19 }, SIZE.detail, { ...o, font: mono, weight: 'bold', color: cap });
+  // Paint-strip caption: left, dim mono (app .rcp-read small / .pc-t)
+  const capEl = (t, y = 8) => textEl('tag', 'Caption', t, { x: 10, y, w: 80, h: 16 }, SIZE.tag, { ...o, font: mono, weight: 'bold', color: cap, halign: 'left', valign: 'top' });
+  const valEl = (t) => textEl('detail', 'Value', t, { x: 10, y: 72, w: 80, h: 18 }, SIZE.detail, { ...o, font: mono, weight: 'bold', color: withAlpha(BRAND_TEXT, 0.82), halign: 'left' });
   switch (b.kind) {
     case 'lcd': {
-      els.push(textEl('tag', 'Header', b.cap || '', { x: 9, y: 10, w: 82, h: 20 }, SIZE.lcd, { ...o, font: mono, weight: 'bold', styles: ['underline'], color: main, halign: 'left', valign: 'top' }));
-      els.push(textEl('label', 'Readout', b.main || '', { x: 9, y: 34, w: 82, h: 30 }, SIZE.lcd, { ...o, font: mono, weight: 'bold', color: main, halign: 'left', valign: 'top' }));
-      if (b.value) els.push(textEl('detail', 'Mode', b.value, { x: 9, y: 70, w: 82, h: 20 }, SIZE.detail, { ...o, font: mono, color: cap, halign: 'left', valign: 'top' }));
+      // App RCP readout strip: header · value · mode, all left mono
+      els.push(textEl('tag', 'Header', b.cap || '', { x: 10, y: 10, w: 80, h: 16 }, SIZE.lcd, { ...o, font: mono, weight: 'bold', color: cap, halign: 'left', valign: 'top' }));
+      els.push(textEl('label', 'Readout', b.main || '', { x: 10, y: 30, w: 80, h: 34 }, SIZE.name, { ...o, font: mono, weight: 'bold', color: main, halign: 'left', valign: 'top' }));
+      if (b.value) els.push(textEl('detail', 'Mode', b.value, { x: 10, y: 70, w: 80, h: 18 }, SIZE.detail, { ...o, font: mono, color: cap, halign: 'left', valign: 'top' }));
       return els;
     }
     case 'step': case 'move': {
+      // Paint strip step: label top-left, glyph centred, live value bottom-left
       if (b.cap) els.push(capEl(b.cap));
-      els.push(textEl('label', b.kind === 'step' ? 'Step' : 'Move', b.main, { x: 5, y: b.cap ? 26 : 12, w: 90, h: b.value ? (b.cap ? 44 : 58) : 76 }, SIZE.verb, { ...o, weight: 'bold', color: main }));
+      els.push(textEl('label', b.kind === 'step' ? 'Step' : 'Move', b.main, { x: 8, y: b.cap ? 26 : 12, w: 84, h: b.value ? (b.cap ? 42 : 56) : 72 }, SIZE.verb, { ...o, weight: 'bold', color: main }));
       if (b.value) els.push(valEl(b.value));
       return els;
     }
     case 'take':
-      els.push(textEl('label', 'Verb', b.main, { x: 5, y: 12, w: 90, h: 76 }, SIZE.name, { ...o, weight: 'bold', color: main }));
+      els.push(textEl('label', 'Verb', b.main, { x: 8, y: 14, w: 84, h: 72 }, SIZE.name, { ...o, weight: 'bold', color: main }));
       return els;
     case 'value': case 'exec': {
-      // caption over a hairline, the state / verb below it
-      if (b.cap) {
-        els.push(capEl(b.cap));
-        els.push({ id: 'rule', type: 'line', name: 'Rule', fromX: 22, fromY: 30, toX: 78, toY: 30, borderWidth: 1.5, borderColor: withAlpha(BRAND_TEXT, 0.4), borderPosition: 'center' });
-      }
-      els.push(textEl('label', 'State', b.main, { x: 6, y: b.cap ? 33 : 12, w: 88, h: b.value ? 36 : (b.cap ? 55 : 76) }, SIZE.name, { ...o, weight: 'bold', color: main }));
+      // Mode / cycle chip: caption top-left, large state (no busy hairline — app chips do not use one)
+      if (b.cap) els.push(capEl(b.cap));
+      els.push(textEl('label', 'State', b.main, { x: 8, y: b.cap ? 28 : 12, w: 84, h: b.value ? 38 : (b.cap ? 56 : 72) }, SIZE.name, { ...o, weight: 'bold', color: main }));
       if (b.value) els.push(valEl(b.value));
       return els;
     }
-    default: { // cam, preset, nav: caption top left, the name, the state under it
-      if (b.cap) els.push(textEl('tag', 'Caption', b.cap, { x: 9, y: 9, w: 82, h: 17 }, SIZE.tag, { ...o, font: mono, weight: 'bold', color: cap, halign: 'left' }));
-      els.push(textEl('label', 'Name', b.main, { x: 6, y: 27, w: 88, h: 44 }, SIZE.name, { ...o, weight: 'bold', color: main }));
+    default: { // cam, preset, nav — app cam-strip / preset tile hierarchy
+      if (b.cap) els.push(textEl('tag', 'Caption', b.cap, { x: 10, y: 8, w: 80, h: 16 }, SIZE.tag, { ...o, font: mono, weight: 'bold', color: cap, halign: 'left', valign: 'top' }));
+      els.push(textEl('label', 'Name', b.main, { x: 8, y: 26, w: 84, h: 42 }, SIZE.name, { ...o, weight: 'bold', color: main, halign: 'left' }));
       if (b.value) els.push(valEl(b.value));
       return els;
     }
   }
 }
-// feedback style keys: bgcolor, color (every text; captions at 85 %), frame (border colour), strike (main text)
+// feedback style keys: bgcolor (fills the chip), color (every text; captions at 85 %), frame (chip border), strike
 function brandOverrides(style, els) {
   const o = [];
   if (!style) return o;
-  if (style.bgcolor !== undefined) o.push({ elementId: 'bg', elementProperty: 'color', override: style.bgcolor });
+  if (style.bgcolor !== undefined) {
+    o.push({ elementId: 'chip', elementProperty: 'color', override: style.bgcolor });
+    // keep the void quiet; soft edge on a lit chip
+    o.push({ elementId: 'chip', elementProperty: 'borderColor', override: style.bgcolor === BRAND_RED || style.bgcolor === 0xc42020 ? withAlpha(BRAND_TEXT, 0.18) : BRAND_LINE });
+  }
   if (style.frame !== undefined) o.push({ elementId: 'frame', elementProperty: 'borderColor', override: style.frame });
   for (const e of els) {
     if (e.type !== 'text') continue;

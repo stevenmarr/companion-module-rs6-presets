@@ -22,7 +22,7 @@ function published() {
 const KNOWN = {
   text: ['id', 'type', 'name', 'x', 'y', 'width', 'height', 'text', 'fontsize', 'fontsizeAllowShrink', 'font', 'weight', 'styles', 'color', 'outlineColor', 'halign', 'valign'],
   line: ['id', 'type', 'name', 'fromX', 'fromY', 'toX', 'toY', 'borderWidth', 'borderColor', 'borderPosition'],
-  box: ['id', 'type', 'name', 'x', 'y', 'width', 'height', 'color', 'cornerRadius'],
+  box: ['id', 'type', 'name', 'x', 'y', 'width', 'height', 'color', 'cornerRadius', 'borderWidth', 'borderColor', 'borderPosition'],
   image: ['id', 'type', 'name', 'x', 'y', 'width', 'height', 'base64Image', 'fillMode', 'halign', 'valign'],
 };
 function sizeKind(role, id) {
@@ -50,6 +50,13 @@ test('0.8.1 text styling: one element per line, one size per line kind, only pro
     const role = G.roleOf(id, all[id]); roles.add(role);
     assert.equal(layer.canvas.decoration, 'none', id);
     assert.equal(layer.elements[0].id, 'bg', id);
+    // 0.9.0 PTZ deck brand keys use void+chip+frame (no family art). Other keys keep the art layer.
+    if (all[id].brand) {
+      assert.equal(layer.elements.find((e) => e.id === 'chip').type, 'box', id);
+      assert.equal(layer.elements.find((e) => e.id === 'frame').type, 'box', id);
+      for (const e of layer.elements) for (const k of Object.keys(e)) assert.ok(KNOWN[e.type].includes(k), `${id} ${e.type}.${k}`);
+      continue;
+    }
     assert.equal(layer.elements[1].id, 'art', id);
     assert.match(layer.elements[1].base64Image, /^data:image\/png;base64,/, id);
     for (const e of layer.elements) for (const k of Object.keys(e)) assert.ok(KNOWN[e.type].includes(k), `${id} ${e.type}.${k}`);

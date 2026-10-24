@@ -85,23 +85,37 @@ test('0.9.0 deck presets: cameras, guarded presets, paint ±, functions, dials, 
   assert.equal(P.deck_stop_all.brand.bg, 0xc42020);
 });
 
-test('0.9.0 brand layered: black/#121212 keys, white frame for selected, red accent', () => {
+test('0.9.0 brand layered: quiet void, inset chip tile, white frame for selected, red chip on tally/ON', () => {
   const S = fixture();
   const P = X.buttonPresets(S);
   const pub = G.publishPresets({ cam: P.deck_cam_cam1, iris: P.deck_iris_up, fn: P.deck_fn_tally, stop: P.deck_stop_all });
   const cam = pub.presets.cam.variants[0];
   assert.equal(cam.type, 'layered');
-  assert.equal(cam.elements.find((e) => e.id === 'bg').color, 0x121212);
-  assert.equal(cam.elements.find((e) => e.id === 'frame').borderWidth, 7);
+  assert.equal(cam.elements.find((e) => e.id === 'bg').color, 0x121212); // void
+  const chip = cam.elements.find((e) => e.id === 'chip');
+  assert.ok(chip, 'inset chip tile');
+  assert.equal(chip.color, 0x161c23); // app --rcp2 panel
+  assert.ok(chip.cornerRadius > 0, 'rounded chip like app tiles');
+  assert.equal(cam.elements.find((e) => e.id === 'frame').borderWidth, 6);
   const sel = cam.feedbacks.find((f) => f.feedbackId === 'ptz_selected');
   assert.ok(sel.styleOverrides.some((o) => o.elementId === 'frame' && o.elementProperty === 'borderColor' && o.override === 0xf5f5f5));
   const tally = cam.feedbacks.find((f) => f.feedbackId === 'ptz_tally');
-  assert.ok(tally.styleOverrides.some((o) => o.elementId === 'bg' && o.override === 0xc42020));
-  assert.equal(pub.presets.stop.variants[0].elements.find((e) => e.id === 'bg').color, 0xc42020);
-  // house sizes: caption at SIZE.tag (15), name at SIZE.name (21)
+  assert.ok(tally.styleOverrides.some((o) => o.elementId === 'chip' && o.override === 0xc42020), 'tally fills the chip, not the void');
+  // ALL STOP: chip is red at rest; void stays quiet
+  const stop = pub.presets.stop.variants[0];
+  assert.equal(stop.elements.find((e) => e.id === 'bg').color, 0x121212);
+  assert.equal(stop.elements.find((e) => e.id === 'chip').color, 0xc42020);
+  // paint-strip caption: left mono
   const tag = cam.elements.find((e) => e.id === 'tag');
   assert.equal(tag.font, 'companion-mono');
   assert.equal(tag.weight, 'bold');
+  assert.equal(tag.halign, 'left');
+  // step key: caption left, value bottom-left (app paint strip)
+  const iris = pub.presets.iris.variants[0];
+  assert.equal(iris.elements.find((e) => e.id === 'tag').halign, 'left');
+  assert.equal(iris.elements.find((e) => e.id === 'detail').halign, 'left');
+  // no busy hairline on value/mode chips
+  assert.equal(iris.elements.find((e) => e.id === 'rule'), undefined);
 });
 
 test('0.9.0 deck actions and feedbacks are registered', () => {
