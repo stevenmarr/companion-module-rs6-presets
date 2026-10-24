@@ -61,7 +61,7 @@ test('0.9.0 deck presets: cameras, guarded presets, paint ±, functions, dials, 
     'deck_fn_tally', 'deck_fn_power', 'deck_fn_af', 'deck_fn_otaf', 'deck_fn_ois', 'deck_fn_bars', 'deck_fn_dext',
     'deck_fn_freeze', 'deck_fn_pspeed', 'deck_fn_autoiris', 'deck_fn_drs', 'deck_fn_night', 'deck_guard',
     'deck_move_up', 'deck_tele', 'deck_home', 'deck_stop_all',
-    'deck_dial_iris', 'deck_strip_iris', 'deck_dial_mped', 'deck_dial_rgain', 'deck_dial_zoom', 'deck_dial_focus',
+    'deck_dial_iris', 'deck_strip_iris', 'deck_dial_mped', 'deck_dial_gain_rb', 'deck_dial_ped_rb', 'deck_dial_zoom', 'deck_dial_focus',
   ];
   for (const id of need) assert.ok(P[id], id);
   // guarded recall on DOWN / UP
@@ -178,15 +178,59 @@ test('0.9.0 dial fine/coarse and guard cycle', async () => {
   assert.equal(S.views.ptz.liveGuard.mode, 'off');
 });
 
+test('0.9.0 multi-step R/B gain dial: push cycles axis × fine/coarse', async () => {
+  const S = fixture();
+  S.views.ptz.cameras[0].values = { rGain: 10, bGain: -4 };
+  const { inst, sent, vars } = fakeInst(S);
+  inst.ptzCats.cam1 = { ops: [
+    { id: 'rGain', type: 'range', range: { min: -200, max: 200, step: 1, centre: 0 } },
+    { id: 'bGain', type: 'range', range: { min: -200, max: 200, step: 1, centre: 0 } },
+  ] };
+  assert.equal(inst.deck.vars().deck_gain_rb_axis, 'R');
+  assert.equal(inst.deck.vars().deck_gain_rb_fine, 'FINE');
+  await inst.deck.dial('cam1', 'gain_rb', 1);
+  assert.equal(sent[0][1].op, 'rGain');
+  assert.equal(sent[0][1].value, 11);
+  inst.deck.setFine('gain_rb', 'toggle'); // R·COARSE
+  assert.equal(vars.deck_gain_rb_axis, 'R');
+  assert.equal(vars.deck_gain_rb_fine, 'COARSE');
+  await inst.deck.dial('cam1', 'gain_rb', 1);
+  assert.equal(sent[1][1].op, 'rGain');
+  assert.equal(sent[1][1].value, 16);
+  inst.deck.setFine('gain_rb', 'toggle'); // B·FINE
+  assert.equal(vars.deck_gain_rb_axis, 'B');
+  assert.equal(vars.deck_gain_rb_fine, 'FINE');
+  await inst.deck.dial('cam1', 'gain_rb', 1);
+  assert.equal(sent[2][1].op, 'bGain');
+  assert.equal(sent[2][1].value, -3);
+  const P = require('../src/sys').buttonPresets(S);
+  assert.ok(P.deck_dial_gain_rb);
+  assert.equal(P.deck_dial_gain_rb.steps[0].down[0].actionId, 'deck_fine');
+  assert.match(P.deck_dial_gain_rb.brand.main, /deck_gain_rb_readout/);
+  assert.match(P.deck_dial_gain_rb.brand.value, /deck_gain_rb_axis/);
+});
+
 test('0.9.0 variables cover paint and function values for the selected camera', () => {
   const S = fixture();
   S.views.ptz.liveGuard = { mode: 'hold', holdMs: 600 };
   S.views.ptz.cameras[0].tally = true;
-  S.views.ptz.cameras[0].values = { rGain: 10, drs: '2', dayNight: true, freezePreset: false, ois: true, dExtender: '1', presetSpeed: '999' };
+  S.views.ptz.cameras[0].values = { rGain: 10, bGain: -4, gamma: 45, chromaLevel: 12, kneePoint: 85, drs: '2', dayNight: true, freezePreset: false, ois: true, dExtender: '1', presetSpeed: '999' };
   S.views.ptz.selected = 'cam1';
-  const v = X.variableValues(S, {});
+  const cats = { cam1: { ops: [
+    { id: 'rGain', type: 'range', range: { min: -200, max: 200, step: 1 } },
+    { id: 'bGain', type: 'range', range: { min: -200, max: 200, step: 1 } },
+    { id: 'gamma', type: 'range', range: { min: 0, max: 100, step: 1 } },
+    { id: 'chromaLevel', type: 'range', range: { min: -100, max: 100, step: 1 } },
+    { id: 'kneePoint', type: 'range', range: { min: 0, max: 100, step: 0.01 } },
+    { id: 'drs', type: 'list', options: [['0', 'OFF'], ['1', 'LOW'], ['2', 'MID'], ['3', 'HIGH']] },
+  ] } };
+  const v = X.variableValues(S, cats);
   assert.equal(v.deck_guard, 'HOLD');
-  assert.equal(v.ptz_sel_r_gain, '10');
+  assert.equal(v.ptz_sel_r_gain, '+10');
+  assert.equal(v.ptz_sel_b_gain, '-4');
+  assert.equal(v.ptz_sel_gamma, '0.45');
+  assert.equal(v.ptz_sel_chroma, '+12%');
+  assert.equal(v.ptz_sel_knee, '85.00%');
   assert.equal(v.ptz_sel_drs, 'MID'); // from generated ops options when no cam catalog... may be empty without cat
   assert.equal(v.ptz_cam1_recall_hint, 'HOLD');
   assert.equal(v.ptz_cam1_deck_state, 'LIVE · SEL');

@@ -1,7 +1,7 @@
 'use strict';
 // 0.9.0: the Stream Deck as the primary live camera surface (design: research note 10-streamdeck-ptz.md).
 // Brand-styled keys for the LIVE / PAINT / FUNCTIONS / MOVE pages the app generates (lib/companion in the app,
-// branch ptz-pages), the deck actions (guarded recall, hold-to-repeat, ramped hold, fine / coarse dials, cycles)
+// branch ptz-pages), the deck actions (guarded recall, hold-to-repeat, ramped hold, fine / coarse and multi-step R/B dials, cycles)
 // and their feedbacks and variables. Everything acts on the SELECTED camera unless a preset names one, and every
 // command goes through the app's HTTP API (needs app 0.12.0: features ptzLiveGuard + ptzDeckFunctions).
 const X = require('./sys');
@@ -38,18 +38,32 @@ const OFF_VALUES = { drs: ['0'], dExtender: ['0'], ndFilter: ['0'], kneeMode: ['
 const PRESET_SPEEDS = ['250', '500', '999']; // SLOW (speed 10) · MID (20) · FAST (30)
 const SPEED_NAMES = { 250: 'SLOW 10', 500: 'MID 20', 999: 'FAST 30' };
 
-// Dials (+ / + XL). turn = the op by fine / coarse codes per detent; push = fine <-> coarse; strip tap = `tap`.
+// Dials (+ / + XL). Labels / formats match Control Center PTZ paint (public/ptz.js SHORT + FMT).
+// Unpaired: turn = op by fine/coarse codes; push = FINE <-> COARSE; strip tap = `tap`.
+// Paired biases (`axes`): one multi-step dial — push cycles R·FINE → R·COARSE → B·FINE → B·COARSE; strip tap = AWB/ABB.
 const DIALS = {
   iris: { op: 'iris', long: 'IRIS', coarse: 5, v: 'iris', mode: 'iris_mode', tap: (cam) => [A('ptz_toggle', { cam, op: 'irisMode', mode: 'toggle' })], tapLabel: 'A/M' },
-  mped: { op: 'masterPed', long: 'MASTER PED', short: 'M PED', coarse: 5, v: 'm_ped', tap: (cam) => [A('ptz_adjust', { cam, op: 'masterPed', mode: 'centre', value: 0 })], tapLabel: 'RESET' },
-  rgain: { op: 'rGain', long: 'R GAIN', coarse: 5, v: 'r_gain', tap: (cam) => [A('ptz_exec', { cam, op: 'awb' })], tapLabel: 'AWB' },
-  bgain: { op: 'bGain', long: 'B GAIN', coarse: 5, v: 'b_gain', tap: (cam) => [A('ptz_exec', { cam, op: 'awb' })], tapLabel: 'AWB' },
-  rped: { op: 'rPed', long: 'R PED', coarse: 5, v: 'r_ped', tap: (cam) => [A('ptz_exec', { cam, op: 'abb' })], tapLabel: 'ABB' },
-  bped: { op: 'bPed', long: 'B PED', coarse: 5, v: 'b_ped', tap: (cam) => [A('ptz_exec', { cam, op: 'abb' })], tapLabel: 'ABB' },
-  detail: { op: 'masterDetail', long: 'DETAIL', short: 'DTL', coarse: 4, v: 'm_detail', mode: 'detail', tap: (cam) => [A('ptz_toggle', { cam, op: 'detail', mode: 'toggle' })], tapLabel: 'ON/OFF' },
+  mped: { op: 'masterPed', long: 'M.PED', short: 'M.PED', coarse: 5, v: 'm_ped', tap: (cam) => [A('ptz_adjust', { cam, op: 'masterPed', mode: 'centre', value: 0 })], tapLabel: 'RESET' },
+  gain_rb: {
+    long: 'R B GAIN', short: 'GAIN',
+    axes: [
+      { op: 'rGain', long: 'R GAIN', short: 'R', v: 'r_gain', coarse: 5 },
+      { op: 'bGain', long: 'B GAIN', short: 'B', v: 'b_gain', coarse: 5 },
+    ],
+    tap: (cam) => [A('ptz_exec', { cam, op: 'awb' })], tapLabel: 'AWB',
+  },
+  ped_rb: {
+    long: 'R B PED', short: 'PED',
+    axes: [
+      { op: 'rPed', long: 'R PED', short: 'R', v: 'r_ped', coarse: 5 },
+      { op: 'bPed', long: 'B PED', short: 'B', v: 'b_ped', coarse: 5 },
+    ],
+    tap: (cam) => [A('ptz_exec', { cam, op: 'abb' })], tapLabel: 'ABB',
+  },
+  detail: { op: 'masterDetail', long: 'M.DTL', short: 'M.DTL', coarse: 4, v: 'm_detail', mode: 'detail', tap: (cam) => [A('ptz_toggle', { cam, op: 'detail', mode: 'toggle' })], tapLabel: 'ON/OFF' },
   gamma: { op: 'gamma', long: 'GAMMA', coarse: 5, v: 'gamma', mode: 'gamma_mode', tap: (cam) => [A('deck_cycle', { cam, op: 'gammaMode', values: '' })], tapLabel: 'MODE' },
-  chroma: { op: 'chromaLevel', long: 'SATURATION', short: 'SAT', coarse: 10, v: 'chroma', tap: (cam) => [A('ptz_adjust', { cam, op: 'chromaLevel', mode: 'centre', value: 0 })], tapLabel: 'RESET' },
-  knee: { op: 'kneePoint', long: 'KNEE POINT', short: 'KNEE', coarse: 4, v: 'knee', mode: 'knee_mode', tap: (cam) => [A('deck_cycle', { cam, op: 'kneeMode', values: '' })], tapLabel: 'MODE' },
+  chroma: { op: 'chromaLevel', long: 'CHROMA', short: 'CHROMA', coarse: 10, v: 'chroma', tap: (cam) => [A('ptz_adjust', { cam, op: 'chromaLevel', mode: 'centre', value: 0 })], tapLabel: 'RESET' },
+  knee: { op: 'kneePoint', long: 'K.POINT', short: 'K.POINT', coarse: 4, v: 'knee', mode: 'knee_mode', tap: (cam) => [A('deck_cycle', { cam, op: 'kneeMode', values: '' })], tapLabel: 'MODE' },
   gain: { op: 'gain', long: 'GAIN', list: true, coarse: 1, v: 'gain', tap: (cam) => [A('ptz_set', { cam, op: 'gain', value: '08' })], tapLabel: '0dB' },
   zoom: { lens: 'zoom', long: 'ZOOM', fineSpeed: 4, coarseSpeed: 14, v: 'zoom', unit: '%', tap: (cam) => [A('ptz_stop', { cam, axes: 'zoom' })], tapLabel: 'STOP' },
   focus: { lens: 'focus', long: 'FOCUS', fineSpeed: 2, coarseSpeed: 8, v: 'focus', mode: 'focus_mode', tap: (cam) => [A('ptz_exec', { cam, op: 'oneTouchAF' })], tapLabel: 'PUSH AF' },
@@ -60,8 +74,8 @@ const DIAL_IDS = Object.keys(DIALS);
 const PAINT_PAIRS = {
   iris: ['iris', 'IRIS', null, 'iris'], gain: ['gain', 'GAIN', null, 'gain'], shutter: ['shutter', 'SHUTTER', 'SHUT', 'shutter'],
   rgain: ['rGain', 'R GAIN', null, 'r_gain'], bgain: ['bGain', 'B GAIN', null, 'b_gain'], rped: ['rPed', 'R PED', null, 'r_ped'], bped: ['bPed', 'B PED', null, 'b_ped'],
-  mped: ['masterPed', 'MASTER PED', 'M PED', 'm_ped'], detail: ['masterDetail', 'DETAIL', 'DTL', 'm_detail'], gamma: ['gamma', 'GAMMA', null, 'gamma'],
-  knee: ['kneePoint', 'KNEE POINT', 'KNEE', 'knee'], chroma: ['chromaLevel', 'SATURATION', 'SAT', 'chroma'],
+  mped: ['masterPed', 'M.PED', 'M.PED', 'm_ped'], detail: ['masterDetail', 'M.DTL', 'M.DTL', 'm_detail'], gamma: ['gamma', 'GAMMA', null, 'gamma'],
+  knee: ['kneePoint', 'K.POINT', 'K.POINT', 'knee'], chroma: ['chromaLevel', 'CHROMA', 'CHROMA', 'chroma'],
 };
 const PAINT_CYCLES = {
   nd: ['ndFilter', 'ND FILTER', 'ND', 'nd'], wb: ['wbMode', 'WHITE BAL', 'WB', 'wb'], gamma_mode: ['gammaMode', 'GAMMA MODE', 'GAMMA', 'gamma_mode'],
@@ -109,7 +123,13 @@ function variableDefinitions(S) {
   if (!X.ptz(S)) return d;
   d.push({ variableId: 'deck_guard', name: 'PTZ deck: live recall guard (OFF / HOLD / LOCK)' }, { variableId: 'deck_guard_ms', name: 'PTZ deck: hold time for a live recall (ms)' },
     { variableId: 'deck_msg', name: 'PTZ deck: last deck message (HOLD TO RECALL, LOCKED …)' });
-  for (const k of DIAL_IDS) d.push({ variableId: `deck_${k}_fine`, name: `PTZ deck: ${DIALS[k].long.toLowerCase()} dial FINE / COARSE` });
+  for (const k of DIAL_IDS) {
+    d.push({ variableId: `deck_${k}_fine`, name: `PTZ deck: ${DIALS[k].long.toLowerCase()} dial FINE / COARSE` });
+    if (DIALS[k].axes) {
+      d.push({ variableId: `deck_${k}_axis`, name: `PTZ deck: ${DIALS[k].long.toLowerCase()} dial active axis (R / B …)` });
+      d.push({ variableId: `deck_${k}_readout`, name: `PTZ deck: ${DIALS[k].long.toLowerCase()} dial both-bias readout (app paint style)` });
+    }
+  }
   for (const c of [{ id: 'sel', name: 'selected camera' }, ...X.cams(S)]) {
     const p = `ptz_${X.safeId(c.id)}`;
     for (const [k] of VALUE_VARS) d.push({ variableId: `${p}_${k}`, name: `PTZ ${c.name}: ${k.replace(/_/g, ' ')}` });
@@ -133,14 +153,37 @@ function variableValues(S, cats = {}) {
     v[`${p}_recall_hint`] = recallHint(S, c); v[`${p}_deck_state`] = deckState(S, c);
   }
   for (let n = 1; n <= DECK_PRESETS; n++) { const nm = sel ? ((sel.presetNames || {})[n] || (sel.presetNames || {})[String(n)]) : ''; v[`ptz_sel_preset_${n}_name`] = nm || `P${n}`; }
+  for (const k of DIAL_IDS) {
+    const dl = DIALS[k]; if (!dl.axes) continue;
+    const active = 0; // static template; live axis marker is deck_*_axis on the value line
+    const parts = dl.axes.map((ax) => {
+      const raw = valOf(sel, ax.op);
+      const formatted = X.fmtValue(X.opFor(cats, S, sel && sel.id, ax.op), raw);
+      return `${ax.short} ${formatted || '-'}`;
+    });
+    v[`deck_${k}_readout`] = parts.join('  ');
+  }
   return v;
 }
 
 // ---------- runtime: hold timers, repeats, ramps, fine / coarse ----------
 class DeckRuntime {
-  constructor(inst) { this.inst = inst; this.fine = Object.fromEntries(DIAL_IDS.map((k) => [k, true])); this.arming = new Map(); this.repeats = new Map(); this.ramps = new Map(); this.msgTimer = null; }
+  constructor(inst) {
+    this.inst = inst;
+    this.fine = Object.fromEntries(DIAL_IDS.map((k) => [k, true]));
+    this.axis = Object.fromEntries(DIAL_IDS.filter((k) => DIALS[k].axes).map((k) => [k, 0]));
+    this.arming = new Map(); this.repeats = new Map(); this.ramps = new Map(); this.msgTimer = null;
+  }
   get S() { return this.inst.sys; }
-  vars() { const v = {}; for (const k of DIAL_IDS) v[`deck_${k}_fine`] = this.fine[k] ? 'FINE' : 'COARSE'; return v; }
+  activeAxis(k) { const dl = DIALS[k]; if (!dl || !dl.axes) return null; return dl.axes[this.axis[k] || 0] || dl.axes[0]; }
+  vars() {
+    const v = {};
+    for (const k of DIAL_IDS) {
+      v[`deck_${k}_fine`] = this.fine[k] ? 'FINE' : 'COARSE';
+      if (DIALS[k].axes) { const ax = this.activeAxis(k); v[`deck_${k}_axis`] = ax ? ax.short : ''; }
+    }
+    return v;
+  }
   say(msg) {
     this.inst.setVariableValues({ deck_msg: msg });
     if (this.msgTimer) clearTimeout(this.msgTimer);
@@ -219,12 +262,30 @@ class DeckRuntime {
       const speed = X.clampSpeed(Math.abs(d) * (fine ? dl.fineSpeed : dl.coarseSpeed));
       return this.inst.ptzPulse(dl.lens, camOpt, (cam) => this.inst.api.ptz(dl.lens, { cam, dir: Math.sign(d) * speed, speed: true }), 250);
     }
+    if (dl.axes) {
+      const ax = this.activeAxis(k); if (!ax) return undefined;
+      return this.step(camOpt, ax.op, Math.sign(d), Math.abs(d) * (fine ? 1 : ax.coarse));
+    }
     if (dl.list) return this.step(camOpt, dl.op, Math.sign(d), 1);
     return this.step(camOpt, dl.op, Math.sign(d), Math.abs(d) * (fine ? 1 : dl.coarse));
   }
+  // unpaired: toggle / set FINE|COARSE. paired multi-step: advance R·FINE → R·COARSE → B·FINE → B·COARSE (or set).
   setFine(k, mode) {
     const ks = k === 'all' ? DIAL_IDS : [k];
-    for (const x of ks) if (DIALS[x]) this.fine[x] = mode === 'fine' ? true : mode === 'coarse' ? false : !this.fine[x];
+    for (const x of ks) {
+      const dl = DIALS[x]; if (!dl) continue;
+      if (dl.axes && (mode === 'toggle' || mode === 'next')) {
+        const n = dl.axes.length * 2;
+        let i = (this.axis[x] || 0) * 2 + (this.fine[x] !== false ? 0 : 1);
+        i = (i + 1) % n;
+        this.axis[x] = Math.floor(i / 2);
+        this.fine[x] = (i % 2) === 0;
+      } else if (dl.axes && (mode === 'r' || mode === 'b' || mode === '0' || mode === '1')) {
+        this.axis[x] = (mode === 'b' || mode === '1') ? 1 : 0;
+      } else {
+        this.fine[x] = mode === 'fine' ? true : mode === 'coarse' ? false : !this.fine[x];
+      }
+    }
     this.inst.setVariableValues(this.vars()); this.check('deck_fine');
   }
   // speed-ramped hold: 25 % of the session speed at once, 100 % after 1.5 s; a tap is a creep
@@ -287,8 +348,8 @@ function deckActions(inst) {
       callback: async (a, ctx) => D.dial(a.options.cam, a.options.dial, await turn(a, ctx)),
     },
     deck_fine: {
-      name: 'PTZ deck: dial fine / coarse',
-      options: [dd('dial', 'Dial', [{ id: 'all', label: 'Every dial' }, ...DIAL_IDS.map((k) => ({ id: k, label: DIALS[k].long }))]), dd('mode', 'Mode', [{ id: 'toggle', label: 'Toggle' }, { id: 'fine', label: 'Fine' }, { id: 'coarse', label: 'Coarse' }])],
+      name: 'PTZ deck: dial fine / coarse, or next multi-step on a paired bias dial (R/B gain, R/B ped)',
+      options: [dd('dial', 'Dial', [{ id: 'all', label: 'Every dial' }, ...DIAL_IDS.map((k) => ({ id: k, label: DIALS[k].long }))]), dd('mode', 'Mode', [{ id: 'toggle', label: 'Toggle / next multi-step' }, { id: 'fine', label: 'Fine' }, { id: 'coarse', label: 'Coarse' }, { id: 'r', label: 'Axis R (paired dials)' }, { id: 'b', label: 'Axis B (paired dials)' }])],
       callback: (a) => D.setFine(a.options.dial, a.options.mode),
     },
     deck_ramp: {
@@ -393,17 +454,28 @@ function presets(S) {
   }
   out.deck_home = key('PTZ deck: move', 'Camera home (selected camera)', { kind: 'exec', cap: 'CAMERA', main: 'HOME' }, [A('ptz_exec', { cam: sel, op: 'home' })]);
   out.deck_stop_all = key('PTZ deck: move', 'ALL STOP (every camera)', { kind: 'take', main: 'ALL STOP', bg: BRAND.red }, [A('ptz_stop_all')]);
-  // dials and their strip cells
+  // dials and their strip cells (paired bias dials show the active axis label + value)
   for (const k of DIAL_IDS) {
-    const dl = DIALS[k]; const val = dl.mode ? `${T(`${P}_${dl.mode}`)} ${T(`${P}_${dl.v}`)}` : `${T(`${P}_${dl.v}`)}${dl.unit || ''}`;
-    const cap = pick(dl.long, dl.short, 16, 1);
+    const dl = DIALS[k];
+    let cap; let val; let pushHint;
+    if (dl.axes) {
+      // Same idea as the app paint GAIN / PED row: both biases in one readout var; active axis in the step line.
+      cap = pick(dl.long, dl.short, 16, 1);
+      val = T(`deck_${k}_readout`);
+      pushHint = 'push: next R/B · FINE/COARSE step';
+    } else {
+      val = dl.mode ? `${T(`${P}_${dl.mode}`)} ${T(`${P}_${dl.v}`)}` : `${T(`${P}_${dl.v}`)}${dl.unit || ''}`;
+      cap = pick(dl.long, dl.short, 16, 1);
+      pushHint = 'push: fine / coarse';
+    }
+    const stepLine = dl.axes ? `${T(`deck_${k}_axis`)} ${T(`deck_${k}_fine`)}` : T(`deck_${k}_fine`);
     out[`deck_dial_${k}`] = {
-      ...key('PTZ deck: dials (Stream Deck + / + XL)', `${dl.long.toLowerCase()} dial (push: fine / coarse)`, { kind: 'lcd', cap, main: val, value: T(`deck_${k}_fine`) }, [A('deck_fine', { dial: k, mode: 'toggle' })], [], [fb('deck_fine', { dial: k }, { color: BRAND.red })]),
+      ...key('PTZ deck: dials (Stream Deck + / + XL)', `${dl.long.toLowerCase()} dial (${pushHint})`, { kind: 'lcd', cap, main: val, value: stepLine }, [A('deck_fine', { dial: k, mode: 'toggle' })], [], [fb('deck_fine', { dial: k }, { color: BRAND.red })]),
       options: { rotaryActions: true },
     };
     out[`deck_dial_${k}`].steps[0].rotate_left = [A('deck_dial', { cam: sel, dial: k, delta: '$(this:delta)', fallback: -1 })];
     out[`deck_dial_${k}`].steps[0].rotate_right = [A('deck_dial', { cam: sel, dial: k, delta: '$(this:delta)', fallback: 1 })];
-    out[`deck_strip_${k}`] = key('PTZ deck: dials (Stream Deck + / + XL)', `${dl.long.toLowerCase()} strip (tap: ${dl.tapLabel.toLowerCase()})`, { kind: 'lcd', cap, main: val, value: `${T(`deck_${k}_fine`)} · ${dl.tapLabel}` }, dl.tap(sel), [], [fb('deck_fine', { dial: k }, { color: BRAND.red })]);
+    out[`deck_strip_${k}`] = key('PTZ deck: dials (Stream Deck + / + XL)', `${dl.long.toLowerCase()} strip (tap: ${dl.tapLabel.toLowerCase()})`, { kind: 'lcd', cap, main: val, value: `${stepLine} · ${dl.tapLabel}` }, dl.tap(sel), [], [fb('deck_fine', { dial: k }, { color: BRAND.red })]);
   }
   return out;
 }

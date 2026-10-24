@@ -24,7 +24,7 @@ Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, wit
 - **Paint and functions** for the selected UE150: iris A/M and ±, gain, shutter, ND, WB mode cycle, AWB, R/B
   gain and ped, master ped, detail, gamma/knee, matrix/saturation; toggles for tally, power, AF, push AF, OIS,
   bars, D.EXT, freeze during preset, DRS, night, auto iris, preset speed, live guard. Hold-to-repeat on ± keys;
-  dials with fine/coarse and strip taps on the + / + XL; speed-ramped hold for pan/tilt/zoom/focus.
+  dials with fine/coarse (and multi-step R/B gain · R/B ped on one encoder each) and strip taps on the + / + XL; paint readouts match the app; speed-ramped hold for pan/tilt/zoom/focus.
 - New actions `deck_*`, feedbacks `ptz_active` / `deck_*`, and paint/function variables. Regenerated `src/ptz-ops.js`
   includes DRS, day/night and freeze-during-preset from the app catalog.
 

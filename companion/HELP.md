@@ -19,13 +19,13 @@ to a camera.
 **New actions:** `deck_recall` (DOWN/UP; on a live camera HOLD arms for `holdMs` then sends `{confirmed:true}`,
 LOCK refuses, OFF recalls at once — the app enforces it with HTTP 423), `deck_repeat` (value ± while held),
 `deck_cycle` (next list value or flip a toggle: WB, ND, DRS, D.EXT, gamma mode …), `deck_dial` / `deck_fine`
-(fine = 1 code, coarse = 5; push toggles), `deck_ramp` (pan/tilt/zoom/focus held, speed ramps 25 % → 100 % over
+(fine = 1 code, coarse = 5; push toggles FINE/COARSE, or advances a multi-step R/B gain · R/B ped dial), `deck_ramp` (pan/tilt/zoom/focus held, speed ramps 25 % → 100 % over
 1.5 s), `deck_guard` (cycle OFF → HOLD → LOCK) and `deck_select_next`.
 
 **New feedbacks:** `ptz_active` (function ON, or a list setting not OFF), `deck_live_guarded`, `deck_arming`,
 `deck_guard_is`, `deck_fine`.
 
-**New variables:** `deck_guard`, `deck_guard_ms`, `deck_msg`, `deck_<dial>_fine`, and per camera / selected:
+**New variables:** `deck_guard`, `deck_guard_ms`, `deck_msg`, `deck_<dial>_fine`, `deck_<dial>_axis` (R/B multi-step dials), and per camera / selected:
 `ptz_<cam>_r_gain` / `_b_gain` / `_r_ped` / `_b_ped` / `_m_ped` / `_detail` / `_m_detail` / `_gamma_mode` /
 `_gamma` / `_knee_mode` / `_knee` / `_matrix` / `_chroma` / `_drs` / `_night` / `_freeze` / `_ois` / `_bars` /
 `_dext` / `_preset_speed` / `_af` / `_auto_iris` / `_recall_hint` / `_deck_state`, plus `ptz_sel_preset_N_name`.
@@ -33,7 +33,8 @@ LOCK refuses, OFF recalls at once — the app enforces it with HTTP 423), `deck_
 **New presets** (categories *PTZ deck: …*): camera select, guarded presets 1–18 for selected and per camera,
 paint ± pairs and cycles, function toggles (tally, power, AF, push AF, OIS, bars, D.EXT, freeze, preset speed,
 auto iris, DRS, night, live guard), ramped move / zoom / focus, ALL STOP, and dials + strip cells for the +
-and + XL (iris, master ped, R/B gain, R/B ped, detail, gamma, chroma, knee, gain, zoom, focus).
+and + XL (iris, M.PED, multi-step R/B gain and R/B ped, M.DTL, gamma, CHROMA, K.POINT, gain, zoom, focus).
+Paint readouts use the same labels/units as the Control Center PTZ pane.
 
 ### Stream Deck pages and knobs (new in 0.7.0)
 

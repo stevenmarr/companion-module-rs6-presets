@@ -97,11 +97,19 @@ function opFor(cats, S, cam, id) {
   const o = cat && (cat.ops || []).find((x) => x.id === id);
   return o || OP_BY_ID.get(id) || null;
 }
+// Formats match Control Center PTZ paint (`public/ptz.js` FMT + signed biases).
 function fmtValue(o, v) {
   if (v === undefined || v === null || v === '') return '';
   if (!o) return String(v);
   if (o.type === 'toggle') return v ? 'ON' : 'OFF';
   if (o.type === 'list') { const x = (o.options || []).find((y) => String(y[0]) === String(v)); return x ? String(x[1]) : String(v); }
+  const id = o.id; const n = Number(v);
+  if (!Number.isFinite(n)) return String(v);
+  if (id === 'gamma') return (n / 100).toFixed(2);
+  if (id === 'kneePoint') return `${n.toFixed(2)}%`;
+  if (id === 'chromaLevel') return n <= -100 ? 'OFF' : `${n > 0 ? '+' : ''}${n}%`;
+  if (id === 'varTemp') return `${Math.round(n)}K`;
+  if (o.range && o.range.min < 0 && n > 0) return `+${n}`;
   return String(v);
 }
 // value for inc/dec on a range op, clamped to the op's range
