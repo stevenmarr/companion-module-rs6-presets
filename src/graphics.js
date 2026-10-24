@@ -236,29 +236,38 @@ function overridesOf(style, els, role) {
 }
 
 
-// ---------- Dark theme brand keys (PVLLC T-Bar / style guide) ----------
-// Tokens from 08-display-themes.md + Performance Video software style guide (Dark first).
-// Red fill = PGM/LIVE only. Feature ON = outline + ON tag (not red fill). ALL STOP = danger outline + HOLD.
-// Fonts (fork feat/lcars-gui): companion-sans Bold labels, companion-mono Bold values,
-// companion-brand (Space Grotesk Bold) HOME/section headers, companion-condensed when Arimo overflows.
-// HOME mark: flat --text T-Bar (c-t-bar/icon_mark_*), never marketing red live slot.
+// ---------- Control-app brand keys (Performance Video Control UI → Stream Deck) ----------
+// Source of truth: rs6-presets/public/style.css (.ctl-t, .mode, .pcard, .rcp-read, .rcp-allstop)
+// + Brand Dark tokens (08-display-themes). Companion is host only — no stock topbar / LCARS chrome.
+//
+// App → key mapping (Dark):
+//   .ctl-t / .mode.ctl-t  → full-bleed --panel2 tile, caption+value LEFT stack (not centered blob)
+//   .mode.active / .ptab.on → accent fill #3B8CFF (feature ON); red reserved for PGM/LIVE only
+//   .rcp-allstop          → #3A0D10 fill + --pgm border + soft red text
+//   .cam-strip .cam       → caption / name / state; selected = white ring; tally = --pgm fill
+//   .rcp-read .rd         → lcd: wide-track caption + mono value
+// Geometry: cornerRadius % of shorter side. App .mode radius 8px on ~70–86px ≈ 10–12% → 12.
+// letterSpacing is % of font size (Skia); app captions use .14em → 14.
 const THEME = {
   bg: 0x101012,       // --bg
   panel: 0x18181b,    // --panel
-  panel2: 0x222226,   // --panel2 (idle chip)
+  panel2: 0x222226,   // --panel2 / idle .ctl-t / .mode
   line: 0x34343a,     // --line
-  text: 0xe6e6e8,     // --text (not pure white on Dark)
+  text: 0xe6e6e8,     // --text
   dim: 0x9a9aa2,      // --dim
-  pgm: 0xc42020,      // --pgm
-  onPgm: 0xffffff,    // --on-pgm
-  pvw: 0x137a3a,      // --pvw
+  pgm: 0xc42020,      // --pgm — true program / live tally only
+  onPgm: 0xffffff,
+  pvw: 0x137a3a,
   onPvw: 0xffffff,
-  armed: 0xe0a000,    // --armed
-  onArmed: 0x101012,  // --on-armed
+  armed: 0xe0a000,
+  onArmed: 0x101012,
   focus: 0x7fb2ff,    // --focus
-  danger: 0xc42020,   // --danger-outline
+  accent: 0x3b8cff,   // app --accent (.mode.active fill)
+  danger: 0xc42020,
+  allstopBg: 0x3a0d10, // .rcp-allstop
+  allstopText: 0xffb3b6,
+  onAccent: 0xffffff,
 };
-// Back-compat aliases used elsewhere in this file / deck.js via exports
 const BRAND_BG = THEME.bg;
 const BRAND_PANEL = THEME.panel2;
 const BRAND_LINE = THEME.line;
@@ -268,97 +277,154 @@ const BRAND_RED = THEME.pgm;
 const BRAND_PVW = THEME.pvw;
 const BRAND_ARMED = THEME.armed;
 const CLEAR = 0xff000000;
-const CHIP_RADIUS = 18;
-const CHIP = { x: 4, y: 4, w: 92, h: 92 };
-const HOME_MARK_PNG64 = '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';
+const CHIP_RADIUS = 12;
+const CHIP = { x: 0, y: 0, w: 100, h: 100 };
+const BORDER_IDLE = 1.5;
+const BORDER_ACTIVE = 2.5;
+const BORDER_DANGER = 3.5;
+const BORDER_SEL = 5;
+const TRACK_CAP = 14;
+const TRACK_MODE = 8;
+const HOME_MARK_PNG64 = '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';
 const FONT_SANS = 'companion-sans';
 const FONT_MONO = 'companion-mono';
 const FONT_BRAND = 'companion-brand';
 
 function brandElements(b, style) {
   const kind = b.kind || 'value';
-  // PGM/LIVE may set b.bg = THEME.pgm. Feature ON and ALL STOP must NOT use solid red fill.
   const lit = b.bg !== undefined ? b.bg : undefined;
   const isPgm = lit === THEME.pgm || lit === 0xc42020;
   const isPvw = lit === THEME.pvw || lit === 0x137a3a;
   const isArmed = lit === THEME.armed || lit === 0xe0a000;
-  const chipFill = lit !== undefined ? lit : THEME.panel2;
-  const voidFill = THEME.bg;
+  const isAccent = lit === THEME.accent || lit === 0x3b8cff;
+  const danger = !!b.danger;
+  let chipFill = THEME.panel2;
+  let borderCol = THEME.line;
+  let borderW = BORDER_IDLE;
   let main = THEME.text;
   let cap = THEME.dim;
-  if (isPgm) { main = THEME.onPgm; cap = withAlpha(THEME.onPgm, 0.85); }
-  else if (isPvw) { main = THEME.onPvw; cap = withAlpha(THEME.onPvw, 0.85); }
-  else if (isArmed) { main = THEME.onArmed; cap = withAlpha(THEME.onArmed, 0.85); }
+  if (danger) {
+    chipFill = THEME.allstopBg;
+    borderCol = THEME.danger;
+    borderW = BORDER_DANGER;
+    main = THEME.allstopText;
+    cap = withAlpha(THEME.allstopText, 0.85);
+  } else if (lit !== undefined) {
+    chipFill = lit;
+    if (isPgm) { main = THEME.onPgm; cap = withAlpha(THEME.onPgm, 0.85); borderCol = withAlpha(0xffffff, 0.22); }
+    else if (isPvw) { main = THEME.onPvw; cap = withAlpha(THEME.onPvw, 0.85); borderCol = withAlpha(0xffffff, 0.22); }
+    else if (isArmed) { main = THEME.onArmed; cap = withAlpha(THEME.onArmed, 0.85); borderCol = withAlpha(0x000000, 0.25); }
+    else if (isAccent) { main = THEME.onAccent; cap = withAlpha(THEME.onAccent, 0.85); borderCol = THEME.accent; }
+    else { borderCol = withAlpha(main, 0.2); }
+  }
 
-  const danger = !!b.danger; // ALL STOP / destructive hold
-  const featureOn = !!b.featureOn; // idle chrome for a key that can show ON via feedback
   const els = [
-    { id: 'bg', type: 'box', name: 'Void', x: 0, y: 0, width: 100, height: 100, color: voidFill, cornerRadius: 0 },
-    { id: 'chip', type: 'box', name: 'Chip', x: CHIP.x, y: CHIP.y, width: CHIP.w, height: CHIP.h, color: chipFill, cornerRadius: CHIP_RADIUS,
-      borderWidth: danger ? 4.5 : 1.2,
-      borderColor: danger ? THEME.danger : (lit !== undefined ? withAlpha(main, 0.18) : THEME.line),
-      borderPosition: 'inside' },
-    // Selected = thick white ring (feedback sets frame). Idle frame is clear.
-    { id: 'frame', type: 'box', name: 'Frame', x: CHIP.x, y: CHIP.y, width: CHIP.w, height: CHIP.h, color: CLEAR, cornerRadius: CHIP_RADIUS, borderWidth: 6, borderColor: CLEAR, borderPosition: 'inside' },
+    { id: 'bg', type: 'box', name: 'Void', x: 0, y: 0, width: 100, height: 100, color: THEME.bg, cornerRadius: 0 },
+    {
+      id: 'chip', type: 'box', name: 'Control', x: CHIP.x, y: CHIP.y, width: CHIP.w, height: CHIP.h,
+      color: chipFill, cornerRadius: CHIP_RADIUS,
+      borderWidth: borderW, borderColor: borderCol, borderPosition: 'inside',
+    },
+    {
+      id: 'frame', type: 'box', name: 'Selected', x: CHIP.x, y: CHIP.y, width: CHIP.w, height: CHIP.h,
+      color: CLEAR, cornerRadius: CHIP_RADIUS, borderWidth: BORDER_SEL, borderColor: CLEAR, borderPosition: 'inside',
+    },
   ];
   const o = { outline: NO_OUTLINE };
-  const capEl = (txt, y = 8) => textEl('tag', 'Caption', txt, { x: 10, y, w: 80, h: 16 }, SIZE.tag, { ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: 2 });
-  const valEl = (txt) => textEl('detail', 'Value', txt, { x: 10, y: 72, w: 80, h: 18 }, SIZE.detail, { ...o, font: FONT_MONO, weight: 'bold', color: withAlpha(main, 0.9), halign: 'left', letterSpacing: 1 });
-  const nameEl = (txt, box, size) => textEl('label', 'Name', txt, box, size, { ...o, font: FONT_SANS, weight: 'bold', color: main, letterSpacing: 0 });
+  const capEl = (txt, y = 10) => textEl('tag', 'Caption', txt, { x: 8, y, w: 70, h: 16 }, SIZE.tag, {
+    ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top',
+    letterSpacing: TRACK_CAP, textTransform: 'uppercase',
+  });
+  const valEl = (txt) => textEl('detail', 'Value', txt, { x: 8, y: 74, w: 84, h: 18 }, SIZE.detail, {
+    ...o, font: FONT_MONO, weight: 'bold', color: withAlpha(main, 0.92), halign: 'left', valign: 'center',
+    letterSpacing: 2,
+  });
+  const mainEl = (txt, box, size, extra = {}) => textEl('label', 'Name', txt, box, size, {
+    ...o, font: FONT_SANS, weight: 'bold', color: main, halign: 'left', valign: 'center',
+    letterSpacing: TRACK_MODE, ...extra,
+  });
 
   if (kind === 'home') {
-    // T-Bar mark (flat --text) + HOME in companion-brand Bold
     els.push({
-      id: 'mark', type: 'image', name: 'T-Bar', x: 22, y: 10, width: 56, height: 48,
-      base64Image: dataUrl(HOME_MARK_PNG64), fillMode: 'fit', halign: 'center', valign: 'center',
+      id: 'mark', type: 'image', name: 'M4 Viewport', x: 22, y: 12, width: 56, height: 46,
+      base64Image: HOME_MARK_PNG64, fillMode: 'fit', halign: 'center', valign: 'center',
     });
-    els.push(textEl('label', 'Home', b.main || 'HOME', { x: 8, y: 60, w: 84, h: 26 }, SIZE.tag + 2, {
-      ...o, font: FONT_BRAND, weight: 'bold', color: main, letterSpacing: -1, textTransform: 'uppercase',
+    els.push(textEl('label', 'Home', b.main || 'HOME', { x: 8, y: 62, w: 84, h: 26 }, SIZE.tag + 2, {
+      ...o, font: FONT_BRAND, weight: 'bold', color: main, letterSpacing: 6, textTransform: 'uppercase',
     }));
     return els;
   }
 
   switch (kind) {
     case 'lcd': {
-      els.push(textEl('tag', 'Header', b.cap || '', { x: 10, y: 10, w: 80, h: 16 }, SIZE.lcd, { ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: 2 }));
-      els.push(textEl('label', 'Readout', b.main || '', { x: 10, y: 30, w: 80, h: 34 }, SIZE.name, { ...o, font: FONT_MONO, weight: 'bold', color: main, halign: 'left', valign: 'top', letterSpacing: 1 }));
-      if (b.value) els.push(textEl('detail', 'Mode', b.value, { x: 10, y: 70, w: 80, h: 18 }, SIZE.detail, { ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top' }));
+      els.push(textEl('tag', 'Header', b.cap || '', { x: 8, y: 10, w: 84, h: 16 }, SIZE.lcd, {
+        ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: TRACK_CAP, textTransform: 'uppercase',
+      }));
+      els.push(textEl('label', 'Readout', b.main || '', { x: 8, y: 30, w: 84, h: 36 }, SIZE.name, {
+        ...o, font: FONT_MONO, weight: 'bold', color: main, halign: 'left', valign: 'top', letterSpacing: 1,
+      }));
+      if (b.value) {
+        els.push(textEl('detail', 'Mode', b.value, { x: 8, y: 72, w: 84, h: 18 }, SIZE.detail, {
+          ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: 2,
+        }));
+      }
       return els;
     }
     case 'step': case 'move': {
       if (b.cap) els.push(capEl(b.cap));
-      els.push(textEl('label', kind === 'step' ? 'Step' : 'Move', b.main, { x: 8, y: b.cap ? 26 : 12, w: 84, h: b.value ? (b.cap ? 42 : 56) : 72 }, SIZE.verb, { ...o, font: FONT_SANS, weight: 'bold', color: main }));
+      const top = b.cap ? 28 : 14;
+      const h = b.value ? (b.cap ? 40 : 52) : (b.cap ? 56 : 72);
+      els.push(textEl('label', kind === 'step' ? 'Step' : 'Move', b.main, { x: 6, y: top, w: 88, h }, SIZE.verb, {
+        ...o, font: FONT_SANS, weight: 'bold', color: main, halign: 'center', letterSpacing: 0,
+      }));
       if (b.value) els.push(valEl(b.value));
       return els;
     }
     case 'take': {
-      // ALL STOP / destructive: idle chip + danger outline (already on chip) + HOLD tag
-      els.push(textEl('label', 'Verb', b.main, { x: 8, y: danger ? 22 : 14, w: 84, h: danger ? 44 : 72 }, SIZE.name, { ...o, font: FONT_SANS, weight: 'bold', color: main, letterSpacing: 1, textTransform: 'uppercase' }));
-      if (danger) els.push(textEl('tag', 'Hold', 'HOLD', { x: 10, y: 68, w: 80, h: 16 }, SIZE.tag, { ...o, font: FONT_MONO, weight: 'bold', color: THEME.danger, letterSpacing: 3, textTransform: 'uppercase' }));
+      els.push(textEl('label', 'Verb', b.main, { x: 8, y: danger ? 18 : 14, w: 84, h: danger ? 42 : 72 }, SIZE.name, {
+        ...o, font: FONT_SANS, weight: 'bold', color: main, letterSpacing: TRACK_MODE, textTransform: 'uppercase', halign: 'left',
+      }));
+      if (danger) {
+        els.push(textEl('tag', 'Hold', 'HOLD', { x: 8, y: 68, w: 84, h: 18 }, SIZE.tag, {
+          ...o, font: FONT_MONO, weight: 'bold', color: THEME.danger, letterSpacing: TRACK_CAP, textTransform: 'uppercase', halign: 'left',
+        }));
+      }
       return els;
     }
     case 'value': case 'exec': {
       if (b.cap) els.push(capEl(b.cap));
-      els.push(nameEl(b.main, { x: 8, y: b.cap ? 28 : 12, w: 84, h: b.value ? 38 : (b.cap ? 56 : 72) }, SIZE.name));
+      const top = b.cap ? 30 : 14;
+      const h = b.value ? 36 : (b.cap ? 50 : 72);
+      els.push(mainEl(b.main, { x: 8, y: top, w: 84, h }, SIZE.name, { textTransform: kind === 'exec' ? 'uppercase' : 'none' }));
       if (b.value) els.push(valEl(b.value));
-      // ON tag slot for feature toggles (feedback sets text/color; never red fill)
-      els.push(textEl('on', 'OnTag', '', { x: 62, y: 8, w: 26, h: 12 }, 12, { ...o, font: FONT_MONO, weight: 'bold', color: CLEAR, letterSpacing: 1, textTransform: 'uppercase' }));
+      els.push(textEl('on', 'OnTag', '', { x: 64, y: 10, w: 28, h: 14 }, 11, {
+        ...o, font: FONT_MONO, weight: 'bold', color: CLEAR, letterSpacing: 2, textTransform: 'uppercase', halign: 'right',
+      }));
       return els;
     }
-    default: { // cam, preset, nav
-      if (b.cap) els.push(textEl('tag', 'Caption', b.cap, { x: 10, y: 8, w: 80, h: 16 }, SIZE.tag, { ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: 2 }));
-      els.push(textEl('label', 'Name', b.main, { x: 8, y: 26, w: 84, h: 42 }, SIZE.name, { ...o, font: FONT_SANS, weight: 'bold', color: main, halign: 'left' }));
+    default: {
+      if (b.cap) {
+        els.push(textEl('tag', 'Caption', b.cap, { x: 8, y: 10, w: 56, h: 16 }, SIZE.tag, {
+          ...o, font: FONT_MONO, weight: 'bold', color: cap, halign: 'left', valign: 'top', letterSpacing: TRACK_CAP, textTransform: 'uppercase',
+        }));
+      }
+      els.push(textEl('label', 'Name', b.main, { x: 8, y: 28, w: 84, h: 40 }, SIZE.name, {
+        ...o, font: FONT_SANS, weight: 'bold', color: main, halign: 'left', letterSpacing: 0,
+      }));
       if (b.value) els.push(valEl(b.value));
-      // Corner tally tags (empty until feedback / lit fill); redundant coding with fill + ring
       const pgmTxt = (isPgm || b.tag === 'PGM') ? 'PGM' : '';
       const pvwTxt = (isPvw || b.tag === 'PVW') ? 'PVW' : '';
-      els.push(textEl('pgm', 'PgmTag', pgmTxt, { x: 58, y: 8, w: 30, h: 14 }, 12, { ...o, font: FONT_MONO, weight: 'bold', color: pgmTxt ? THEME.onPgm : CLEAR, letterSpacing: 1, textTransform: 'uppercase' }));
-      els.push(textEl('pvw', 'PvwTag', pvwTxt, { x: 58, y: 8, w: 30, h: 14 }, 12, { ...o, font: FONT_MONO, weight: 'bold', color: pvwTxt ? THEME.onPvw : CLEAR, letterSpacing: 1, textTransform: 'uppercase' }));
+      els.push(textEl('pgm', 'PgmTag', pgmTxt, { x: 58, y: 10, w: 34, h: 14 }, 11, {
+        ...o, font: FONT_MONO, weight: 'bold', color: pgmTxt ? THEME.onPgm : CLEAR, letterSpacing: 2, textTransform: 'uppercase', halign: 'right',
+      }));
+      els.push(textEl('pvw', 'PvwTag', pvwTxt, { x: 58, y: 10, w: 34, h: 14 }, 11, {
+        ...o, font: FONT_MONO, weight: 'bold', color: pvwTxt ? THEME.onPvw : CLEAR, letterSpacing: 2, textTransform: 'uppercase', halign: 'right',
+      }));
       return els;
     }
   }
 }
-// feedback style keys: bgcolor (fills the chip), color (text), frame (selected ring), strike, onTag
+
 function brandOverrides(style, els) {
   const o = [];
   if (!style) return o;
@@ -367,44 +433,77 @@ function brandOverrides(style, els) {
     const isPgm = style.bgcolor === THEME.pgm || style.bgcolor === 0xc42020;
     const isArmed = style.bgcolor === THEME.armed || style.bgcolor === 0xe0a000;
     const isPvw = style.bgcolor === THEME.pvw || style.bgcolor === 0x137a3a;
-    o.push({ elementId: 'chip', elementProperty: 'borderColor', override: isPgm || isPvw || isArmed ? withAlpha(0xffffff, 0.18) : THEME.line });
-    if (isPgm) {
-      const has = els.some((e) => e.id === 'pgm');
-      if (has) o.push({ elementId: 'pgm', elementProperty: 'text', override: 'PGM' }, { elementId: 'pgm', elementProperty: 'color', override: THEME.onPgm });
+    const isAccent = style.bgcolor === THEME.accent || style.bgcolor === 0x3b8cff;
+    let edge = THEME.line;
+    if (isPgm || isPvw) edge = withAlpha(0xffffff, 0.22);
+    else if (isArmed) edge = withAlpha(0x000000, 0.25);
+    else if (isAccent) edge = THEME.accent;
+    o.push({ elementId: 'chip', elementProperty: 'borderColor', override: edge });
+    if (isPgm && els.some((e) => e.id === 'pgm')) {
+      o.push({ elementId: 'pgm', elementProperty: 'text', override: 'PGM' }, { elementId: 'pgm', elementProperty: 'color', override: THEME.onPgm });
     }
   }
-  // Feature ON: keep panel2 fill; show ON tag + focus/outline — never red fill
+  // Feature ON → app .mode.active (accent fill + white text). Never PGM red.
   if (style.featureOn) {
-    o.push({ elementId: 'chip', elementProperty: 'borderColor', override: THEME.focus });
-    o.push({ elementId: 'chip', elementProperty: 'borderWidth', override: 2.5 });
-    if (els.some((e) => e.id === 'on')) {
-      o.push({ elementId: 'on', elementProperty: 'text', override: 'ON' });
-      o.push({ elementId: 'on', elementProperty: 'color', override: THEME.text });
+    o.push({ elementId: 'chip', elementProperty: 'color', override: THEME.accent });
+    o.push({ elementId: 'chip', elementProperty: 'borderColor', override: THEME.accent });
+    o.push({ elementId: 'chip', elementProperty: 'borderWidth', override: BORDER_ACTIVE });
+    for (const e of els) {
+      if (e.type !== 'text') continue;
+      if (e.id === 'on') {
+        o.push({ elementId: 'on', elementProperty: 'text', override: 'ON' });
+        o.push({ elementId: 'on', elementProperty: 'color', override: THEME.onAccent });
+      } else if (e.id === 'label') {
+        o.push({ elementId: e.id, elementProperty: 'color', override: THEME.onAccent });
+      } else if (e.id === 'tag' || e.id === 'detail') {
+        o.push({ elementId: e.id, elementProperty: 'color', override: withAlpha(THEME.onAccent, 0.85) });
+      }
     }
   }
   if (style.frame !== undefined) o.push({ elementId: 'frame', elementProperty: 'borderColor', override: style.frame });
   for (const e of els) {
     if (e.type !== 'text') continue;
+    if (style.featureOn) continue;
     const isMain = e.id === 'label';
     if (style.color !== undefined) o.push({ elementId: e.id, elementProperty: 'color', override: isMain ? style.color : withAlpha(rgbOf(style.color), 0.85) });
     if (style.strike && isMain) o.push({ elementId: e.id, elementProperty: 'styles', override: [...new Set([...(e.styles || []), 'strikethrough'])] });
   }
   return o;
 }
+
 function brandLayered(classic) {
   const elements = brandElements(classic.brand, classic.style);
   const feedbacks = [];
   for (const f of classic.feedbacks || []) {
     const styleOverrides = brandOverrides(f.style, elements);
     if (!styleOverrides.length) continue;
-    feedbacks.push({ feedbackId: f.feedbackId, options: f.options, isInverted: f.isInverted, styleOverrides });
+    const entry = { feedbackId: f.feedbackId, options: f.options || {}, styleOverrides };
+    if (f.isInverted) entry.isInverted = true;
+    feedbacks.push(entry);
   }
-  return { type: 'layered', name: classic.name, canvas: { decoration: false, showStatusIcons: false }, elements, feedbacks };
+  const preset = {
+    type: 'layered',
+    name: classic.name,
+    // Enum strings required — boolean false leaves global TopBar (Companion stock chrome).
+    canvas: { decoration: 'none', showStatusIcons: 'none' },
+    elements,
+    feedbacks,
+    steps: stepsOf(classic.steps),
+  };
+  if (classic.options && classic.options.stepAutoProgress === false) preset.options = { stepAutoProgress: false };
+  if (classic.options && classic.options.rotaryActions) {
+    preset.options = { ...(preset.options || {}), rotaryActions: true };
+  }
+  return preset;
 }
 // the classic fallback cannot draw a frame or strike: it keeps the colours only
 function classicFeedbacks(list) {
-  return (list || []).map((f) => { const { frame, strike, ...st } = f.style || {}; return { ...f, style: frame !== undefined && !Object.keys(st).length ? { color: frame } : st }; });
+  return (list || []).map((f) => {
+    const { frame, strike, featureOn, ...st } = f.style || {};
+    return { ...f, style: frame !== undefined && !Object.keys(st).length ? { color: frame } : st };
+  });
 }
+
 
 function stepsOf(steps) {
   return (steps || []).map((s) => {

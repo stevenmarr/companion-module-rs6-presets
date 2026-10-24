@@ -8,13 +8,14 @@ const X = require('./sys');
 
 // ---------- brand ----------
 const BRAND = {
-  // Dark theme tokens (08-display-themes / PVLLC style guide). Red = PGM/LIVE only.
+  // Dark theme = Control app tokens. Red = PGM/LIVE only. Feature ON = accent (app .mode.active).
   bg: 0x101012, panel: 0x18181b, panel2: 0x222226, line: 0x34343a,
   text: 0xe6e6e8, dim: 0x9a9aa2, grey: 0x6e6e6e, black: 0x000000,
   red: 0xc42020, pgm: 0xc42020, onPgm: 0xffffff,
   pvw: 0x137a3a, onPvw: 0xffffff,
   armed: 0xe0a000, onArmed: 0x101012,
-  focus: 0x7fb2ff, danger: 0xc42020,
+  focus: 0x7fb2ff, accent: 0x3b8cff, danger: 0xc42020,
+  allstopBg: 0x3a0d10, allstopText: 0xffb3b6,
 };
 const T = (s) => `$(rs6presets:${s})`;
 const A = (actionId, options = {}) => ({ actionId, options });
@@ -378,7 +379,7 @@ function deckFeedbacks(inst) {
   const g = () => inst.sys; const S = g();
   const dd = (id, label, choices, extra = {}) => ({ type: 'dropdown', id, label, default: choices[0] && choices[0].id, choices, ...extra });
   const camOpt = dd('cam', 'Camera', X.camChoices(S), { allowCustom: true });
-  // Feature ON: outline + ON tag (graphics brandOverrides.featureOn) — never solid red.
+  // Feature ON: app .mode.active accent fill (graphics brandOverrides.featureOn) — never PGM red.
   const FEATURE_ON = { featureOn: true, color: BRAND.text };
   const PGM = { bgcolor: BRAND.pgm, color: BRAND.onPgm };
   const ARMED = { bgcolor: BRAND.armed, color: BRAND.onArmed };
@@ -410,8 +411,8 @@ const camFbs = (cam) => [fb('ptz_tally', { cam, color: 'red' }, PGM_FILL), fb('p
 function presets(S) {
   const out = {}; if (!X.ptz(S)) return out;
   const sel = 'selected'; const P = 'ptz_sel';
-  // Systems HOME: T-Bar mark (flat --text) on panel2. App page sets wire the press to systems home.
-  out.deck_nav_home = key('PTZ deck: nav', 'HOME — systems / surface home (T-Bar)', { kind: 'home', main: 'HOME' }, []);
+  // Systems HOME: M4 Viewport mark (flat --text) on panel2. App page sets wire the press to systems home.
+  out.deck_nav_home = key('PTZ deck: nav', 'HOME — systems / surface home (M4 Viewport)', { kind: 'home', main: 'HOME' }, []);
   // camera select row
   X.cams(S).forEach((c, i) => {
     const id = X.safeId(c.id); const p = `ptz_${id}`;
@@ -469,7 +470,7 @@ function presets(S) {
     out[`deck_${d}`] = key('PTZ deck: move', `${cap.toLowerCase()} ${d} while held (ramps)`, { kind: 'move', cap, main, value: T(`${P}_${axis}`) }, [A('deck_ramp', { cam: sel, axis, dir: d, phase: 'down' })], [A('deck_ramp', { cam: sel, axis, dir: d, phase: 'up' })], [], { role: 'motion' });
   }
   out.deck_home = key('PTZ deck: move', 'Camera home (selected camera)', { kind: 'exec', cap: 'CAMERA', main: 'HOME' }, [A('ptz_exec', { cam: sel, op: 'home' })]);
-  out.deck_stop_all = key('PTZ deck: move', 'ALL STOP (every camera) — hold; red outline, not PGM fill', { kind: 'take', main: 'ALL STOP', danger: true }, [A('ptz_stop_all')]);
+  out.deck_stop_all = key('PTZ deck: move', 'ALL STOP (every camera) — hold; .rcp-allstop fill, not PGM', { kind: 'take', main: 'ALL STOP', danger: true }, [A('ptz_stop_all')]);
   // dials and their strip cells (paired bias dials show the active axis label + value)
   for (const k of DIAL_IDS) {
     const dl = DIALS[k];

@@ -82,40 +82,52 @@ test('0.9.0 deck presets: cameras, guarded presets, paint ±, functions, dials, 
   assert.equal(P.deck_strip_iris.steps[0].down[0].actionId, 'ptz_toggle');
   // brand
   assert.equal(P.deck_cam_cam1.brand.kind, 'cam');
-  assert.equal(P.deck_stop_all.brand.bg, 0xc42020);
+  assert.equal(P.deck_stop_all.brand.danger, true);
 });
 
-test('0.9.0 brand layered: quiet void, inset chip tile, white frame for selected, red chip on tally/ON', () => {
+test('0.9.0 brand layered: Control-app ctl-t geometry, accent ON, all-stop, PGM tally', () => {
   const S = fixture();
   const P = X.buttonPresets(S);
-  const pub = G.publishPresets({ cam: P.deck_cam_cam1, iris: P.deck_iris_up, fn: P.deck_fn_tally, stop: P.deck_stop_all });
+  const pub = G.publishPresets({
+    cam: P.deck_cam_cam1, iris: P.deck_iris_up, auto: P.deck_iris_auto, stop: P.deck_stop_all, home: P.deck_nav_home,
+  });
   const cam = pub.presets.cam.variants[0];
   assert.equal(cam.type, 'layered');
-  assert.equal(cam.elements.find((e) => e.id === 'bg').color, 0x121212); // void
+  assert.equal(cam.canvas.decoration, 'none');
+  assert.equal(cam.canvas.showStatusIcons, 'none');
+  assert.equal(cam.elements.find((e) => e.id === 'bg').color, 0x101012);
   const chip = cam.elements.find((e) => e.id === 'chip');
-  assert.ok(chip, 'inset chip tile');
-  assert.equal(chip.color, 0x161c23); // app --rcp2 panel
-  assert.ok(chip.cornerRadius > 0, 'rounded chip like app tiles');
-  assert.equal(cam.elements.find((e) => e.id === 'frame').borderWidth, 6);
+  assert.ok(chip, 'full-bleed control tile');
+  assert.equal(chip.color, 0x222226); // --panel2 / .ctl-t idle
+  assert.equal(chip.cornerRadius, 12);
+  assert.equal(chip.x, 0);
+  assert.equal(chip.width, 100);
+  assert.equal(cam.elements.find((e) => e.id === 'frame').borderWidth, 5);
   const sel = cam.feedbacks.find((f) => f.feedbackId === 'ptz_selected');
-  assert.ok(sel.styleOverrides.some((o) => o.elementId === 'frame' && o.elementProperty === 'borderColor' && o.override === 0xf5f5f5));
+  assert.ok(sel.styleOverrides.some((o) => o.elementId === 'frame' && o.elementProperty === 'borderColor' && o.override === 0xffffff));
   const tally = cam.feedbacks.find((f) => f.feedbackId === 'ptz_tally');
-  assert.ok(tally.styleOverrides.some((o) => o.elementId === 'chip' && o.override === 0xc42020), 'tally fills the chip, not the void');
-  // ALL STOP: chip is red at rest; void stays quiet
+  assert.ok(tally.styleOverrides.some((o) => o.elementId === 'chip' && o.override === 0xc42020), 'tally = PGM fill');
+  // ALL STOP = .rcp-allstop
   const stop = pub.presets.stop.variants[0];
-  assert.equal(stop.elements.find((e) => e.id === 'bg').color, 0x121212);
-  assert.equal(stop.elements.find((e) => e.id === 'chip').color, 0xc42020);
-  // paint-strip caption: left mono
+  assert.equal(stop.elements.find((e) => e.id === 'chip').color, 0x3a0d10);
+  assert.equal(stop.elements.find((e) => e.id === 'chip').borderColor, 0xc42020);
+  // Feature ON → accent (app .mode.active), not red
+  const auto = pub.presets.auto.variants[0];
+  const onFb = auto.feedbacks.find((f) => f.feedbackId === 'ptz_active');
+  assert.ok(onFb.styleOverrides.some((o) => o.elementId === 'chip' && o.elementProperty === 'color' && o.override === 0x3b8cff));
+  // ctl-t caption: left mono, wide tracking
   const tag = cam.elements.find((e) => e.id === 'tag');
   assert.equal(tag.font, 'companion-mono');
-  assert.equal(tag.weight, 'bold');
   assert.equal(tag.halign, 'left');
-  // step key: caption left, value bottom-left (app paint strip)
+  assert.equal(tag.letterSpacing, 14);
   const iris = pub.presets.iris.variants[0];
   assert.equal(iris.elements.find((e) => e.id === 'tag').halign, 'left');
   assert.equal(iris.elements.find((e) => e.id === 'detail').halign, 'left');
-  // no busy hairline on value/mode chips
   assert.equal(iris.elements.find((e) => e.id === 'rule'), undefined);
+  // HOME uses brand font + M4 Viewport mark
+  const home = pub.presets.home.variants[0];
+  assert.ok(home.elements.find((e) => e.id === 'mark'));
+  assert.equal(home.elements.find((e) => e.id === 'label').font, 'companion-brand');
 });
 
 test('0.9.0 deck actions and feedbacks are registered', () => {
