@@ -1,10 +1,10 @@
 {
   "$schema": "../node_modules/@companion-module/base/assets/manifest.schema.json",
-  "id": "rs6-presets",
-  "name": "PV Control Center",
-  "shortname": "rs6presets",
-  "description": "Control everything through the PV Control Center app: Analog Way Aquilon RS6 presets, Barco E2, PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. The module talks only to the app, never to the devices.",
-  "version": "0.10.0",
+  "id": "pvllc-control-center",
+  "name": "Performance Video Control Center",
+  "shortname": "pvcc",
+  "description": "Control everything through the Performance Video Control Center app: Control Center buttons and pages, Analog Way Aquilon RS6 presets, Barco E2, PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. The module talks only to the app, never to the devices.",
+  "version": "0.11.0",
   "license": "MIT",
   "repository": "git+https://github.com/stevenmarr/companion-module-rs6-presets.git",
   "bugs": "https://github.com/stevenmarr/companion-module-rs6-presets/issues",
@@ -13,7 +13,9 @@
       "name": "Steven"
     }
   ],
-  "legacyIds": [],
+  "legacyIds": [
+    "rs6-presets"
+  ],
   "type": "connection",
   "runtime": {
     "type": "node22",
@@ -23,13 +25,12 @@
   },
   "manufacturer": "Performance Video",
   "products": [
-    "PV Control Center (Aquilon RS6, Barco E2, PixelHue, Blackmagic ATEM, Panasonic PTZ)"
+    "Control Center"
   ],
   "keywords": [
     "Analog Way",
     "Aquilon",
     "RS6",
-    "presets",
     "E2",
     "Barco",
     "PixelHue",
@@ -38,6 +39,7 @@
     "Panasonic",
     "PTZ",
     "switcher",
-    "control center"
+    "control center",
+    "Performance Video"
   ]
 }

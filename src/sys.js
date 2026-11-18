@@ -329,7 +329,7 @@ function camDeckPresets(c) {
 }
 
 // ---------- button presets ----------
-const T = (s) => `$(rs6presets:${s})`;
+const T = (s) => `$(pvcc:${s})`;
 function btn(category, name, style, down, up = [], feedbacks = []) { return { type: 'button', category, name, style, steps: [{ down, up }], feedbacks }; }
 const A = (actionId, options = {}) => ({ actionId, options });
 

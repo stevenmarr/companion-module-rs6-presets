@@ -146,9 +146,9 @@ test('backup buttons name the source, the live state, and the groups', () => {
   assert.equal(v.bk_grp_2_state, 'BKP 2');
   assert.equal(v.bk_grp_2_members, 'IN 4 PPT Main');
   const p = L.buttonPresets(st);
-  assert.equal(p.input_backup_4_1.style.text, '$(rs6presets:bk_in_4_name)\nBKP 1 $(rs6presets:bk_in_4_src1)\n$(rs6presets:bk_in_4_state)');
-  assert.equal(p.input_backup_4_NONE.style.text, '$(rs6presets:bk_in_4_name)\nPRIMARY\n$(rs6presets:bk_in_4_state)');
-  assert.equal(p.bg_backup_S1_1_1.style.text, '$(rs6presets:bk_bg_S1_1_name)\nBKP 1 $(rs6presets:bk_bg_S1_1_src1)\n$(rs6presets:bk_bg_S1_1_state)');
+  assert.equal(p.input_backup_4_1.style.text, '$(pvcc:bk_in_4_name)\nBKP 1 $(pvcc:bk_in_4_src1)\n$(pvcc:bk_in_4_state)');
+  assert.equal(p.input_backup_4_NONE.style.text, '$(pvcc:bk_in_4_name)\nPRIMARY\n$(pvcc:bk_in_4_state)');
+  assert.equal(p.bg_backup_S1_1_1.style.text, '$(pvcc:bk_bg_S1_1_name)\nBKP 1 $(pvcc:bk_bg_S1_1_src1)\n$(pvcc:bk_bg_S1_1_state)');
   assert.match(p.group_backup_2_2.style.text, /backup_group_2_name/);
   assert.match(p.group_backup_2_2.style.text, /bk_grp_2_state/);
   assert.match(p.group_backup_2_2.style.text, /bk_grp_2_members/);
