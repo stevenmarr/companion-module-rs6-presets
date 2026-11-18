@@ -57,6 +57,8 @@ test('cc_button_run posts the button and event to the app; a knob turn sends the
 test('cc_button_look returns the CC text and colors; variables count buttons and pages', () => {
   const f = C.feedbacks({ cc: model }).cc_button_look;
   assert.equal(f.type, 'advanced');
+  // 0.11.1: Companion warns when an advanced feedback has no affectedProperties array.
+  assert.deepEqual(f.affectedProperties, ['text', 'color', 'bgcolor']);
   assert.deepEqual(f.callback({ options: { button: 'bcut' } }), { text: 'CUT', color: 0xffffff, bgcolor: 0xff2d2d });
   assert.deepEqual(f.callback({ options: { button: 'gone' } }), {});
   assert.deepEqual(C.variableValues(model), { cc_buttons_rev: 'abc123.1', cc_button_count: '4', cc_page_count: '1' });
@@ -64,4 +66,13 @@ test('cc_button_look returns the CC text and colors; variables count buttons and
   assert.equal(C.variableDefinitions().length, 3);
   assert.equal(C.deltaOf(' -2 '), -2);
   assert.equal(C.deltaOf('x'), 0);
+});
+
+test('every advanced feedback declares affectedProperties with valid style keys (0.11.1)', () => {
+  const ok = new Set(['text', 'size', 'color', 'bgcolor', 'alignment', 'pngalignment', 'png64', 'imageBuffer']);
+  for (const [id, f] of Object.entries(C.feedbacks({ cc: model }))) {
+    if (f.type !== 'advanced') continue;
+    assert.ok(Array.isArray(f.affectedProperties), `${id} has no affectedProperties array`);
+    for (const p of f.affectedProperties) assert.ok(ok.has(p), `${id}: ${p}`);
+  }
 });

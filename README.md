@@ -15,6 +15,11 @@ Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, wit
 
 ![icon](companion/icon.png)
 
+## New in 0.11.1
+
+- Feedback `cc_button_look` declares `affectedProperties` (`text`, `color`, `bgcolor`), so Companion 5 no longer warns
+  "advanced feedback definitions are missing an array for affectedProperties" and offers only those style overrides.
+
 ## New in 0.11.0
 
 - **Renamed to "Performance Video Control Center".** Module id `pvllc-control-center` (was `rs6-presets`),
