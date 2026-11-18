@@ -110,7 +110,7 @@ test('0.7.0 / 0.8.1 cc_pages_refresh: evaluating publishes the presets again (on
   const calls = [];
   const inst = Object.create(ControlCenterInstance.prototype);
   Object.assign(inst, { state: null, sys: fixture(), ptzCats: {}, holds: new Map(), log() {}, setPresetDefinitions: (structure, presets) => calls.push(Object.keys(presets || structure).length) });
-  Object.defineProperty(inst, 'label', { value: 'rs6presets' });
+  Object.defineProperty(inst, 'label', { value: 'pvcc' });
   const fb = inst.feedbacks().cc_pages_refresh;
   assert.equal(fb.type, 'boolean'); assert.equal(fb.callback(), false); assert.deepEqual(fb.defaultStyle, {});
   assert.equal(fb.subscribe, undefined, 'module-base 2 has no subscribe');
@@ -124,7 +124,7 @@ test('contract: every module preset the app\'s Companion page generator uses exi
   if (!fs.existsSync(path.join(APP, 'lib', 'companion', 'index.js'))) return t.skip('rs6-presets app checkout not found');
   const C = require(path.join(APP, 'lib', 'companion'));
   const input = JSON.parse(fs.readFileSync(path.join(APP, 'test', 'fixtures', 'companion-input.json'), 'utf8'));
-  const presets = { ...L.buttonPresets(input.state, 'rs6presets'), ...X.buttonPresets({ views: input.views }) };
+  const presets = { ...L.buttonPresets(input.state, 'pvcc'), ...X.buttonPresets({ views: input.views }) };
   const { files } = C.generate(input.state, input.views, { surfaces: 'all', combined: true, seed: 2 });
   const used = new Set(); const actions = new Set(); const feedbacks = new Set();
   for (const p of Object.values(files[0].json.pages)) for (const row of Object.values(p.controls)) for (const ctl of Object.values(row)) {
@@ -141,7 +141,7 @@ test('contract: every module preset the app\'s Companion page generator uses exi
   for (const a of actions) assert.ok(defs[a], `action ${a}`);
   const { ControlCenterInstance } = loadMain();
   const fi = Object.assign(Object.create(ControlCenterInstance.prototype), { state: input.state, sys: { views: input.views }, ptzCats: {}, holds: new Map(), log() {} });
-  Object.defineProperty(fi, 'label', { value: 'rs6presets' });
+  Object.defineProperty(fi, 'label', { value: 'pvcc' });
   const fdefs = fi.feedbacks();
   for (const f of feedbacks) assert.ok(fdefs[f], `feedback ${f}`);
   // knob presets that sit on encoder cells are rotary

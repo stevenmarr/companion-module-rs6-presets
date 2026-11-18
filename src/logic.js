@@ -390,12 +390,12 @@ function presetSignature(state) {
 }
 
 // `label` is this connection's label in Companion (variables are $(<label>:name)); the default label is
-// the manifest shortname, rs6presets, but users can rename the connection.
-function buttonPresets(state, label = 'rs6presets') { return relabel(buildPresets(state), label); }
-// preset texts use $(rs6presets:...); point them at this connection's label
-function relabel(out, label = 'rs6presets') {
-  if (label && label !== 'rs6presets') {
-    for (const b of Object.values(out)) if (b.style && typeof b.style.text === 'string') b.style.text = b.style.text.split('$(rs6presets:').join(`$(${label}:`);
+// the manifest shortname, pvcc, but users can rename the connection.
+function buttonPresets(state, label = 'pvcc') { return relabel(buildPresets(state), label); }
+// preset texts use $(pvcc:...); point them at this connection's label
+function relabel(out, label = 'pvcc') {
+  if (label && label !== 'pvcc') {
+    for (const b of Object.values(out)) if (b.style && typeof b.style.text === 'string') b.style.text = b.style.text.split('$(pvcc:').join(`$(${label}:`);
   }
   return out;
 }
@@ -410,7 +410,7 @@ function buildPresets(state) {
     out[`preset_${n}`] = {
       type: 'button', category: `Preset tiles ${lo}-${lo + 23}`, name: p ? `${n} ${p.name}` : `${n} (empty tile)`,
       // Name only (live through the variable; it falls back to the number). size auto wraps on spaces.
-      style: look('preset', `$(rs6presets:preset_${n}_name)`),
+      style: look('preset', `$(pvcc:preset_${n}_name)`),
       steps: [{ down: [{ actionId: 'recall_preset', options: { preset: n } }], up: [] }],
       feedbacks: [
         { feedbackId: 'preset_pvw', options: { preset: n, partial: false }, style: lit('preset_pvw', COLORS.green) },
@@ -421,7 +421,7 @@ function buildPresets(state) {
   for (const i of memItems(state, 'master')) {
     out[`master_mem_${i.slot}`] = {
       type: 'button', category: 'Master memories', name: `Load Master ${i.slot} ${i.label || ''} to PVW`,
-      style: look('master', i.label ? `$(rs6presets:master_mem_${i.slot}_name)` : `MASTER ${i.slot}`),
+      style: look('master', i.label ? `$(pvcc:master_mem_${i.slot}_name)` : `MASTER ${i.slot}`),
       steps: [{ down: [{ actionId: 'load_master_memory', options: { memory: i.slot, target: 'preview' } }], up: [] }],
       feedbacks: [
         { feedbackId: 'master_memory', options: { side: 'pvw', memory: i.slot }, style: lit('master_pvw', COLORS.green) },
@@ -439,17 +439,17 @@ function buildPresets(state) {
       feedbacks: [{ feedbackId: 'dest_selected', options: { dest: d.key }, style: lit('dest_sel', COLORS.amber, COLORS.black) }],
     };
   }
-  out.take = { type: 'button', category: 'Transitions', name: 'TAKE', style: look('take', 'TAKE\\n$(rs6presets:selection)', COLORS.white, COLORS.red), steps: [{ down: [{ actionId: 'take', options: {} }], up: [] }], feedbacks: [] };
-  out.cut = { type: 'button', category: 'Transitions', name: 'CUT', style: look('cut', 'CUT\\n$(rs6presets:selection)', COLORS.white, COLORS.darkred), steps: [{ down: [{ actionId: 'cut', options: {} }], up: [] }], feedbacks: [] };
+  out.take = { type: 'button', category: 'Transitions', name: 'TAKE', style: look('take', 'TAKE\\n$(pvcc:selection)', COLORS.white, COLORS.red), steps: [{ down: [{ actionId: 'take', options: {} }], up: [] }], feedbacks: [] };
+  out.cut = { type: 'button', category: 'Transitions', name: 'CUT', style: look('cut', 'CUT\\n$(pvcc:selection)', COLORS.white, COLORS.darkred), steps: [{ down: [{ actionId: 'cut', options: {} }], up: [] }], feedbacks: [] };
   out.auto_take = {
     type: 'button', category: 'Transitions', name: 'Auto take toggle',
-    style: look('auto', 'AUTO\\nTAKE\\n$(rs6presets:auto_take)'),
+    style: look('auto', 'AUTO\\nTAKE\\n$(pvcc:auto_take)'),
     steps: [{ down: [{ actionId: 'auto_take', options: { mode: 'toggle' } }], up: [] }],
     feedbacks: [{ feedbackId: 'auto_take_on', options: {}, style: lit('auto_sel', COLORS.amber, COLORS.black) }],
   };
   // ---- live device presets ----
   for (const i of liveInputs(state)) {
-    const lbl = `$(rs6presets:input_${i.number}_label)`;
+    const lbl = `$(pvcc:input_${i.number}_label)`;
     out[`input_tally_${i.number}`] = {
       type: 'button', category: 'Input tally', name: `Tally IN ${i.number} ${i.label || ''}`,
       style: look('tally', `IN ${i.number}\\n${lbl}`),
@@ -473,8 +473,8 @@ function buildPresets(state) {
   // source it switches to (LIVE_n resolved to that input's label). The last line is the live
   // state (PRIMARY / BKP n, plus AUTO). size auto shrinks so a long name does not clip.
   const bkFace = (nameId, stateId, slot, srcId) => {
-    const slotLine = srcId && slot !== 'NONE' ? `${slotWord(slot)} $(rs6presets:${srcId})` : slotWord(slot);
-    return `$(rs6presets:${nameId})\n${slotLine}\n$(rs6presets:${stateId})`;
+    const slotLine = srcId && slot !== 'NONE' ? `${slotWord(slot)} $(pvcc:${srcId})` : slotWord(slot);
+    return `$(pvcc:${nameId})\n${slotLine}\n$(pvcc:${stateId})`;
   };
   for (const b of bk.inputs || []) {
     for (const slot of ['NONE', '1', '2']) {
@@ -501,7 +501,7 @@ function buildPresets(state) {
     for (const slot of ['NONE', '1', '2']) {
       out[`group_backup_${g.group}_${slot}`] = {
         type: 'button', category: 'Backup groups', name: `Group ${g.group} ${groupLabel(g)} ${slotWord(slot)}`,
-        style: look('backup', `${bkFace(`backup_group_${g.group}_name`, `bk_grp_${g.group}_state`, slot)}\n$(rs6presets:bk_grp_${g.group}_members)`),
+        style: look('backup', `${bkFace(`backup_group_${g.group}_name`, `bk_grp_${g.group}_state`, slot)}\n$(pvcc:bk_grp_${g.group}_members)`),
         steps: [{ down: [{ actionId: 'backup_trigger', options: { kind: 'group', id: String(g.group), slot } }], up: [] }],
         feedbacks: [{ feedbackId: 'backup_active', options: { kind: 'group', id: String(g.group), slot }, style: lit('backup_sel', COLORS.amber, COLORS.black) }],
       };
@@ -520,8 +520,8 @@ function buildPresets(state) {
       }
     }
   }
-  out.master_status = { type: 'button', category: 'Status', name: 'Last Master memory (PGM)', style: look('status', 'MASTER\\n$(rs6presets:master_pgm_number)\\n$(rs6presets:master_pgm_name)', COLORS.lightred, COLORS.black), steps: [{ down: [], up: [] }], feedbacks: [] };
-  out.last = { type: 'button', category: 'Status', name: 'Last recalled preset', style: look('status', 'PVW\\n$(rs6presets:last_preset_number)\\n$(rs6presets:last_preset_name)', COLORS.lightgreen, COLORS.black), steps: [{ down: [], up: [] }], feedbacks: [] };
+  out.master_status = { type: 'button', category: 'Status', name: 'Last Master memory (PGM)', style: look('status', 'MASTER\\n$(pvcc:master_pgm_number)\\n$(pvcc:master_pgm_name)', COLORS.lightred, COLORS.black), steps: [{ down: [], up: [] }], feedbacks: [] };
+  out.last = { type: 'button', category: 'Status', name: 'Last recalled preset', style: look('status', 'PVW\\n$(pvcc:last_preset_number)\\n$(pvcc:last_preset_name)', COLORS.lightgreen, COLORS.black), steps: [{ down: [], up: [] }], feedbacks: [] };
   return out;
 }
 

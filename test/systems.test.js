@@ -90,5 +90,5 @@ test('systems: action and feedback ids are prefixed; RS6 ids are untouched; pres
   for (const id of ['ptz_move_up', 'ptz_move_downLeft', 'ptz_tele', 'ptz_near']) assert.equal(p[id].steps[0].up[0].actionId, 'ptz_stop', id);
   // the text variables they show exist
   const defs = new Set([...X.variableDefinitions(S).map((d) => d.variableId)]);
-  for (const [id, b] of Object.entries(p)) for (const m of String(b.style.text).matchAll(/\$\(rs6presets:(\w+)\)/g)) assert.ok(defs.has(m[1]), `${id}: $(rs6presets:${m[1]})`);
+  for (const [id, b] of Object.entries(p)) for (const m of String(b.style.text).matchAll(/\$\(pvcc:(\w+)\)/g)) assert.ok(defs.has(m[1]), `${id}: $(pvcc:${m[1]})`);
 });

@@ -1,7 +1,7 @@
 {
-  "name": "companion-module-rs6-presets",
-  "version": "0.10.0",
-  "description": "Companion module for the PV Control Center app (RS6, E2, PixelHue, ATEM and Panasonic PTZ). Layered buttons need Companion with the graphics overhaul (module-base 2.2).",
+  "name": "companion-module-pvllc-control-center",
+  "version": "0.11.0",
+  "description": "Companion module for the Performance Video Control Center app (Control Center buttons and pages, RS6, E2, PixelHue, ATEM and Panasonic PTZ). Layered buttons need Companion with the graphics overhaul (module-base 2.2).",
   "main": "src/main.js",
   "license": "MIT",
   "private": true,

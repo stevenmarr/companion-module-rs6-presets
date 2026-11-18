@@ -40,7 +40,7 @@ class ControlCenterInstance extends InstanceBase {
 
   getConfigFields() {
     return [
-      { type: 'static-text', id: 'info', width: 12, label: 'About', value: 'PV Control Center: every command goes through the Control Center app (RS6, E2, PixelHue, ATEM and Panasonic PTZ); this module never talks to a device. Enter the Mac running the app and its port (default 8080).' },
+      { type: 'static-text', id: 'info', width: 12, label: 'About', value: 'Performance Video Control Center: every command goes through the Control Center app (RS6, E2, PixelHue, ATEM and Panasonic PTZ); this module never talks to a device. Enter the Mac running the app and its port (default 8080).' },
       { type: 'textinput', id: 'host', label: 'App host / IP', width: 8, default: '127.0.0.1', regex: Regex.HOSTNAME },
       { type: 'number', id: 'port', label: 'App port', width: 4, default: 8080, min: 1, max: 65535 },
       { type: 'dropdown', id: 'updates', label: 'Updates', width: 8, default: 'longpoll', choices: [{ id: 'longpoll', label: 'Long-poll (instant, app 0.2.0+; falls back to polling)' }, { id: 'poll', label: 'Poll only' }] },

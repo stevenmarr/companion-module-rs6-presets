@@ -1,10 +1,11 @@
-# companion-module-rs6-presets: PV Control Center
+# Performance Video Control Center (Companion module)
 
-A Bitfocus **Companion** module for the **PV Control Center** app
+A Bitfocus **Companion** module for the **Performance Video Control Center** app
 (formerly RS6 Presets). It controls an Analog Way Aquilon RS6 (Barco E2-style destination presets), a Barco E2,
 a PixelHue, a Blackmagic ATEM and Panasonic PTZ cameras, **all through the app's HTTP API** (default port 8080).
-The module never connects to a device directly. The module id stays `rs6-presets` (shortname `rs6presets`), so
-existing connections and buttons keep working; only the display name is now "PV Control Center".
+The module never connects to a device directly. Since 0.11.0 the module id is `pvllc-control-center`
+(shortname `pvcc`). The old id `rs6-presets` is listed in the manifest's `legacyIds`, so Companion moves existing
+`rs6-presets` connections over to this module.
 
 **0.7.3 and later need Companion with the layered button editor** (module-base 2.2, the graphics overhaul on
 `feat/lcars-gui`). Stock Companion 3.x will not load this build. Import the `.tgz` on the Connections
@@ -13,6 +14,18 @@ page of that Companion.
 Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, with no TypeScript build.
 
 ![icon](companion/icon.png)
+
+## New in 0.11.0
+
+- **Renamed to "Performance Video Control Center".** Module id `pvllc-control-center` (was `rs6-presets`),
+  shortname `pvcc` (was `rs6presets`), npm name `companion-module-pvllc-control-center`. The manifest lists
+  `rs6-presets` in `legacyIds`, so Companion migrates old connections to the new id.
+- New connections get the default label `pvcc`, so preset texts read `$(pvcc:...)`. A connection that keeps its
+  old `rs6presets` label still works: preset texts always follow the connection's own label.
+- Action, feedback and variable ids are unchanged (`cc_button_run`, `cc_button_look`, `cc_buttons_rev`, ...).
+- Release assets are now `pvllc-control-center.tgz` / `.zip`. The install script falls back to the old asset name
+  for `--version v0.10.0` and earlier, and installs to `~/companion-modules/pvllc-control-center/`.
+- Pairs with Control Center 0.31.1, whose COMPANION tab accepts both ids.
 
 ## New in 0.10.0
 
@@ -107,10 +120,10 @@ curl -fsSL https://github.com/stevenmarr/companion-module-rs6-presets/releases/l
 ```
 
 The script ([install-companion-module.sh](install-companion-module.sh), also attached to every release):
-- downloads the release's module package `companion-module-rs6-presets.tgz` (built with
+- downloads the release's module package `pvllc-control-center.tgz` (built with
   `companion-module-build`)
-- checks it and saves it as `~/companion-modules/rs6-presets/companion-module-rs6-presets-<version>.tgz`
-- lists the rs6-presets versions Companion already has
+- checks it and saves it as `~/companion-modules/pvllc-control-center/pvllc-control-center-<version>.tgz`
+- lists the versions Companion already has, including old `rs6-presets` ones
 - opens Companion's Modules page and shows the file in Finder
 
 It is safe to run again, never uses sudo, and doesn't touch Companion's own files. To pass options,
@@ -120,7 +133,7 @@ use `| bash -s -- --dev`:
 |---|---|
 | `--version v0.3.1` | Install that release instead of the latest. |
 | `--file <.tgz or release .zip>` | Use a local file instead of downloading. |
-| `--dev` | Also unpack to `~/companion-modules/dev/rs6-presets` for the Developer modules path. Automatic on Companion 3.x. |
+| `--dev` | Also unpack to `~/companion-modules/dev/pvllc-control-center` for the Developer modules path. Automatic on Companion 3.x. |
 | `--restart` | Quit and reopen Companion. |
 | `--no-open` | Don't open Companion or Finder. |
 
@@ -128,13 +141,13 @@ Then, in Companion 4.x or 5.x (this is Companion's supported way to add a module
 store; see the Modules page in the Companion user guide):
 1. **Modules › Import module package**, then choose the `.tgz` the script printed. In the file
    dialog, press Cmd+Shift+G and paste the path. Don't unpack the `.tgz`.
-2. **New connection:** Connections › **+ Add connection**, search **PV Control Center** (Performance Video; module id rs6-presets),
+2. **New connection:** Connections › **+ Add connection**, search **Control Center** (Performance Video; module id pvllc-control-center),
    pick the version you imported, then set **App host/IP** (`127.0.0.1` if the app runs on the same
    Mac) and **App port** `8080`.
    **Existing connection:** open it, click the **pencil** next to the module version, pick the new
    version and **Save**. The connection restarts; Companion itself doesn't need a restart.
-3. Drag buttons from **Buttons › Presets › rs6-presets**. Buttons you already have keep working,
-   because the module id never changes. Buttons dragged from an older version keep their old text;
+3. Drag buttons from **Buttons › Presets › Performance Video Control Center**. Buttons you already have keep
+   working: the module id only changed once (0.11.0), and the old id is a legacy id. Buttons dragged from an older version keep their old text;
    drag them again only if you want the new text.
 
 ## New in 0.5.0 (for app 0.5.0)
@@ -230,7 +243,7 @@ memory actions return the app's 404.
 
 ### How it stays up to date
 
-The module talks **only to the RS6 Presets app's HTTP API**. It never connects to the Aquilon.
+The module talks **only to the Control Center app's HTTP API**. It never connects to the Aquilon.
 
 - **Long-poll (default).** The module sends `GET /api/state?since=<rev>&timeout=20000`, and the app
   holds the request open until something changes. With app 0.2.0's live AWJ subscriptions, a change
@@ -240,31 +253,31 @@ The module talks **only to the RS6 Presets app's HTTP API**. It never connects t
   and polls `GET /api/state` every *poll interval*. *Poll only* forces this mode. After a network
   error, the module waits one poll interval and retries.
 
-The live features need RS6 Presets app **0.2.0 or later**, connected to the RS6 with live state on.
+The live features need the app (then called RS6 Presets) **0.2.0 or later**, connected to the RS6 with live state on.
 Against an older app, the new feedbacks are simply false and the new variables are empty.
 
 ## Alternative: the Developer modules path
 
-Use this on Companion 3.x, which has no package import, or for development. You need Companion 3.4 or newer and the RS6 Presets app running somewhere on the
+Use this on Companion 3.x, which has no package import, or for development. You need Companion 3.4 or newer and the Control Center app running somewhere on the
 network.
 
 1. Make a folder for dev modules, for example `~/companion-dev-modules`.
 2. Put the module inside it, using **either**:
-   - **Pre-built (no Node or npm needed):** copy `dist/rs6-presets/` from this zip to
-     `~/companion-dev-modules/rs6-presets/`. It holds a bundled `main.js`, `package.json` and `companion/manifest.json`.
-   - **From source:** copy this whole folder to `~/companion-dev-modules/companion-module-rs6-presets/`, then run
+   - **Pre-built (no Node or npm needed):** copy `dist/pvllc-control-center/` from this zip to
+     `~/companion-dev-modules/pvllc-control-center/`. It holds a bundled `main.js`, `package.json` and `companion/manifest.json`.
+   - **From source:** copy this whole folder to `~/companion-dev-modules/companion-module-pvllc-control-center/`, then run
      ```bash
-     cd ~/companion-dev-modules/companion-module-rs6-presets
+     cd ~/companion-dev-modules/companion-module-pvllc-control-center
      npm install
      ```
 3. Open the **Companion launcher** window (the small window with the "Launch GUI" button), click the
    **cog** (on Companion 4.1 and later this opens a Settings window), and set **Developer modules path** to `~/companion-dev-modules`. Companion
    restarts its module host and picks the module up. It also reloads when files there change.
-4. In the Companion web UI, go to **Connections › Add connection**, search for **"PV Control Center"**
+4. In the Companion web UI, go to **Connections › Add connection**, search for **"Control Center"**
    (manufacturer Performance Video), and add it.
-5. Set **App host/IP** to the Mac running the RS6 Presets app (`127.0.0.1` if it's the same machine) and
+5. Set **App host/IP** to the Mac running the Control Center app (`127.0.0.1` if it's the same machine) and
    **App port** to `8080`.
-6. Drag buttons from **Presets › rs6-presets**: Presets, Destinations and Transitions.
+6. Drag buttons from **Presets › Performance Video Control Center**: Presets, Destinations and Transitions.
 
 On a headless or Pi install, pass `--extra-module-path /path/to/companion-dev-modules` to the
 Companion binary instead of using the launcher. Check the docs for your Companion version, since the
@@ -287,7 +300,7 @@ npm run package       # companion-module-build -> pkg/ and pkg.tgz
     was captured from it). A freeze made through the app reached the module's feedback in about 65 ms.
   - 0.3.0: combined-preset dropdowns, memory dropdowns/variables, Master memory buttons and the new
     memory routes, against `test/fixtures/app-state-0.3.0.json` (captured from app 0.3.0 `--mock`).
-  - `companion-module-build` completes and produces `dist/rs6-presets`
+  - `companion-module-build` completes and produces `dist/pvllc-control-center`
   - 0.6.0: `test/e2e-systems.test.js` runs the module against the real Control Center app 0.8.0 in `--mock` mode:
     E2 (selection, recall, take, auto take, cue), PixelHue (selection, recall, cut), ATEM (buses, cut, auto, keys,
     aux, macros, FTB) and PTZ (select, hold with keep-alives past the dead-man, stop on release, max hold, iris,

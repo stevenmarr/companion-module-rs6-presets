@@ -7,7 +7,7 @@ const C = require('../src/ccbuttons');
 const G = require('../src/graphics');
 
 const model = {
-  rev: 'abc123.1', appVersion: '0.31.0', apiVersion: 9, moduleId: 'rs6-presets',
+  rev: 'abc123.1', appVersion: '0.31.0', apiVersion: 9, moduleId: 'pvllc-control-center',
   buttons: [
     { id: 'bcut', name: 'CUT', element: 'button', role: 'hot', text: 'CUT', look: { bgcolor: '#FF2D2D', color: '#FFFFFF' }, events: ['press'] },
     { id: 'bpgm', name: 'Program', element: 'button', role: 'program', text: '$(atem:name)', look: { bgcolor: '#101010', color: '#FFFFFF' }, events: ['press', 'release'] },

@@ -1,8 +1,8 @@
-## PV Control Center
+## Performance Video Control Center
 
 ![Performance Video](icon.png)
 
-Controls the **PV Control Center** app (formerly RS6 Presets): Analog Way Aquilon RS6 presets, Barco E2,
+Controls the **Performance Video Control Center** app (formerly RS6 Presets; module id `pvllc-control-center`, formerly `rs6-presets`): Analog Way Aquilon RS6 presets, Barco E2,
 PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. **Every command goes through the app** (default port
 8080); this module never talks to a device. Remove any direct E2 / ATEM / Panasonic connections from
 Companion once your buttons use this module, so there is one path to each device.
@@ -16,7 +16,7 @@ onto a page, or lay them out with the fork's page designs and templates.
 **Action** *Control Center: run a CC button* (`cc_button_run`): button, event (press / release / hold / turn /
 push / touch) and a knob delta (variables allowed). The app runs the button's own actions. **Feedback**
 *Control Center: look of a CC button* (`cc_button_look`): the button's text and colours from the app. **Variables:**
-`$(rs6presets:cc_buttons_rev)`, `$(rs6presets:cc_button_count)`, `$(rs6presets:cc_page_count)`.
+`$(pvcc:cc_buttons_rev)`, `$(pvcc:cc_button_count)`, `$(pvcc:cc_page_count)`.
 
 An edit in the app, or **SYNC TO COMPANION** on the app's COMPANION tab, republishes the presets within a few
 seconds. The COMPANION tab can also download a page as a `.companionconfig` for Companion's Import / Export.
@@ -142,38 +142,38 @@ the Companion fork with the layered button editor (module-base 2.2).
 - Backup active
 - Audio channel muted
 
-**Variables:** `$(rs6presets:last_preset_number)`, `$(rs6presets:last_preset_name)`,
-`$(rs6presets:program_presets)`, `$(rs6presets:selection)`, `$(rs6presets:auto_take)`,
-`$(rs6presets:device_connected)`, and `$(rs6presets:preset_N_name)` for each tile (1 to the app's tile count, or the highest used; "N (empty)" for an empty tile). Swapping or moving tiles in the app (0.4.0) swaps the numbers, so buttons follow the tile. `$(rs6presets:backup_group_G_name)` holds each backup group's device name. `$(rs6presets:bk_in_N_name)` is the input a backup protects, `bk_in_N_src1` / `bk_in_N_src2` are the backup sources, and `bk_in_N_state` is `PRIMARY` or `BKP n` (with `AUTO` when automatic). Background sets use `bk_bg_<screen>_<set>_…`. Groups add `bk_grp_G_state` and `bk_grp_G_members`.
+**Variables:** `$(pvcc:last_preset_number)`, `$(pvcc:last_preset_name)`,
+`$(pvcc:program_presets)`, `$(pvcc:selection)`, `$(pvcc:auto_take)`,
+`$(pvcc:device_connected)`, and `$(pvcc:preset_N_name)` for each tile (1 to the app's tile count, or the highest used; "N (empty)" for an empty tile). Swapping or moving tiles in the app (0.4.0) swaps the numbers, so buttons follow the tile. `$(pvcc:backup_group_G_name)` holds each backup group's device name. `$(pvcc:bk_in_N_name)` is the input a backup protects, `bk_in_N_src1` / `bk_in_N_src2` are the backup sources, and `bk_in_N_state` is `PRIMARY` or `BKP n` (with `AUTO` when automatic). Background sets use `bk_bg_<screen>_<set>_…`. Groups add `bk_grp_G_state` and `bk_grp_G_members`.
 New in 0.5.0: the tiles follow the app's tile count (24/48/72/96), with button presets in pages of 24.
-`$(rs6presets:app_version)`, `$(rs6presets:app_api_version)`, `$(rs6presets:show_name)` and `$(rs6presets:tile_count)`
+`$(pvcc:app_version)`, `$(pvcc:app_api_version)`, `$(pvcc:show_name)` and `$(pvcc:tile_count)`
 are new. If the app version doesn't match, the connection shows a warning and the log says what to update.
 **Upgrading:** import the new package, then click the pencil next to the version on the connection and pick
 the new version. The connection and its buttons are kept.
 New in 0.2.0:
-- `$(rs6presets:input_N_label)`
-- `$(rs6presets:S1_pgm_memory_number)` and `_name`, with the matching `pvw` versions
-- `$(rs6presets:master_pgm_number)` and `_name`, with the matching `pvw` versions
-- `$(rs6presets:S1_pgm_layer1)`
-- `$(rs6presets:live_mode)`
+- `$(pvcc:input_N_label)`
+- `$(pvcc:S1_pgm_memory_number)` and `_name`, with the matching `pvw` versions
+- `$(pvcc:master_pgm_number)` and `_name`, with the matching `pvw` versions
+- `$(pvcc:S1_pgm_layer1)`
+- `$(pvcc:live_mode)`
 
 New in 0.3.0:
-- `$(rs6presets:screen_mem_N_name)` and `$(rs6presets:master_mem_N_name)` for each named memory
-- `$(rs6presets:mv_mem_N_name)` (only with the app's memory probe on)
-- `$(rs6presets:preset_N_summary)`, e.g. `M:3 S4:30 MV1:2`
-- `$(rs6presets:memories_imported)`
+- `$(pvcc:screen_mem_N_name)` and `$(pvcc:master_mem_N_name)` for each named memory
+- `$(pvcc:mv_mem_N_name)` (only with the app's memory probe on)
+- `$(pvcc:preset_N_summary)`, e.g. `M:3 S4:30 MV1:2`
+- `$(pvcc:memories_imported)`
 
 **Presets:** one button per app preset, which recalls it, shows its name (from
-`$(rs6presets:preset_N_name)`; the number if it has no name) and shows PVW/PGM tally, plus destination
+`$(pvcc:preset_N_name)`; the number if it has no name) and shows PVW/PGM tally, plus destination
 toggles, TAKE and CUT (with their target screens on a second line), and Auto take. Also: Input tally and Input freeze buttons for each input,
 Backup buttons, an Audio mute button for each channel, and (0.3.0) Master memory buttons (showing the memory name), Refresh memories and a logo button. They regenerate when presets are added
 or renamed in the app.
 
-With RS6 Presets app 0.2.0 or later, tally and status come from the device itself (AWJ
+With Control Center app (then RS6 Presets) 0.2.0 or later, tally and status come from the device itself (AWJ
 subscriptions), so changes made on the RC400T or the Web RCS show up. The freeze write is inferred,
 because the AWJ guide documents only a read of it.
 
-Memory import and combined presets need RS6 Presets app 0.3.0 or later. Memory names are documented
+Memory import and combined presets need Control Center app (then RS6 Presets) 0.3.0 or later. Memory names are documented
 (AWJ §3.7); memory validity and multiviewer memory names are inferred and only read when the app's
 memory probe is enabled.
 

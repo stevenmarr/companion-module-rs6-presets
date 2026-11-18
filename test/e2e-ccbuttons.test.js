@@ -12,7 +12,7 @@ const { AppApi } = require('../src/api');
 
 function loadInstance() {
   class InstanceBase {
-    constructor() { this.calls = { status: [], vars: {}, varDefs: [], presets: {}, actions: {}, feedbacks: {}, logs: [] }; this.label = 'rs6presets'; }
+    constructor() { this.calls = { status: [], vars: {}, varDefs: [], presets: {}, actions: {}, feedbacks: {}, logs: [] }; this.label = 'pvcc'; }
     updateStatus(s, m) { this.calls.status.push([s, m]); }
     setVariableDefinitions(d) { this.calls.varDefs = d; }
     setVariableValues(v) { Object.assign(this.calls.vars, v); }

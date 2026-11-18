@@ -101,7 +101,7 @@ test('0.8.1 text styling: each button function has its own look, feedbacks resty
   assert.equal(el('atem_pgm_1', 'tag').text, 'PGM'); assert.equal(el('atem_pgm_1', 'tag').halign, 'left');
   assert.equal(el('atem_pgm_1', 'tag').font, 'companion-mono');
   assert.equal(el('atem_pgm_1', 'tag').color, G.ACCENT.atem);
-  assert.equal(el('atem_pgm_1', 'label').text, '$(rs6presets:atem_input_1_name)');
+  assert.equal(el('atem_pgm_1', 'label').text, '$(pvcc:atem_input_1_name)');
   const lit = pgm.feedbacks[0].styleOverrides;
   assert.ok(lit.some((o) => o.elementId === 'art' && String(o.override).startsWith('data:image/png')));
   assert.ok(lit.some((o) => o.elementId === 'tag' && o.elementProperty === 'color'), 'caption follows the lit colour');
@@ -118,8 +118,8 @@ test('0.8.1 text styling: each button function has its own look, feedbacks resty
   assert.equal(el('ptz_tele', 'label').text, 'TELE'); assert.equal(el('ptz_tele', 'label').font, 'companion-mono');
 
   // step: caption, the step, the live value in mono
-  const step = G.layeredOf({ category: 'ATEM: audio faders', style: { text: 'MIC 1\\n+1 dB\\n$(rs6presets:atem_audio_1_fader)', color: 0xffffff, png64: require('../src/styles').atem }, steps: [{ down: [], up: [] }] }, 'atem_audio_1_up');
-  assert.deepEqual(step.elements.filter((e) => e.type === 'text').map((e) => [e.id, e.text]), [['tag', 'MIC 1'], ['label', '+1 dB'], ['detail', '$(rs6presets:atem_audio_1_fader)']]);
+  const step = G.layeredOf({ category: 'ATEM: audio faders', style: { text: 'MIC 1\\n+1 dB\\n$(pvcc:atem_audio_1_fader)', color: 0xffffff, png64: require('../src/styles').atem }, steps: [{ down: [], up: [] }] }, 'atem_audio_1_up');
+  assert.deepEqual(step.elements.filter((e) => e.type === 'text').map((e) => [e.id, e.text]), [['tag', 'MIC 1'], ['label', '+1 dB'], ['detail', '$(pvcc:atem_audio_1_fader)']]);
 
   // lcd: mono throughout, header bold and underlined
   assert.deepEqual(el('ptz_status', 'tag').styles, ['underline']); assert.equal(el('ptz_status', 'tag').font, 'companion-mono');
