@@ -130,6 +130,8 @@ function feedbacks(inst) {
     cc_button_look: {
       type: 'advanced',
       name: 'Control Center: look of a CC button',
+      // Companion 5 warns at load when an advanced feedback has no affectedProperties array.
+      affectedProperties: ['text', 'color', 'bgcolor'],
       description: 'The text and colors of a button from the Control Center BUTTONS tab. Follows edits in the app.',
       options: [{ type: 'dropdown', id: 'button', label: 'Button', default: choices(inst.cc)[0].id, choices: choices(inst.cc), allowCustom: true }],
       callback: (f) => {
