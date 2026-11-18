@@ -14,6 +14,26 @@ Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, wit
 
 ![icon](companion/icon.png)
 
+## New in 0.10.0
+
+- **Control Center buttons and pages in Companion** (Control Center app 0.31.0, API 9, feature `companionButtons`).
+  The buttons you build on the app's **BUTTONS** tab and the pages on its **PAGES** tab show up here:
+  - **Presets.** A *CC buttons* category with one preset per button, and one *CC page: <name> (<surface>)*
+    category per page, in key order, then the + / + XL touch strip, then the knobs. Drag them onto any page, or use
+    the fork's page designs (Stream Deck, XL, +, + XL) and page templates to lay them out.
+  - **Action `cc_button_run`** (button, event, delta). Companion sends the button and event to the app
+    (`POST /api/companion/buttons/<id>/run`), and the app runs that button's actions, so the button does the same
+    thing on a Companion surface as in the app. Knob presets turn with delta −1 / +1.
+  - **Feedback `cc_button_look`** gives the button's text and colours from the app.
+  - **Variables** `cc_buttons_rev`, `cc_button_count` and `cc_page_count`.
+- The module checks the app's buttons revision every 3 s. An edit in the app, or **SYNC TO COMPANION** on the app's
+  **COMPANION** tab, republishes the presets and dropdowns. The module reports its version and revision to that tab.
+- Against an app older than 0.31.0 nothing changes: the module checks `/api/version` once a minute and makes no other
+  new requests.
+- The app's COMPANION tab can also download a page as a `.companionconfig` that uses this module's action and feedback.
+  Import it on Companion's Buttons page (Import / Export).
+- Version 0.10.0 skips 0.9.0, which is the unreleased PTZ deck work on the `ptz-pages` branch.
+
 ## New in 0.8.1
 
 - **Loads on Companion with module-base 2.** 0.7.3 and 0.8.0 called `runEntrypoint()`, which `@companion-module/base`

@@ -6,6 +6,8 @@ const UpgradeScripts = require('./upgrades');
 const X = require('./sys');
 const { sysActions, sysFeedbacks } = require('./sysdefs');
 const G = require('./graphics');
+const C = require('./ccbuttons');
+const MODULE_VERSION = require('../package.json').version;
 
 const FEEDBACK_IDS = ['preset_pvw', 'preset_pgm', 'dest_selected', 'auto_take_on', 'device_connected', 'input_pgm', 'input_pvw', 'dest_memory', 'master_memory', 'input_frozen', 'input_problem', 'backup_active', 'audio_muted'];
 const TRI = { type: 'dropdown', id: 'mode', label: 'Mode', default: 'toggle', choices: [{ id: 'toggle', label: 'Toggle' }, { id: 'on', label: 'On' }, { id: 'off', label: 'Off' }] };
@@ -24,6 +26,7 @@ const AUDIO_TARGET = [
 class ControlCenterInstance extends InstanceBase {
   async init(config) {
     this.config = config; this.state = null; this.sig = null; this.failures = 0;
+    this.cc = null; this.ccRev = null;
     this.sys = null; this.sysSig = null; this.sysFailures = 0; this.ptzCats = {}; this.catKeys = {}; this.holds = new Map();
     this.setActionDefinitions(this.actions());
     this.setFeedbackDefinitions(this.feedbacks());
@@ -57,6 +60,54 @@ class ControlCenterInstance extends InstanceBase {
     this.longPoll = this.config.updates !== 'poll';
     this.loop(this.ctrl.signal);
     this.sysStarted = false; // the multi-system loop starts once the app reports API 8+ (an older app sees no extra requests)
+    this.ccStarted = false; // the Control Center buttons loop starts once the app reports API 9 and lists companionBridge
+  }
+
+  // 0.10.0: Control Center BUTTONS / PAGES (app 0.31.0+). Checks the revision every few seconds; a change (an edit in
+  // the app, or SYNC on its COMPANION tab) republishes the presets and dropdowns. An older app answers 404: back off.
+  maybeStartCc(st) {
+    if (this.ccStarted || !this.ctrl || !(Number(st && st.apiVersion) >= L.EXPECTED_API)) return;
+    this.ccStarted = true; this.ccLoop(this.ctrl.signal);
+  }
+
+  async ccLoop(signal) {
+    let quietUntil = 0; let warned = false; let supported = false;
+    while (this.running && !signal.aborted) {
+      if (Date.now() >= quietUntil) {
+        try {
+          if (!supported) {
+            const v = await this.api.version({ signal });
+            if (signal.aborted) break;
+            if (!(v && Array.isArray(v.features) && v.features.includes(C.FEATURE))) {
+              quietUntil = Date.now() + 60000; // an app before 0.31.0: check again in a minute, no other requests
+              await this.sleep(3000, signal); continue;
+            }
+            supported = true;
+          }
+          const m = await this.api.ccButtons({ signal });
+          if (signal.aborted) break;
+          if (!m || typeof m.rev !== 'string' || !Array.isArray(m.buttons)) throw new Error('no buttons model');
+          warned = false;
+          const changed = !!(m && m.rev !== this.ccRev);
+          if (changed) {
+            this.cc = m; this.ccRev = m.rev;
+            this.redefine();
+            this.setVariableValues(C.variableValues(m));
+            this.checkFeedbacks('cc_button_look');
+          }
+          // tell the app's COMPANION tab which module version is here and which revision it has (on change, else every 30 s)
+          if (changed || !this.ccHelloAt || Date.now() - this.ccHelloAt > 30000) {
+            this.ccHelloAt = Date.now();
+            this.api.ccHello({ moduleVersion: MODULE_VERSION, label: this.label || '', rev: this.ccRev, presets: Object.keys(C.presets(this.cc)).length }).catch(() => {});
+          }
+        } catch (e) {
+          if (signal.aborted) break;
+          if (!warned) { warned = true; this.log('info', `Control Center buttons and pages are not available (${e.message}); they need app 0.31.0`); }
+          quietUntil = Date.now() + 30000; supported = false;
+        }
+      }
+      await this.sleep(3000, signal);
+    }
   }
 
   maybeStartSys(st) {
@@ -79,6 +130,7 @@ class ControlCenterInstance extends InstanceBase {
         if (this.longPoll && typeof st.rev !== 'number' && !this.warnedNoRev) { this.warnedNoRev = true; this.log('info', 'App has no long-poll support (pre-0.2.0); polling instead'); }
         this.applyState(st);
         this.maybeStartSys(st);
+        this.maybeStartCc(st);
         // 0.5.0: say so when the app and this module don't match (log once per app version)
         const vp = L.versionProblem(st);
         const vkey = `${st.appVersion}|${st.apiVersion}`;
@@ -109,13 +161,13 @@ class ControlCenterInstance extends InstanceBase {
 
   // definitions for RS6 (logic.js) plus E2 / PixelHue / ATEM / PTZ (sys.js), rebuilt when either structure changes
   redefine() {
-    this.setVariableDefinitions(G.variableObject([...L.variableDefinitions(this.state), ...X.variableDefinitions(this.sys)]));
+    this.setVariableDefinitions(G.variableObject([...L.variableDefinitions(this.state), ...X.variableDefinitions(this.sys), ...C.variableDefinitions()]));
     this.publishPresets();
     this.setActionDefinitions(this.actions()); // refresh dropdowns
     this.setFeedbackDefinitions(this.feedbacks());
   }
 
-  presets() { return { ...L.buttonPresets(this.state, this.label), ...L.relabel(X.buttonPresets(this.sys), this.label) }; }
+  presets() { return { ...L.buttonPresets(this.state, this.label), ...L.relabel(X.buttonPresets(this.sys), this.label), ...C.presets(this.cc) }; }
 
   // Layered buttons (comfortable text size, shrink-to-fit, outline) plus the classic style as a fallback.
   publishPresets() {
@@ -269,7 +321,7 @@ class ControlCenterInstance extends InstanceBase {
   }
 
   // ---------- actions ----------
-  actions() { return { ...this.rs6Actions(), ...sysActions(this) }; }
+  actions() { return { ...this.rs6Actions(), ...sysActions(this), ...C.actions(this) }; }
 
   rs6Actions() {
     return {
@@ -359,7 +411,7 @@ class ControlCenterInstance extends InstanceBase {
     const sys = sysFeedbacks(this);
     this.sysFeedbackIds = Object.keys(sys);
     return {
-      ...this.rs6Feedbacks(), ...sys,
+      ...this.rs6Feedbacks(), ...sys, ...C.feedbacks(this),
       cc_pages_refresh: {
         type: 'boolean', name: 'Generated pages: fill in linked buttons (internal, never shows)',
         description: 'Put on the linked buttons of pages generated by the Control Center app; it makes this connection publish its presets again so those buttons fill in after an import.',

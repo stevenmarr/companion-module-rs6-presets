@@ -7,6 +7,20 @@ PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. **Every command goes throug
 8080); this module never talks to a device. Remove any direct E2 / ATEM / Panasonic connections from
 Companion once your buttons use this module, so there is one path to each device.
 
+### Control Center buttons and pages (new in 0.10.0, needs Control Center app 0.31.0)
+
+The app's **BUTTONS** and **PAGES** tabs define the buttons; Companion puts them on Stream Decks. Presets: **CC buttons**
+(one per button) and **CC page: <name> (<surface>)** (keys, then the + / + XL touch strip, then the knobs). Drag them
+onto a page, or lay them out with the fork's page designs and templates.
+
+**Action** *Control Center: run a CC button* (`cc_button_run`): button, event (press / release / hold / turn /
+push / touch) and a knob delta (variables allowed). The app runs the button's own actions. **Feedback**
+*Control Center: look of a CC button* (`cc_button_look`): the button's text and colours from the app. **Variables:**
+`$(rs6presets:cc_buttons_rev)`, `$(rs6presets:cc_button_count)`, `$(rs6presets:cc_page_count)`.
+
+An edit in the app, or **SYNC TO COMPANION** on the app's COMPANION tab, republishes the presets within a few
+seconds. The COMPANION tab can also download a page as a `.companionconfig` for Companion's Import / Export.
+
 ### Stream Deck pages and knobs (new in 0.7.0)
 
 The Control Center app (0.9.0+, SYSTEMS › COMPANION PAGES) makes ready-made pages for Stream Deck XL, MK.2,

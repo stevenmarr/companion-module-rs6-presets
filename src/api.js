@@ -60,6 +60,10 @@ class AppApi {
   sysRefresh(sys) { return this._req('POST', `/api/sys/${sys}/refresh`, undefined, { timeoutMs: 15000 }); }
   atem(name, body = {}) { return this._req('POST', `/api/sys/atem/cmd/${encodeURIComponent(name)}`, body); }
   ptz(name, body = {}, opts) { return this._req('POST', `/api/sys/ptz/cmd/${encodeURIComponent(name)}`, body, opts); }
+  // 0.10.0 (app 0.31.0+): Control Center BUTTONS / PAGES for Companion
+  ccButtons(opts) { return this._req('GET', '/api/companion/buttons', undefined, opts); }
+  ccHello(body) { return this._req('POST', '/api/companion/hello', body); }
+  ccRun(id, body = {}) { return this._req('POST', `/api/companion/buttons/${encodeURIComponent(id)}/run`, body, { timeoutMs: 15000 }); }
   ptzCatalog(cam) { return this._req('GET', `/api/sys/ptz/cameras/${encodeURIComponent(cam)}/catalog`); }
 }
 module.exports = { AppApi };
