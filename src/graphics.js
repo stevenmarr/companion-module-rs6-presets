@@ -281,7 +281,10 @@ function publishPresets(classic) {
   const order = [];
   for (const [id, p] of Object.entries(classic || {})) {
     if (!p || !p.style) continue;
-    presets[id] = { type: 'alternatives', variants: [layeredOf(p, id), simpleOf(p)] };
+    // simpleOnly: the look comes from an advanced feedback (CC buttons, CC deck pages). A layered variant would
+    // drop it (it has no style to turn into overrides), so publish the simple preset, which Companion converts
+    // with the feedback's affectedProperties.
+    presets[id] = p.simpleOnly ? simpleOf(p) : { type: 'alternatives', variants: [layeredOf(p, id), simpleOf(p)] };
     order.push([p.category || 'Presets', id]);
   }
   const cats = []; const byCat = new Map();

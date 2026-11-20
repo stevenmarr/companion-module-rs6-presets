@@ -53,7 +53,7 @@ function stepsFor(b) {
 function presetFor(b, category, name) {
   const s = stepsFor(b);
   const p = {
-    type: 'button', category, name,
+    type: 'button', category, name, simpleOnly: true, // 0.12.0: keep cc_button_look (a layered variant dropped it)
     style: look(b),
     steps: s.steps,
     feedbacks: [{ feedbackId: 'cc_button_look', options: { button: b.id } }],

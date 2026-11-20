@@ -15,6 +15,24 @@ Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, wit
 
 ![icon](companion/icon.png)
 
+## New in 0.12.0 (needs Control Center app 0.32.0 for the deck pages)
+
+- **Control Center deck pages.** The pages Control Center draws on a USB Stream Deck (HOME, the PTZ paint / preset /
+  lens pages, the ATEM switcher page, CONSOLE) are now in Companion. Until now the module only had the BUTTONS / PAGES
+  library and its older per-system presets, because those pages are built at run time and were never in the library.
+  Presets → **CC deck: <deck size> (whole deck, follows HOME and page keys)** mirrors one Control Center deck: HOME,
+  system and page keys move it like a USB deck. **CC deck: <deck size> · <page> [ptz.0]** keeps one page.
+  Control Center's COMPANION tab also has each one as a `.companionconfig` page file (DECK PAGES).
+- **Touch-strip displays for the knobs.** On a Stream Deck + / + XL each knob gets a strip cell showing its label and
+  live value (R GAIN +12 / B GAIN -3 with the active side marked, iris, detail, gamma, ATEM rate, T-bar ...), placed above
+  the matching knob in the page presets. **CC deck: touch-strip displays and knobs** has every PTZ dial on its own,
+  to put anywhere. Variables: `cc_strip_<deck>_<n>`, `cc_dial_<dial>`, `cc_deck_<deck>_page`.
+- New: actions `cc_deck_key`, `cc_deck_dial`, `cc_dial_widget`; feedbacks `cc_deck_look`, `cc_dial_look`; config
+  **Control Center deck pages for** (default Stream Deck + XL). Existing ids (`cc_button_run`, `cc_button_look`, all
+  system ids) are unchanged.
+- CC button presets are published as simple presets, so `cc_button_look` stays on the button (the layered variant
+  dropped it, so edits in Control Center did not show on a placed preset).
+
 ## New in 0.11.1
 
 - Feedback `cc_button_look` declares `affectedProperties` (`text`, `color`, `bgcolor`), so Companion 5 no longer warns
