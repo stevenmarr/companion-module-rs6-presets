@@ -4,7 +4,7 @@
   "name": "Performance Video Control Center",
   "shortname": "pvcc",
   "description": "Control everything through the Performance Video Control Center app: Control Center buttons and pages, Analog Way Aquilon RS6 presets, Barco E2, PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. The module talks only to the app, never to the devices.",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "license": "MIT",
   "repository": "git+https://github.com/stevenmarr/companion-module-rs6-presets.git",
   "bugs": "https://github.com/stevenmarr/companion-module-rs6-presets/issues",

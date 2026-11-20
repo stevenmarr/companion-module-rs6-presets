@@ -15,6 +15,20 @@ Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, wit
 
 ![icon](companion/icon.png)
 
+## New in 0.13.0 (Control Center app 0.33.0 recommended)
+
+- **Control Center presets come first.** Presets now list **CC deck: ...** (the live HOME / PTZ / ATEM / CONSOLE deck
+  pages) and **CC: ...** (the BUTTONS / PAGES library) before the older per-system and RS6 presets, which used to bury
+  them. New config **Older per-system presets** (Show / Hide) hides the old sections entirely.
+- **Deck pages are on for existing connections.** An upgrade script sets **Control Center deck pages for** to Stream
+  Deck + XL on connections made before 0.12.0 (where the field was missing or empty), so they publish deck pages too.
+- **The module tells Control Center how many deck pages it published.** Control Center's COMPANION tab shows
+  "N CC button presets · N deck presets" and says how to switch deck pages on when the count is 0. The log also says
+  "Control Center deck pages: N presets for ...". The first deck fetch now waits up to 15 s (was 5 s).
+- **Control Center pages in PV Companion.** With Control Center 0.33.0 and the PV Companion fork, Pages → Control Center
+  pages places any Control Center page as an editable copy and saves edited copies to User pages (stored in Control
+  Center).
+
 ## New in 0.12.0 (needs Control Center app 0.32.0 for the deck pages)
 
 - **Control Center deck pages.** The pages Control Center draws on a USB Stream Deck (HOME, the PTZ paint / preset /

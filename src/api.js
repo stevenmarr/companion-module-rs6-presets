@@ -69,7 +69,7 @@ class AppApi {
   ccDeck(surfaces, rev, waitMs, signal) {
     const q = [`surfaces=${encodeURIComponent((surfaces || []).join(','))}`];
     if (rev) q.push(`since=${encodeURIComponent(rev)}`, `timeout=${Number(waitMs) || 20000}`);
-    return this._req('GET', `/api/companion/deck?${q.join('&')}`, undefined, { timeoutMs: (rev ? Number(waitMs) || 20000 : 0) + 5000, signal });
+    return this._req('GET', `/api/companion/deck?${q.join('&')}`, undefined, { timeoutMs: (rev ? Number(waitMs) || 20000 : 0) + 15000, signal });
   }
   ccDeckKey(surface, body) { return this._req('POST', `/api/companion/deck/${encodeURIComponent(surface)}/key`, body, { timeoutMs: 15000 }); }
   ccDeckDial(surface, body) { return this._req('POST', `/api/companion/deck/${encodeURIComponent(surface)}/dial`, body, { timeoutMs: 15000 }); }
