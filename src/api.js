@@ -64,6 +64,16 @@ class AppApi {
   ccButtons(opts) { return this._req('GET', '/api/companion/buttons', undefined, opts); }
   ccHello(body) { return this._req('POST', '/api/companion/hello', body); }
   ccRun(id, body = {}) { return this._req('POST', `/api/companion/buttons/${encodeURIComponent(id)}/run`, body, { timeoutMs: 15000 }); }
+  // 0.12.0 (app 0.32.0+): Control Center deck pages (HOME, PTZ, ATEM, CONSOLE) and the + / + XL strip displays.
+  // Long-poll: held until the deck revision differs from `rev` or `waitMs` elapses.
+  ccDeck(surfaces, rev, waitMs, signal) {
+    const q = [`surfaces=${encodeURIComponent((surfaces || []).join(','))}`];
+    if (rev) q.push(`since=${encodeURIComponent(rev)}`, `timeout=${Number(waitMs) || 20000}`);
+    return this._req('GET', `/api/companion/deck?${q.join('&')}`, undefined, { timeoutMs: (rev ? Number(waitMs) || 20000 : 0) + 5000, signal });
+  }
+  ccDeckKey(surface, body) { return this._req('POST', `/api/companion/deck/${encodeURIComponent(surface)}/key`, body, { timeoutMs: 15000 }); }
+  ccDeckDial(surface, body) { return this._req('POST', `/api/companion/deck/${encodeURIComponent(surface)}/dial`, body, { timeoutMs: 15000 }); }
+  ccDialWidget(widget, body) { return this._req('POST', `/api/companion/dials/${encodeURIComponent(widget)}`, body, { timeoutMs: 15000 }); }
   ptzCatalog(cam) { return this._req('GET', `/api/sys/ptz/cameras/${encodeURIComponent(cam)}/catalog`); }
 }
 module.exports = { AppApi };

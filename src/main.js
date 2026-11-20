@@ -7,6 +7,7 @@ const X = require('./sys');
 const { sysActions, sysFeedbacks } = require('./sysdefs');
 const G = require('./graphics');
 const C = require('./ccbuttons');
+const D = require('./ccdeck');
 const MODULE_VERSION = require('../package.json').version;
 
 const FEEDBACK_IDS = ['preset_pvw', 'preset_pgm', 'dest_selected', 'auto_take_on', 'device_connected', 'input_pgm', 'input_pvw', 'dest_memory', 'master_memory', 'input_frozen', 'input_problem', 'backup_active', 'audio_muted'];
@@ -27,6 +28,7 @@ class ControlCenterInstance extends InstanceBase {
   async init(config) {
     this.config = config; this.state = null; this.sig = null; this.failures = 0;
     this.cc = null; this.ccRev = null;
+    this.deck = null; this.deckLayout = null; this.deckStarted = false;
     this.sys = null; this.sysSig = null; this.sysFailures = 0; this.ptzCats = {}; this.catKeys = {}; this.holds = new Map();
     this.setActionDefinitions(this.actions());
     this.setFeedbackDefinitions(this.feedbacks());
@@ -46,6 +48,7 @@ class ControlCenterInstance extends InstanceBase {
       { type: 'dropdown', id: 'updates', label: 'Updates', width: 8, default: 'longpoll', choices: [{ id: 'longpoll', label: 'Long-poll (instant, app 0.2.0+; falls back to polling)' }, { id: 'poll', label: 'Poll only' }] },
       { type: 'number', id: 'poll', label: 'Poll interval (ms)', width: 4, default: 300, min: 100, max: 5000 },
       { type: 'dropdown', id: 'systems', label: 'E2 / PixelHue / ATEM / PTZ', width: 8, default: 'on', choices: [{ id: 'on', label: 'On (app 0.8.0+, API 8)' }, { id: 'off', label: 'Off (RS6 only)' }] },
+      { type: 'multidropdown', id: 'deck_surfaces', label: 'Control Center deck pages for (app 0.32.0+)', width: 12, default: D.DEFAULT_SURFACES.slice(), choices: D.SURFACES.map((x) => ({ id: x.id, label: x.label })), tooltip: 'Which Stream Deck sizes get the CC deck presets: HOME, PTZ, ATEM and CONSOLE pages with the knobs and touch-strip readouts' },
       { type: 'number', id: 'max_hold', label: 'PTZ max hold (ms)', width: 4, default: 20000, min: 1000, max: 120000, tooltip: 'A held pan/tilt/zoom/focus button stops by itself after this long, in case the release is lost' },
     ];
   }
@@ -83,6 +86,8 @@ class ControlCenterInstance extends InstanceBase {
               await this.sleep(3000, signal); continue;
             }
             supported = true;
+            // 0.12.0: the deck pages (app 0.32.0) have their own long-poll loop
+            if (v.features.includes(D.FEATURE) && !this.deckStarted) { this.deckStarted = true; this.deckLoop(signal); }
           }
           const m = await this.api.ccButtons({ signal });
           if (signal.aborted) break;
@@ -109,6 +114,41 @@ class ControlCenterInstance extends InstanceBase {
       await this.sleep(3000, signal);
     }
   }
+
+  // 0.12.0: Control Center deck pages (HOME, PTZ, ATEM, CONSOLE, + / + XL strip readouts), app 0.32.0+.
+  // Long-polls GET /api/companion/deck; a new value only updates feedbacks and variables, a new page set
+  // (layoutRev) republishes the presets.
+  async deckLoop(signal) {
+    let rev = null; let warned = false;
+    while (this.running && !signal.aborted) {
+      try {
+        const surfaces = D.surfaceIds(this.config);
+        const m = await this.api.ccDeck(surfaces, rev, 20000, signal);
+        if (signal.aborted) break;
+        if (!m || typeof m.rev !== 'string' || !Array.isArray(m.surfaces)) throw new Error('no deck model');
+        warned = false;
+        if (m.rev !== rev) this.applyDeck(m, surfaces);
+        rev = m.rev;
+      } catch (e) {
+        if (signal.aborted) break;
+        if (!warned) { warned = true; this.log('info', `Control Center deck pages are not available (${e.message}); they need app 0.32.0`); }
+        rev = null;
+        await this.sleep(5000, signal);
+      }
+    }
+    this.deckStarted = false;
+  }
+
+  applyDeck(m, surfaces = D.surfaceIds(this.config)) {
+    this.deck = m;
+    const key = D.layoutKey(m, surfaces);
+    if (key !== this.deckLayout) { this.deckLayout = key; this.redefine(); }
+    this.setVariableValues(D.variableValues(m, surfaces));
+    this.checkFeedbacks('cc_deck_look', 'cc_dial_look');
+  }
+
+  // after a deck action the long-poll answers by itself; nothing to do here (kept for tests and future use)
+  deckChanged() {}
 
   maybeStartSys(st) {
     if (this.sysStarted || this.config.systems === 'off' || !this.ctrl || !(Number(st && st.apiVersion) >= L.SYS_API)) return;
@@ -161,13 +201,13 @@ class ControlCenterInstance extends InstanceBase {
 
   // definitions for RS6 (logic.js) plus E2 / PixelHue / ATEM / PTZ (sys.js), rebuilt when either structure changes
   redefine() {
-    this.setVariableDefinitions(G.variableObject([...L.variableDefinitions(this.state), ...X.variableDefinitions(this.sys), ...C.variableDefinitions()]));
+    this.setVariableDefinitions(G.variableObject([...L.variableDefinitions(this.state), ...X.variableDefinitions(this.sys), ...C.variableDefinitions(), ...D.variableDefinitions(this.deck, D.surfaceIds(this.config))]));
     this.publishPresets();
     this.setActionDefinitions(this.actions()); // refresh dropdowns
     this.setFeedbackDefinitions(this.feedbacks());
   }
 
-  presets() { return { ...L.buttonPresets(this.state, this.label), ...L.relabel(X.buttonPresets(this.sys), this.label), ...C.presets(this.cc) }; }
+  presets() { return { ...L.buttonPresets(this.state, this.label), ...L.relabel(X.buttonPresets(this.sys), this.label), ...C.presets(this.cc), ...D.presets(this.deck, D.surfaceIds(this.config)) }; }
 
   // Layered buttons (comfortable text size, shrink-to-fit, outline) plus the classic style as a fallback.
   publishPresets() {
@@ -321,7 +361,7 @@ class ControlCenterInstance extends InstanceBase {
   }
 
   // ---------- actions ----------
-  actions() { return { ...this.rs6Actions(), ...sysActions(this), ...C.actions(this) }; }
+  actions() { return { ...this.rs6Actions(), ...sysActions(this), ...C.actions(this), ...D.actions(this) }; }
 
   rs6Actions() {
     return {
@@ -411,7 +451,7 @@ class ControlCenterInstance extends InstanceBase {
     const sys = sysFeedbacks(this);
     this.sysFeedbackIds = Object.keys(sys);
     return {
-      ...this.rs6Feedbacks(), ...sys, ...C.feedbacks(this),
+      ...this.rs6Feedbacks(), ...sys, ...C.feedbacks(this), ...D.feedbacks(this),
       cc_pages_refresh: {
         type: 'boolean', name: 'Generated pages: fill in linked buttons (internal, never shows)',
         description: 'Put on the linked buttons of pages generated by the Control Center app; it makes this connection publish its presets again so those buttons fill in after an import.',
