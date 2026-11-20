@@ -49,6 +49,7 @@ class ControlCenterInstance extends InstanceBase {
       { type: 'number', id: 'poll', label: 'Poll interval (ms)', width: 4, default: 300, min: 100, max: 5000 },
       { type: 'dropdown', id: 'systems', label: 'E2 / PixelHue / ATEM / PTZ', width: 8, default: 'on', choices: [{ id: 'on', label: 'On (app 0.8.0+, API 8)' }, { id: 'off', label: 'Off (RS6 only)' }] },
       { type: 'multidropdown', id: 'deck_surfaces', label: 'Control Center deck pages for (app 0.32.0+)', width: 12, default: D.DEFAULT_SURFACES.slice(), choices: D.SURFACES.map((x) => ({ id: x.id, label: x.label })), tooltip: 'Which Stream Deck sizes get the CC deck presets: HOME, PTZ, ATEM and CONSOLE pages with the knobs and touch-strip readouts' },
+      { type: 'dropdown', id: 'legacy_presets', label: 'Older per-system presets (RS6 tiles, E2, PixelHue, ATEM, PTZ)', width: 8, default: 'show', choices: [{ id: 'show', label: 'Show, after the Control Center presets' }, { id: 'hide', label: 'Hide (placed buttons keep working)' }], tooltip: 'The presets from before Control Center deck pages. The CC deck, CC button and CC page presets are always listed first.' },
       { type: 'number', id: 'max_hold', label: 'PTZ max hold (ms)', width: 4, default: 20000, min: 1000, max: 120000, tooltip: 'A held pan/tilt/zoom/focus button stops by itself after this long, in case the release is lost' },
     ];
   }
@@ -103,7 +104,7 @@ class ControlCenterInstance extends InstanceBase {
           // tell the app's COMPANION tab which module version is here and which revision it has (on change, else every 30 s)
           if (changed || !this.ccHelloAt || Date.now() - this.ccHelloAt > 30000) {
             this.ccHelloAt = Date.now();
-            this.api.ccHello({ moduleVersion: MODULE_VERSION, label: this.label || '', rev: this.ccRev, presets: Object.keys(C.presets(this.cc)).length }).catch(() => {});
+            this.api.ccHello({ moduleVersion: MODULE_VERSION, label: this.label || '', rev: this.ccRev, presets: Object.keys(C.presets(this.cc)).length, ...this.deckHello() }).catch(() => {});
           }
         } catch (e) {
           if (signal.aborted) break;
@@ -126,12 +127,17 @@ class ControlCenterInstance extends InstanceBase {
         const m = await this.api.ccDeck(surfaces, rev, 20000, signal);
         if (signal.aborted) break;
         if (!m || typeof m.rev !== 'string' || !Array.isArray(m.surfaces)) throw new Error('no deck model');
-        warned = false;
+        if (warned || this.deckState !== 'ok') {
+          const n = Object.keys(D.presets(m, surfaces)).length;
+          this.log('info', `Control Center deck pages: ${n} presets for ${surfaces.join(', ')} (Presets → "CC deck: ...", listed first)`);
+        }
+        warned = false; this.deckState = 'ok'; this.deckError = '';
         if (m.rev !== rev) this.applyDeck(m, surfaces);
         rev = m.rev;
       } catch (e) {
         if (signal.aborted) break;
-        if (!warned) { warned = true; this.log('info', `Control Center deck pages are not available (${e.message}); they need app 0.32.0`); }
+        if (!warned) { warned = true; this.log('warn', `Control Center deck pages are not available (${e.message}); they need app 0.32.0`); }
+        this.deckState = 'error'; this.deckError = String(e.message || e).slice(0, 120);
         rev = null;
         await this.sleep(5000, signal);
       }
@@ -145,6 +151,19 @@ class ControlCenterInstance extends InstanceBase {
     if (key !== this.deckLayout) { this.deckLayout = key; this.redefine(); }
     this.setVariableValues(D.variableValues(m, surfaces));
     this.checkFeedbacks('cc_deck_look', 'cc_dial_look');
+  }
+
+  // 0.13.0: what the COMPANION tab shows about the deck pages: how many deck presets are published and for which deck
+  // sizes, or why there are none (the app has no deck pages, or the long-poll fails).
+  deckHello() {
+    const surfaces = D.surfaceIds(this.config);
+    return {
+      deckPresets: Object.keys(D.presets(this.deck, surfaces)).length,
+      deckSurfaces: surfaces,
+      deckState: this.deckState || (this.deckStarted ? 'loading' : 'off'),
+      deckError: this.deckError || '',
+      legacyPresets: this.config && this.config.legacy_presets === 'hide' ? 'hide' : 'show',
+    };
   }
 
   // after a deck action the long-poll answers by itself; nothing to do here (kept for tests and future use)
@@ -207,7 +226,15 @@ class ControlCenterInstance extends InstanceBase {
     this.setFeedbackDefinitions(this.feedbacks());
   }
 
-  presets() { return { ...L.buttonPresets(this.state, this.label), ...L.relabel(X.buttonPresets(this.sys), this.label), ...C.presets(this.cc), ...D.presets(this.deck, D.surfaceIds(this.config)) }; }
+  // 0.13.0: Control Center first. The CC deck pages, then the CC buttons and pages, then the older per-system presets
+  // (RS6 tiles, E2 / PixelHue / ATEM / PTZ). Companion lists sections in this order, so the CC deck pages are no
+  // longer at the bottom under dozens of older sections. Config "Older per-system presets: Hide" leaves those out
+  // (their actions and feedbacks stay, so buttons already placed keep working).
+  presets() {
+    const cc = { ...D.presets(this.deck, D.surfaceIds(this.config)), ...C.presets(this.cc) };
+    if (this.config && this.config.legacy_presets === 'hide') return cc;
+    return { ...cc, ...L.buttonPresets(this.state, this.label), ...L.relabel(X.buttonPresets(this.sys), this.label) };
+  }
 
   // Layered buttons (comfortable text size, shrink-to-fit, outline) plus the classic style as a fallback.
   publishPresets() {
