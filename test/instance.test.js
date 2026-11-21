@@ -3,7 +3,7 @@
 // feedbacks, presets, actions) is exercised without a running Companion.
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const http = require('http');
+const { mockApp } = require('./mock-app');
 const Module = require('module');
 
 function stubBase() {
@@ -37,7 +37,7 @@ test('module instance polls the app, exposes variables/feedbacks/presets and sen
     presets: [{ number: 3, name: 'Panel', tally: { pvw: 'full', pgm: 'none' } }],
   };
   const posts = [];
-  const srv = http.createServer((req, res) => {
+  const srv = mockApp((req, res) => {
     let b = ''; req.on('data', (c) => (b += c));
     req.on('end', () => {
       if (req.method === 'POST') {

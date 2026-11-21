@@ -3,7 +3,7 @@
 // preset 10 "Panel Master + MV" = Master 3 + S4 mem 30 + MV1 mem 2, taken; preset 9 on PVW).
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const http = require('http');
+const { mockApp } = require('./mock-app');
 const Module = require('module');
 const L = require('../src/logic');
 const { AppApi } = require('../src/api');
@@ -42,7 +42,7 @@ test('memory dropdowns and name variables come from the imported memories', () =
 
 test('AppApi memory routes', async () => {
   const seen = [];
-  const srv = http.createServer((req, res) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => { seen.push(`${req.method} ${req.url} ${b}`); res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}'); }); });
+  const srv = mockApp((req, res) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => { seen.push(`${req.method} ${req.url} ${b}`); res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}'); }); });
   await new Promise((r) => srv.listen(0, '127.0.0.1', r));
   const api = new AppApi('127.0.0.1', srv.address().port);
   try {
@@ -59,7 +59,7 @@ test('AppApi memory routes', async () => {
 
 test('instance: preset recall/feedback dropdowns list combined presets; memory actions post to the app', async () => {
   const state = fixture(); const posts = [];
-  const srv = http.createServer((req, res) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => { if (req.method === 'POST') posts.push(`${req.url} ${b}`); res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(state)); }); });
+  const srv = mockApp((req, res) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => { if (req.method === 'POST') posts.push(`${req.url} ${b}`); res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(state)); }); });
   await new Promise((r) => srv.listen(0, '127.0.0.1', r));
   const captured = {};
   class InstanceBase { constructor() { this.calls = { vars: {}, actions: {}, feedbacks: {}, presets: {}, status: [], logs: [] }; }

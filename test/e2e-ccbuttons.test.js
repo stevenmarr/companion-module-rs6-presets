@@ -53,6 +53,8 @@ test('e2e: Control Center buttons and pages become presets; a preset runs its CC
   const inst = loadInstance();
   t.after(() => inst.destroy());
   await inst.init({ host: '127.0.0.1', port, poll: 100, updates: 'longpoll', systems: 'on', max_hold: 4000 });
+  // 0.15.0: this test is not about deck pictures; skip fetching them so it measures only what it tests (e2e-ccdeck covers art)
+  inst.art.stop();
   const c = inst.calls;
   await until(() => c.presets[`cc_btn_${cut.id}`] && c.vars.cc_button_count === '2', 15000, 'CC button presets');
   assert.ok(c.presets[`cc_pg_${page.id}_k1_3`], 'page slot preset');

@@ -3,7 +3,7 @@
 // API routes, and the long-poll update loop (with poll fallback for pre-0.2.0 apps).
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const http = require('http');
+const { mockApp } = require('./mock-app');
 const Module = require('module');
 const L = require('../src/logic');
 const { AppApi } = require('../src/api');
@@ -78,7 +78,7 @@ test('preset signature tracks structure (labels, channels) but not mute values',
 
 test('API client hits the app 0.2.0 control routes', async () => {
   const seen = [];
-  const srv = http.createServer((req, res) => {
+  const srv = mockApp((req, res) => {
     let b = ''; req.on('data', (c) => (b += c));
     req.on('end', () => { seen.push([req.method, req.url, b ? JSON.parse(b) : null]); res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}'); });
   });
@@ -128,10 +128,9 @@ function loadInstance() {
 function fakeApp({ longPoll = true } = {}) {
   let state = fixture(); const waiters = new Set(); const reqs = [];
   const send = (res) => { res.writeHead(200, { 'Content-Type': 'application/json' }); const s = { appVersion: '0.5.0', apiVersion: 5, ...state }; if (!longPoll) delete s.rev; res.end(JSON.stringify(s)); };
-  const srv = http.createServer((req, res) => {
+  const srv = mockApp((req, res) => {
     let b = ''; req.on('data', (c) => (b += c));
     req.on('end', () => {
-      if (req.method === 'GET' && (req.url === '/' || req.url === '/favicon.ico')) { res.writeHead(404); res.end(); return; }
       const u = new URL(req.url, 'http://x'); reqs.push(req.method + ' ' + req.url);
       if (req.method === 'POST') {
         if (u.pathname === '/api/inputs/1/freeze') { const i = state.live.inputs[0]; i.freeze = !i.freeze; state.rev++; }

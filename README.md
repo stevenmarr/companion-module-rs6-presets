@@ -11,6 +11,20 @@ module built in). Plain JavaScript on `@companion-module/base` ~2.2 (node22 runt
 
 ![icon](companion/icon.png)
 
+## New in 0.15.0: buttons look exactly like Control Center
+
+- With Control Center 0.35.0, every **CC deck** button (key, touch-strip cell, knob, PTZ dial display) draws the picture
+  Control Center itself draws for that key: color bar, small header over the big label, green PVW / red PGM frame,
+  dashed amber guard border, the HOME house, and the round knob readouts on the strip. Pictures come from
+  `GET /api/companion/deck/art/<id>.png`, fetched once per picture and refreshed live with values and tally.
+- Presets and placed pages have no Companion top bar, so the picture fills the button. With an older Control Center
+  the buttons keep the text look.
+- Nothing outlives the connection: removing or reconfiguring it aborts picture downloads still running and leaves no
+  redraw or publish timer behind. The unit-test mock servers ignore stray `GET /` / `/favicon.ico` probes (some
+  sandboxes poke every new port), so the request-log tests don't flake.
+- Pictures are fetched one at a time. Control Center draws them on its main thread, so camera and switcher commands
+  never wait behind a batch of pictures (slow when Control Center can't find its fonts: about 150 ms per picture).
+
 ## New in 0.14.0: Control Center only
 
 - **Presets are Control Center presets only:** **CC deck: ...** (the live deck pages, knobs and touch strips) and

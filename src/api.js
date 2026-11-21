@@ -73,6 +73,22 @@ class AppApi {
   }
   ccDeckKey(surface, body) { return this._req('POST', `/api/companion/deck/${encodeURIComponent(surface)}/key`, body, { timeoutMs: 15000 }); }
   ccDeckDial(surface, body) { return this._req('POST', `/api/companion/deck/${encodeURIComponent(surface)}/dial`, body, { timeoutMs: 15000 }); }
+  // 0.15.0: one picture Control Center draws for a deck slot (app 0.35.0, feature companionDeckArt), as base64 PNG
+  // `signal` aborts it early (the instance was destroyed or its config changed).
+  async ccDeckArt(id, { timeoutMs = 10000, signal } = {}) {
+    if (!/^[0-9a-f]{20}$/.test(String(id))) throw new Error('bad picture id');
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    const onAbort = () => ctrl.abort();
+    if (signal) { if (signal.aborted) ctrl.abort(); else signal.addEventListener('abort', onAbort, { once: true }); }
+    try {
+      const res = await fetch(`${this.base}/api/companion/deck/art/${id}.png`, { signal: ctrl.signal });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length < 8 || buf.readUInt32BE(0) !== 0x89504e47) throw new Error('not a PNG');
+      return buf.toString('base64');
+    } finally { clearTimeout(t); if (signal) signal.removeEventListener('abort', onAbort); }
+  }
   ccDialWidget(widget, body) { return this._req('POST', `/api/companion/dials/${encodeURIComponent(widget)}`, body, { timeoutMs: 15000 }); }
   ptzCatalog(cam) { return this._req('GET', `/api/sys/ptz/cameras/${encodeURIComponent(cam)}/catalog`); }
 }
