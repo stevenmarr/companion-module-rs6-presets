@@ -53,27 +53,44 @@ function faceOf(model, surface, pin) {
   return (s.pages || []).find((p) => p.id === pin) || null;
 }
 
-// The look of one slot: { text, color, bgcolor } (Companion style values), or null when the slot is unknown.
-function slotLook(model, o) {
+// 0.15.0: with Control Center 0.35.0 a slot also has "img", the id of the picture Control Center draws there (see
+// ccart.js). art.get(id) is that picture as base64 PNG once fetched: the button then shows exactly Control Center's
+// key (no text of ours on top). Until it arrives, or with an older Control Center, the text look below is used.
+function pictured(look, id, art) {
+  const png = id && art && typeof art.get === 'function' ? art.get(id) : null;
+  return png ? { text: '', png64: png, pngalignment: 'center:center', color: look.color, bgcolor: STRIP_BG } : look;
+}
+
+// The look of one slot: { text, color, bgcolor } (Companion style values), or with a picture { png64, text: '' },
+// or null when the slot is unknown.
+function slotLook(model, o, art) {
   const face = faceOf(model, o.surface, String(o.pin || ''));
   if (!face) return null;
+  const blank = model && model.art && model.art.blank;
   if (o.part === 'key') {
     const k = (face.keys || []).find((x) => x.row === Number(o.row) && x.col === Number(o.col));
-    if (!k) return { text: '', color: KNOB_FG, bgcolor: 0x222226 };
-    return { text: joinText(k.lines), color: hex(k.color, 0xffffff), bgcolor: hex(k.bgcolor, 0x000000) };
+    if (!k) return pictured({ text: '', color: KNOB_FG, bgcolor: 0x222226 }, blank, art);
+    return pictured({ text: joinText(k.lines), color: hex(k.color, 0xffffff), bgcolor: hex(k.bgcolor, 0x000000) }, k.img, art);
   }
   const d = (face.dials || []).find((x) => x.index === Number(o.index));
   if (!d) return { text: '', color: KNOB_FG, bgcolor: STRIP_BG };
-  if (o.part === 'knob') return { text: joinText(d.knob), color: KNOB_FG, bgcolor: STRIP_BG };
-  return { text: joinText(d.lines), color: hex(d.color, 0xffffff), bgcolor: hex(d.bgcolor, STRIP_BG) };
+  if (o.part === 'knob') return pictured({ text: joinText(d.knob), color: KNOB_FG, bgcolor: STRIP_BG }, d.knobImg, art);
+  return pictured({ text: joinText(d.lines), color: hex(d.color, 0xffffff), bgcolor: hex(d.bgcolor, STRIP_BG) }, d.img, art);
 }
 
-function widgetLook(model, widget, part) {
+function widgetLook(model, widget, part, art) {
   const w = model && model.widgets && model.widgets[widget];
   if (!w) return null;
-  if (part === 'knob') return { text: joinText(w.knob), color: KNOB_FG, bgcolor: STRIP_BG };
-  return { text: joinText(w.lines), color: hex(w.color, 0xffffff), bgcolor: hex(w.bgcolor, STRIP_BG) };
+  if (part === 'knob') return pictured({ text: joinText(w.knob), color: KNOB_FG, bgcolor: STRIP_BG }, w.knobImg, art);
+  return pictured({ text: joinText(w.lines), color: hex(w.color, 0xffffff), bgcolor: hex(w.bgcolor, STRIP_BG) }, w.img, art);
 }
+
+// A preset's own style: the current look (picture if held), no top bar, so the picture fills the button.
+const styleOf = (st) => {
+  const out = { text: st.text, size: 'auto', color: st.color, bgcolor: st.bgcolor, show_topbar: false };
+  if (st.png64) { out.png64 = st.png64; out.pngalignment = 'center:center'; }
+  return out;
+};
 
 // ---------- presets ----------
 const look = (part, o) => ({ feedbackId: 'cc_deck_look', options: { surface: o.surface, part, pin: o.pin || '', row: o.row || 0, col: o.col || 0, index: o.index || 0 } });
@@ -82,55 +99,55 @@ const dialAct = (o, event, delta = '') => ({ actionId: 'cc_deck_dial', options: 
 
 // simpleOnly: published as a 'simple' preset only, so Companion keeps the advanced look feedback (a 'layered'
 // variant would drop it, and these buttons change with every page and every value).
-function keyPreset(category, name, k, o, model) {
-  const st = slotLook(model, { ...o, part: 'key' }) || { text: '', color: 0xffffff, bgcolor: 0 };
+function keyPreset(category, name, k, o, model, art) {
+  const st = slotLook(model, { ...o, part: 'key' }, art) || { text: '', color: 0xffffff, bgcolor: 0 };
   return {
     type: 'button', category, name, simpleOnly: true,
-    style: { text: st.text, size: 'auto', color: st.color, bgcolor: st.bgcolor },
+    style: styleOf(st),
     steps: [{ down: [keyAct(o, 'press')], up: [keyAct(o, 'release')] }],
     feedbacks: [look('key', o)],
   };
 }
 
-function stripPreset(category, name, o, model) {
-  const st = slotLook(model, { ...o, part: 'strip' }) || { text: '', color: 0xffffff, bgcolor: STRIP_BG };
+function stripPreset(category, name, o, model, art) {
+  const st = slotLook(model, { ...o, part: 'strip' }, art) || { text: '', color: 0xffffff, bgcolor: STRIP_BG };
   return {
     type: 'button', category, name, simpleOnly: true,
-    style: { text: st.text, size: 'auto', color: st.color, bgcolor: st.bgcolor },
+    style: styleOf(st),
     steps: [{ down: [dialAct(o, 'tap')], up: [] }],
     feedbacks: [look('strip', o)],
   };
 }
 
-function knobPreset(category, name, o, model) {
-  const st = slotLook(model, { ...o, part: 'knob' }) || { text: '', color: KNOB_FG, bgcolor: STRIP_BG };
+function knobPreset(category, name, o, model, art) {
+  const st = slotLook(model, { ...o, part: 'knob' }, art) || { text: '', color: KNOB_FG, bgcolor: STRIP_BG };
   return {
     type: 'button', category, name, simpleOnly: true,
     options: { rotaryActions: true },
-    style: { text: st.text, size: 'auto', color: st.color, bgcolor: st.bgcolor },
+    style: styleOf(st),
     steps: [{ down: [dialAct(o, 'down')], up: [dialAct(o, 'up')], rotate_left: [dialAct(o, 'rotate', '-1')], rotate_right: [dialAct(o, 'rotate', '1')] }],
     feedbacks: [look('knob', o)],
   };
 }
 
-function widgetPresets(model, out) {
+function widgetPresets(model, out, art) {
   const cat = 'CC deck: touch-strip displays and knobs (PTZ, selected camera)';
   for (const w of (model && model.widgetList) || []) {
     if (!model.widgets || !model.widgets[w.id]) continue;
     const id = safe(w.id);
-    const st = widgetLook(model, w.id, 'strip');
+    const st = widgetLook(model, w.id, 'strip', art);
     out[`ccw_${id}_strip`] = {
       type: 'button', category: cat, name: `${w.name}: touch-strip display${w.tap ? ` (touch: ${w.tap})` : ''}`, simpleOnly: true,
-      style: { text: st.text, size: 'auto', color: st.color, bgcolor: st.bgcolor },
+      style: styleOf(st),
       steps: [{ down: [{ actionId: 'cc_dial_widget', options: { widget: w.id, event: 'tap', delta: '' } }], up: [] }],
       feedbacks: [{ feedbackId: 'cc_dial_look', options: { widget: w.id, part: 'strip' } }],
     };
-    const kn = widgetLook(model, w.id, 'knob');
+    const kn = widgetLook(model, w.id, 'knob', art);
     const act = (event, delta = '') => ({ actionId: 'cc_dial_widget', options: { widget: w.id, event, delta } });
     out[`ccw_${id}_knob`] = {
       type: 'button', category: cat, name: `${w.name}: knob${w.pair ? ' (push: switch side)' : ''}`, simpleOnly: true,
       options: { rotaryActions: true },
-      style: { text: kn.text, size: 'auto', color: kn.color, bgcolor: kn.bgcolor },
+      style: styleOf(kn),
       steps: [{ down: [act('down')], up: [act('up')], rotate_left: [act('rotate', '-1')], rotate_right: [act('rotate', '1')] }],
       feedbacks: [{ feedbackId: 'cc_dial_look', options: { widget: w.id, part: 'knob' } }],
     };
@@ -139,7 +156,7 @@ function widgetPresets(model, out) {
 
 // "CC deck: <surface> (whole deck, follows HOME)": every key, strip cell and knob of one virtual deck.
 // "CC deck: <surface> · <page>": one page, pinned. Keys first, then the strip, then the knobs.
-function presets(model, surfaces) {
+function presets(model, surfaces, art) {
   const out = {};
   if (!model) return out;
   const want = new Set(surfaces && surfaces.length ? surfaces : DEFAULT_SURFACES);
@@ -148,23 +165,23 @@ function presets(model, surfaces) {
     const knobCols = s.knobCols || [];
     const cat = `CC deck: ${s.label} (whole deck, follows HOME and page keys)`;
     for (let row = 0; row < s.rows; row++) {
-      for (let col = 0; col < s.cols; col++) out[`ccd_${s.id}_k${row}_${col}`] = keyPreset(cat, `Row ${row + 1} col ${col + 1}`, null, { surface: s.id, row, col, pin: '' }, model);
+      for (let col = 0; col < s.cols; col++) out[`ccd_${s.id}_k${row}_${col}`] = keyPreset(cat, `Row ${row + 1} col ${col + 1}`, null, { surface: s.id, row, col, pin: '' }, model, art);
     }
-    knobCols.forEach((col, index) => { out[`ccd_${s.id}_s${index}`] = stripPreset(cat, `Strip col ${col + 1} (knob ${index + 1} readout)`, { surface: s.id, index, pin: '' }, model); });
-    knobCols.forEach((col, index) => { out[`ccd_${s.id}_e${index}`] = knobPreset(cat, `Knob ${index + 1} (col ${col + 1})`, { surface: s.id, index, pin: '' }, model); });
+    knobCols.forEach((col, index) => { out[`ccd_${s.id}_s${index}`] = stripPreset(cat, `Strip col ${col + 1} (knob ${index + 1} readout)`, { surface: s.id, index, pin: '' }, model, art); });
+    knobCols.forEach((col, index) => { out[`ccd_${s.id}_e${index}`] = knobPreset(cat, `Knob ${index + 1} (col ${col + 1})`, { surface: s.id, index, pin: '' }, model, art); });
     for (const p of s.pages || []) {
       const pc = `CC deck: ${s.label} · ${p.title} [${p.id}]`;
       const base = `ccd_${s.id}_${safe(p.id)}`;
       const keys = (p.keys || []).filter((k) => k.pressable || (k.lines || []).length).slice().sort((a, b) => a.row - b.row || a.col - b.col);
-      for (const k of keys) out[`${base}_k${k.row}_${k.col}`] = keyPreset(pc, `Row ${k.row + 1} col ${k.col + 1}: ${oneLine(k.lines) || 'blank'}`, k, { surface: s.id, row: k.row, col: k.col, pin: p.id }, model);
+      for (const k of keys) out[`${base}_k${k.row}_${k.col}`] = keyPreset(pc, `Row ${k.row + 1} col ${k.col + 1}: ${oneLine(k.lines) || 'blank'}`, k, { surface: s.id, row: k.row, col: k.col, pin: p.id }, model, art);
       for (const d of (p.dials || []).slice().sort((a, b) => a.index - b.index)) {
         const o = { surface: s.id, index: d.index, pin: p.id };
-        out[`${base}_s${d.index}`] = stripPreset(pc, `Strip col ${d.col + 1}: ${oneLine(d.lines) || d.label}`, o, model);
-        out[`${base}_e${d.index}`] = knobPreset(pc, `Knob col ${d.col + 1}: ${d.label || oneLine(d.knob)}`, o, model);
+        out[`${base}_s${d.index}`] = stripPreset(pc, `Strip col ${d.col + 1}: ${oneLine(d.lines) || d.label}`, o, model, art);
+        out[`${base}_e${d.index}`] = knobPreset(pc, `Knob col ${d.col + 1}: ${d.label || oneLine(d.knob)}`, o, model, art);
       }
     }
   }
-  widgetPresets(model, out);
+  widgetPresets(model, out, art);
   return out;
 }
 
@@ -264,8 +281,8 @@ function feedbacks(inst) {
     cc_deck_look: {
       type: 'advanced',
       name: 'Control Center deck: look of a key, strip cell or knob',
-      description: 'Text and colors of one slot of a Control Center Stream Deck page, live: page changes, camera values, tally. On a strip cell it is the knob\'s label and value (e.g. R GAIN +12).',
-      affectedProperties: ['text', 'color', 'bgcolor'],
+      description: 'The picture Control Center draws for one slot of its Stream Deck page (Control Center 0.35.0+; text and colors before), live: page changes, camera values, tally. On a strip cell it is the knob\'s label and value (e.g. R GAIN +12).',
+      affectedProperties: ['text', 'color', 'bgcolor', 'png64', 'pngalignment'],
       options: [
         { type: 'dropdown', id: 'surface', label: 'Deck size', default: 'plusxl', choices: surfaceChoices() },
         { type: 'dropdown', id: 'part', label: 'Slot', default: 'key', choices: PARTS },
@@ -274,18 +291,18 @@ function feedbacks(inst) {
         { type: 'number', id: 'index', label: 'Knob (from 0)', default: 0, min: 0, max: 5 },
         pinOpt,
       ],
-      callback: (f) => slotLook(inst.deck, f.options) || {},
+      callback: (f) => slotLook(inst.deck, f.options, inst.art) || {},
     },
     cc_dial_look: {
       type: 'advanced',
       name: 'Control Center PTZ dial: touch-strip display',
       description: 'Label and live value of one PTZ dial on the selected camera (R GAIN / B GAIN with the active side marked, iris, detail ...).',
-      affectedProperties: ['text', 'color', 'bgcolor'],
+      affectedProperties: ['text', 'color', 'bgcolor', 'png64', 'pngalignment'],
       options: [
         { type: 'dropdown', id: 'widget', label: 'Dial', default: widgetChoices(inst.deck)[0].id, choices: widgetChoices(inst.deck), allowCustom: true },
         { type: 'dropdown', id: 'part', label: 'Show', default: 'strip', choices: [{ id: 'strip', label: 'Readout (strip cell)' }, { id: 'knob', label: 'Knob label' }] },
       ],
-      callback: (f) => widgetLook(inst.deck, f.options.widget, f.options.part) || {},
+      callback: (f) => widgetLook(inst.deck, f.options.widget, f.options.part, inst.art) || {},
     },
   };
 }

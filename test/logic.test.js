@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const http = require('http');
+const { mockApp } = require('./mock-app');
 const L = require('../src/logic');
 const { AppApi } = require('../src/api');
 
@@ -78,7 +78,7 @@ test('preset signature changes when the app adds a preset', () => {
 
 test('AppApi talks to the app endpoints', async () => {
   const seen = [];
-  const srv = http.createServer((req, res) => {
+  const srv = mockApp((req, res) => {
     let b = ''; req.on('data', (c) => (b += c));
     req.on('end', () => { seen.push([req.method, req.url, b]); res.writeHead(req.url.includes('99') ? 400 : 200, { 'Content-Type': 'application/json' }); res.end(req.url.includes('99') ? '{"error":"No preset 99"}' : JSON.stringify(STATE)); });
   });

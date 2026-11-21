@@ -4,7 +4,7 @@
   "name": "Performance Video Control Center",
   "shortname": "pvcc",
   "description": "Control Center buttons, pages and Stream Deck deck pages (knobs and touch strips) in Companion, plus actions and feedbacks for the systems Control Center drives: Analog Way Aquilon RS6, Barco E2, PixelHue, Blackmagic ATEM and Panasonic PTZ cameras. The module talks only to the Control Center app, never to the devices.",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "license": "MIT",
   "repository": "git+https://github.com/stevenmarr/companion-module-rs6-presets.git",
   "bugs": "https://github.com/stevenmarr/companion-module-rs6-presets/issues",

@@ -66,7 +66,7 @@ test('deck presets publish as simple presets so the live look feedback is kept',
 test('cc_deck_look follows the deck: page change, new values, missing slots', () => {
   const inst = { deck: clone() };
   const fb = D.feedbacks(inst).cc_deck_look;
-  assert.deepEqual(fb.affectedProperties, ['text', 'color', 'bgcolor']);
+  assert.deepEqual(fb.affectedProperties, ['text', 'color', 'bgcolor', 'png64', 'pngalignment']);
   const home = fb.callback({ options: { surface: 'plusxl', part: 'key', row: 0, col: 2, pin: '' } });
   assert.equal(home.text, 'OPEN\\nPTZ');
   // the virtual deck opened PTZ: "live" is now that page
@@ -83,7 +83,7 @@ test('cc_deck_look follows the deck: page change, new values, missing slots', ()
   assert.deepEqual(fb.callback({ options: { surface: 'plus', part: 'key', row: 0, col: 0, pin: '' } }), {});
   assert.equal(fb.callback({ options: { surface: 'plusxl', part: 'key', row: 9, col: 9, pin: '' } }).text, '');
   const wl = D.feedbacks(inst).cc_dial_look;
-  assert.deepEqual(wl.affectedProperties, ['text', 'color', 'bgcolor']);
+  assert.deepEqual(wl.affectedProperties, ['text', 'color', 'bgcolor', 'png64', 'pngalignment']);
   assert.match(wl.callback({ options: { widget: 'gainRb', part: 'strip' } }).text, /R GAIN/);
   assert.deepEqual(wl.callback({ options: { widget: 'nope', part: 'strip' } }), {});
 });

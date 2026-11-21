@@ -58,6 +58,8 @@ test('e2e: module -> Control Center app (mock) -> E2 / PixelHue / ATEM / PTZ dev
   const inst = loadInstance();
   t.after(() => inst.destroy());
   await inst.init({ host: '127.0.0.1', port, poll: 100, updates: 'longpoll', systems: 'on', max_hold: 4000 });
+  // 0.15.0: this test is not about deck pictures; skip fetching them so it measures only what it tests (e2e-ccdeck covers art)
+  inst.art.stop();
   const c = inst.calls; const A = (id, options = {}) => c.actions[id].callback({ options });
   const F = (id, options = {}) => c.feedbacks[id].callback({ options });
   await until(() => c.vars.e2_connected === 'true' && c.vars.atem_connected === 'true' && c.vars.ptz_selected, 10000, 'module sees every system');
@@ -128,8 +130,13 @@ test('e2e: module -> Control Center app (mock) -> E2 / PixelHue / ATEM / PTZ dev
     // max hold: a lost release still stops
     await A('ptz_zoom', { cam: 'cam1', dir: 'tele', speed: 20 });
     await until(async () => (await views()).ptz.cameras.find((x) => x.id === 'cam1').axes.z, 2000, 'zooming');
+    // Two independent safeties can stop a held zoom: this module's max hold (4 s here; it logs the warn, then sends
+    // stop) and the app's dead-man (stops a camera ~1.5 s after the last keep-alive). On a loaded machine a late
+    // keep-alive lets the dead-man stop the zoom first; asserting the warn the moment the zoom stopped then raced the
+    // module's 4 s timer (Grok Build, 0.15.0 v3). So wait for the module's own warn, then for the camera to be stopped.
+    await until(() => c.logs.some(([l, m]) => l === 'warn' && /held for more than 4000 ms/.test(m)), 15000, 'max hold warned');
     await until(async () => !(await views()).ptz.cameras.find((x) => x.id === 'cam1').axes.z, 8000, 'max hold stopped the zoom');
-    assert.ok(c.logs.some(([l, m]) => l === 'warn' && /held for more than 4000 ms/.test(m)));
+    assert.equal(inst.holds.has('cam1'), false, 'the hold is gone (no more keep-alives)');
     await A('ptz_focus', { cam: 'cam1', dir: 'near', speed: 0 }); await A('ptz_stop', { cam: 'cam1', axes: 'all' });
     // exposure / paint through the catalog ops
     await A('ptz_toggle', { cam: 'cam1', op: 'irisMode', mode: 'off' });

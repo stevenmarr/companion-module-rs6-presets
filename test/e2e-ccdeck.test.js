@@ -57,7 +57,10 @@ test('e2e: Control Center deck pages become presets; a knob turns the camera and
   assert.ok(c.feedbacks.cc_deck_look && c.feedbacks.cc_dial_look && c.feedbacks.cc_button_look);
 
   // HOME -> PTZ on the Companion virtual deck
-  const fb = c.feedbacks.cc_deck_look;
+  // 0.15.0: with Control Center 0.35.0 the feedback draws Control Center's picture (png64); the text look is still
+  // what an older app gets, so check the text through slotLook without pictures, and the picture separately below
+  const fbLive = c.feedbacks.cc_deck_look;
+  const fb = { callback: (f) => require('../src/ccdeck').slotLook(inst.deck, f.options) || {} };
   const home = inst.deck.surfaces[0].live.keys.find((k) => k.lines.includes('PTZ'));
   assert.equal(fb.callback({ options: { surface: 'plusxl', part: 'key', row: home.row, col: home.col, pin: '' } }).text, 'OPEN\\nPTZ');
   await c.actions.cc_deck_key.callback({ options: { surface: 'plusxl', row: home.row, col: home.col, event: 'press', pin: '' } });
@@ -76,6 +79,21 @@ test('e2e: Control Center deck pages become presets; a knob turns the camera and
   await until(() => /R GAIN \+\d/.test(c.vars[v]), 15000, `${v} shows the new R gain (${c.vars[v]})`);
   assert.match(fb.callback({ options: { surface: 'plusxl', part: 'strip', index: gain.index, pin: '' } }).text, /R GAIN \+\d/);
   assert.ok(c.checked.includes('cc_deck_look'));
+  if (inst.deck.art) {
+    // Budgets are generous on purpose: the module fetches one picture at a time, and a Control Center that has to load
+    // every system font takes about 150 ms per picture (more on a loaded machine), so a whole page set (~90) can take
+    // 15-30 s. Each wait still ends the moment the state is there.
+    const idOf = () => inst.deck.surfaces[0].live.dials.find((d) => d.index === gain.index).img;
+    await until(() => inst.art.get(idOf()), 30000, 'Control Center picture of the strip cell');
+    const drawn = fbLive.callback({ options: { surface: 'plusxl', part: 'strip', index: gain.index, pin: '' } });
+    assert.equal(drawn.text, '');
+    assert.equal(Buffer.from(drawn.png64, 'base64').subarray(1, 4).toString(), 'PNG');
+    const key = fbLive.callback({ options: { surface: 'plusxl', part: 'key', row: 0, col: 0, pin: '' } });
+    await until(() => fbLive.callback({ options: { surface: 'plusxl', part: 'key', row: 0, col: 0, pin: '' } }).png64, 30000, 'key picture');
+    assert.ok(key);
+    await until(() => (c.presets.ccd_plusxl_ptz_0_k1_1 || {}).style && c.presets.ccd_plusxl_ptz_0_k1_1.style.png64, 60000, 'presets republished with pictures');
+    assert.equal(c.presets.ccd_plusxl_ptz_0_k1_1.style.show_topbar, false);
+  }
   const deckPresets = () => Object.keys(c.presets).filter((k) => /^cc[dw]_/.test(k)).length;
   const pinnedPresets = deckPresets();
 

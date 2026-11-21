@@ -8,6 +8,7 @@ const { sysActions, sysFeedbacks } = require('./sysdefs');
 const G = require('./graphics');
 const C = require('./ccbuttons');
 const D = require('./ccdeck');
+const A = require('./ccart');
 const MODULE_VERSION = require('../package.json').version;
 
 // Module id: pvllc-control-center. companion/manifest.json still lists legacyIds ["rs6-presets"] and the GitHub repo
@@ -34,6 +35,10 @@ class ControlCenterInstance extends InstanceBase {
     this.config = config; this.state = null; this.sig = null; this.failures = 0;
     this.cc = null; this.ccRev = null;
     this.deck = null; this.deckLayout = null; this.deckStarted = false;
+    // 0.15.0: Control Center's pictures for the deck slots (app 0.35.0), fetched once per picture id
+    this.destroyed = false;
+    this.art = new A.ArtCache((id, signal) => (this.api ? this.api.ccDeckArt(id, { signal }) : Promise.reject(new Error('not connected'))));
+    this.presetArtPending = false;
     this.sys = null; this.sysSig = null; this.sysFailures = 0; this.ptzCats = {}; this.catKeys = {}; this.holds = new Map();
     this.setActionDefinitions(this.actions());
     this.setFeedbackDefinitions(this.feedbacks());
@@ -41,9 +46,17 @@ class ControlCenterInstance extends InstanceBase {
     this.start();
   }
 
-  async destroy() { if (this.republishTimer) clearTimeout(this.republishTimer); await this.releaseHolds(); this.stop(); }
+  // 0.15.0: nothing outlives destroy(): picture fetches are aborted and no redraw or publish timer is left behind
+  async destroy() {
+    this.destroyed = true;
+    if (this.art) this.art.stop();
+    if (this.republishTimer) clearTimeout(this.republishTimer);
+    this.republishTimer = null;
+    await this.releaseHolds();
+    this.stop();
+  }
 
-  async configUpdated(config) { await this.releaseHolds(); this.config = config; this.stop(); this.sig = null; this.sysSig = null; this.start(); }
+  async configUpdated(config) { await this.releaseHolds(); this.config = config; this.stop(); this.sig = null; this.sysSig = null; if (this.art) this.art.clear(); this.start(); }
 
   getConfigFields() {
     return [
@@ -152,9 +165,25 @@ class ControlCenterInstance extends InstanceBase {
   applyDeck(m, surfaces = D.surfaceIds(this.config)) {
     this.deck = m;
     const key = D.layoutKey(m, surfaces);
-    if (key !== this.deckLayout) { this.deckLayout = key; this.redefine(); }
+    if (key !== this.deckLayout) { this.deckLayout = key; this.presetArtPending = !!(m && m.art); this.redefine(); }
     this.setVariableValues(D.variableValues(m, surfaces));
     this.checkFeedbacks('cc_deck_look', 'cc_dial_look');
+    this.fetchArt(m, surfaces);
+  }
+
+  // 0.15.0: fetch the pictures this model uses that we do not have yet, then redraw. The first time after a new page
+  // set the presets are published again too, so the Presets list shows Control Center's pictures and not text.
+  fetchArt(m, surfaces) {
+    if (this.destroyed || !m || !m.art || !this.art) return Promise.resolve(0);
+    const ids = A.artIds(m, surfaces);
+    return this.art.want(ids).then((got) => {
+      if (this.destroyed) return 0;
+      // keep only what the newest model uses (an older value's picture is never shown again)
+      this.art.keepOnly(this.deck === m ? ids : A.artIds(this.deck, surfaces));
+      if (got) this.checkFeedbacks('cc_deck_look', 'cc_dial_look');
+      if (got && this.presetArtPending) { this.presetArtPending = false; this.republishSoon(); }
+      return got;
+    }, () => 0);
   }
 
   // 0.13.0: what the COMPANION tab shows about the deck pages: how many deck presets are published and for which deck
@@ -233,7 +262,7 @@ class ControlCenterInstance extends InstanceBase {
   // sections (and their config switch) are gone. Every action and feedback is still defined, so buttons already placed
   // keep working.
   presets() {
-    return { ...D.presets(this.deck, D.surfaceIds(this.config)), ...C.presets(this.cc) };
+    return { ...D.presets(this.deck, D.surfaceIds(this.config), this.art), ...C.presets(this.cc) };
   }
 
   // Layered buttons (comfortable text size, shrink-to-fit, outline) plus the classic style as a fallback.
@@ -246,6 +275,7 @@ class ControlCenterInstance extends InstanceBase {
   // each carries the cc_pages_refresh feedback, and its subscription makes us publish the presets again so
   // Companion fills the buttons in (that replaces the cache, so the feedback goes away by itself)
   republishSoon() {
+    if (this.destroyed) return;
     if (this.republishTimer) clearTimeout(this.republishTimer);
     this.republishTimer = setTimeout(() => { this.republishTimer = null; this.publishPresets(); }, 300);
   }

@@ -53,6 +53,8 @@ test('e2e ATEM 0.8.0: router, audio, keys per M/E, SuperSource (app simulator ch
   t.after(() => { global.fetch = origFetch; });
   const inst = loadInstance(); t.after(() => inst.destroy());
   await inst.init({ host: '127.0.0.1', port, poll: 100, updates: 'longpoll', systems: 'on', max_hold: 4000 });
+  // 0.15.0: this test is not about deck pictures; skip fetching them so it measures only what it tests (e2e-ccdeck covers art)
+  inst.art.stop();
   const c = inst.calls; const A = (id, options = {}) => c.actions[id].callback({ options }); const F = (id, options = {}) => c.feedbacks[id].callback({ options });
   await until(() => c.vars.atem_connected === 'true' && c.vars.atem_out_aux_11 !== undefined, 10000, 'module sees the ATEM outputs');
   assert.ok(!c.status.some(([s, m]) => s === 'unknown_warning' && /API/.test(m || '')), 'no version warning against app 0.10.0');
