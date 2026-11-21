@@ -35,7 +35,8 @@ function loadInstance() {
 const until = async (fn, ms = 5000, what = 'condition') => { const t0 = Date.now(); let last; while (Date.now() - t0 < ms) { try { if (await fn()) return; } catch (e) { last = e; } await new Promise((r) => setTimeout(r, 30)); } throw new Error(`timed out: ${what}${last ? ` (${last.message})` : ''}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const APP_DIR = process.env.RS6_APP_DIR || path.join(__dirname, '..', '..', 'rs6-presets');
+const APP_DIR = require('./app-dir');
+const armSystems = require('./e2e-arm');
 const haveApp = fs.existsSync(path.join(APP_DIR, 'server.js')) && fs.existsSync(path.join(APP_DIR, 'lib', 'drivers', 'ptz-commands.js'));
 
 test('e2e: module -> Control Center app (mock) -> E2 / PixelHue / ATEM / PTZ device mocks', { skip: haveApp ? false : `Control Center app 0.8.0 not found at ${APP_DIR}`, timeout: 90000 }, async (t) => {
@@ -46,7 +47,8 @@ test('e2e: module -> Control Center app (mock) -> E2 / PixelHue / ATEM / PTZ dev
   const api = new AppApi('127.0.0.1', port, 5000);
   const views = async () => (await api.sysViews()).views;
   const status = (cam) => api._req('GET', `/api/sys/ptz/cameras/${cam}/status`); // fresh camdata read through the app
-  await until(async () => { const v = await views(); return ['e2', 'pixelhue', 'atem'].every((k) => v[k] && v[k].status.connected) && v.ptz.cameras.every((c) => c.connected) && v.e2.presets.length && v.pixelhue.presets.length; }, 20000, 'app up, every mock connected');
+  let armed = false;
+  await until(async () => { if (!armed) armed = await armSystems(port, ['e2', 'pixelhue', 'atem', 'ptz']); const v = await views(); return ['e2', 'pixelhue', 'atem'].every((k) => v[k] && v[k].status.connected) && v.ptz.cameras.every((c) => c.connected) && v.e2.presets.length && v.pixelhue.presets.length; }, 20000, 'app up, every mock connected');
 
   // record every request the module makes
   const seen = []; const origFetch = global.fetch;
@@ -60,7 +62,10 @@ test('e2e: module -> Control Center app (mock) -> E2 / PixelHue / ATEM / PTZ dev
   const F = (id, options = {}) => c.feedbacks[id].callback({ options });
   await until(() => c.vars.e2_connected === 'true' && c.vars.atem_connected === 'true' && c.vars.ptz_selected, 10000, 'module sees every system');
   assert.ok(seen.some((s) => /\/api\/sys\?since=-?\d+&timeout=\d+&views=all$/.test(s)), 'multi-system long-poll');
-  assert.ok(c.presets.e2_preset_1 && c.presets.pixelhue_preset_1 && c.presets.atem_pgm_1 && c.presets.ptz_cam_cam1, 'button presets for every system');
+  // 0.14.0: presets are Control Center presets only; every system keeps its actions and feedbacks
+  assert.ok(!Object.keys(c.presets).some((id) => /^(e2|pixelhue|atem|ptz)_/.test(id)), 'no per-system presets');
+  for (const id of ['e2_recall_preset', 'pixelhue_recall_preset', 'atem_program', 'ptz_move', 'ptz_stop']) assert.ok(c.actions[id], id);
+  for (const id of ['e2_preset_pvw', 'pixelhue_preset_pvw', 'atem_program_is', 'atem_output_is', 'ptz_selected']) assert.ok(c.feedbacks[id], id);
 
   await t.test('E2: recall, destinations, take, cue', async () => {
     await A('e2_set_destinations', { dests: 'S1,S2' });

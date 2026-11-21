@@ -34,7 +34,7 @@ function loadInstance() {
 const until = async (fn, ms = 5000, what = 'condition') => { const t0 = Date.now(); let last; while (Date.now() - t0 < ms) { try { if (await fn()) return; } catch (e) { last = e; } await new Promise((r) => setTimeout(r, 30)); } throw new Error(`timed out: ${what}${last ? ` (${last.message})` : ''}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const APP_DIR = process.env.RS6_APP_DIR || path.join(__dirname, '..', '..', 'rs6-presets');
+const APP_DIR = require('./app-dir');
 const haveApp = fs.existsSync(path.join(APP_DIR, 'lib', 'companion', 'bridge.js'));
 
 test('e2e: Control Center buttons and pages become presets; a preset runs its CC actions', { skip: haveApp ? false : `Control Center app 0.31.0 not found at ${APP_DIR}`, timeout: 90000 }, async (t) => {

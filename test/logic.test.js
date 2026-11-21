@@ -72,12 +72,7 @@ test('variables', () => {
   assert.equal(L.variableValues(null).last_preset_name, '');
 });
 
-test('button presets: one per app preset plus transport and destinations', () => {
-  const p = L.buttonPresets(STATE);
-  assert.ok(p.preset_1 && p.preset_2 && p.take && p.cut && p.auto_take && p.dest_S1 && p.dest_A1);
-  assert.deepEqual(p.preset_2.steps[0].down[0], { actionId: 'recall_preset', options: { preset: 2 } });
-  assert.deepEqual(p.preset_2.feedbacks.map((f) => f.feedbackId), ['preset_pvw', 'preset_pgm']);
-  assert.equal(p.preset_1.style.bgcolor, L.rgb(40, 40, 40));
+test('preset signature changes when the app adds a preset', () => {
   assert.notEqual(L.presetSignature(STATE), L.presetSignature({ ...STATE, presets: [...STATE.presets, { number: 3, name: 'x' }] }));
 });
 
@@ -129,7 +124,7 @@ test('0.4.0 backup group name variables use the label from the device', () => {
   assert.notEqual(L.presetSignature(st), L.presetSignature({ live: { backup: { groups: [{ group: 1, label: 'RENAMED' }] } } }));
 });
 
-test('backup buttons name the source, the live state, and the groups', () => {
+test('backup variables name the source, the live state, and the groups', () => {
   const st = { live: { inputs: [{ number: 4, label: 'PPT Main' }, { number: 9, label: 'PPT Main Bkp' }],
     backup: { inputs: [{ number: 4, label: 'PPT Main', slots: { 1: 'LIVE_9', 2: 'STILL_1' }, selected: '1', active: true, auto: false }],
       backgrounds: [{ screen: 'S1', set: 1, slots: { 1: 'NATIVE_2', 2: 'NONE' }, selected: 'NONE', auto: true, active: false }],
@@ -145,15 +140,4 @@ test('backup buttons name the source, the live state, and the groups', () => {
   assert.equal(v.backup_group_2_name, 'MEDIA BU');
   assert.equal(v.bk_grp_2_state, 'BKP 2');
   assert.equal(v.bk_grp_2_members, 'IN 4 PPT Main');
-  const p = L.buttonPresets(st);
-  assert.equal(p.input_backup_4_1.style.text, '$(pvcc:bk_in_4_name)\nBKP 1 $(pvcc:bk_in_4_src1)\n$(pvcc:bk_in_4_state)');
-  assert.equal(p.input_backup_4_NONE.style.text, '$(pvcc:bk_in_4_name)\nPRIMARY\n$(pvcc:bk_in_4_state)');
-  assert.equal(p.bg_backup_S1_1_1.style.text, '$(pvcc:bk_bg_S1_1_name)\nBKP 1 $(pvcc:bk_bg_S1_1_src1)\n$(pvcc:bk_bg_S1_1_state)');
-  assert.match(p.group_backup_2_2.style.text, /backup_group_2_name/);
-  assert.match(p.group_backup_2_2.style.text, /bk_grp_2_state/);
-  assert.match(p.group_backup_2_2.style.text, /bk_grp_2_members/);
-  assert.equal(p.input_backup_4_1.style.size, 'auto');
-  assert.equal(p.group_backup_2_2.steps[0].down[0].options.kind, 'group');
-  assert.equal(p.bg_backup_S1_1_NONE.steps[0].down[0].options.id, 'S1/1');
-  assert.equal(p.group_backup_2_1.feedbacks[0].options.slot, '1');
 });

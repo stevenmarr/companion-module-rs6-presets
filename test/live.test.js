@@ -8,7 +8,7 @@ const Module = require('module');
 const L = require('../src/logic');
 const { AppApi } = require('../src/api');
 
-// Captured from the RS6 Presets app 0.2.0 in --mock mode (preset 1 taken, preset 4 on PVW,
+// Captured from the Control Center app 0.2.0 in --mock mode (preset 1 taken, preset 4 on PVW,
 // IN 3 + IN 5 frozen, audio IN1 ch2 muted, IN 4 on backup 1). lastMaster is filled in below.
 const BASE = require('./fixtures/app-state-0.2.0.json');
 const fixture = () => {
@@ -68,15 +68,8 @@ test('variables: input labels, memory numbers/names, master, PGM layer-1 source'
   assert.equal(empty.master_pgm_number, ''); assert.equal(empty.live_mode, 'off');
 });
 
-test('presets: tally per input, freeze per input, backups, audio mutes', () => {
+test('preset signature tracks structure (labels, channels) but not mute values', () => {
   const s = fixture();
-  const p = L.buttonPresets(s);
-  assert.ok(p.input_tally_1 && p.input_tally_12 && p.input_freeze_3);
-  assert.deepEqual(p.input_tally_1.feedbacks.map((f) => f.feedbackId), ['input_pvw', 'input_pgm', 'input_problem']);
-  assert.equal(p.input_freeze_3.steps[0].down[0].actionId, 'input_freeze');
-  assert.ok(p.input_backup_4_1 && p.input_backup_4_NONE && !p.input_backup_1_1);
-  assert.equal(p.audio_inputs_1_2.steps[0].down[0].options.channel, 2);
-  assert.equal(p.audio_outputs_4_8.feedbacks[0].feedbackId, 'audio_muted');
   // signature tracks structure (labels, channels) but not mute values, so mutes don't rebuild definitions
   const a = L.presetSignature(s); const s2 = fixture(); s2.live.audio.inputs[0].channels[0].mute = true;
   assert.equal(L.presetSignature(s2), a);
@@ -181,7 +174,6 @@ test('instance: long-poll delivers device changes immediately; live actions/feed
     assert.equal(c.feedbacks.input_problem.callback({ options: { input: 6, what: 'either' } }), true);
     assert.equal(c.feedbacks.backup_active.callback({ options: { kind: 'input', id: '4', slot: 'any' } }), true);
     assert.equal(c.feedbacks.audio_muted.callback({ options: { dir: 'inputs', id: 1, channel: 2 } }), true);
-    assert.ok(c.presets.input_tally_1 && c.presets.audio_inputs_1_1);
 
     // An external change (e.g. RC400T/Web RCS) arrives over the held long-poll well before the 5 s poll interval.
     const t0 = Date.now();
