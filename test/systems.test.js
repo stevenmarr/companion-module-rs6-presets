@@ -10,7 +10,6 @@ const L = require('../src/logic');
 const { sysActions, sysFeedbacks } = require('../src/sysdefs');
 
 const fixture = () => JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'app-sys-0.8.0.json'), 'utf8'));
-const isPng72 = (b64) => { const b = Buffer.from(b64, 'base64'); return b.slice(1, 4).toString() === 'PNG' && b.readUInt32BE(16) === 72 && b.readUInt32BE(20) === 72; };
 const fakeInst = (S) => ({ sys: S, ptzCats: {}, api: {}, log() {}, runSys: async (l, fn) => fn(), ptzHold() {}, ptzRelease() {}, ptzReleaseAll() {}, optimistic() {} });
 
 test('systems: variables for E2, PixelHue, ATEM and PTZ; definitions cover every value', () => {
@@ -69,26 +68,25 @@ test('systems: PTZ bodies, steps and the full command set', () => {
   assert.ok(X.OPS.length >= 70);
 });
 
-test('systems: action and feedback ids are prefixed; RS6 ids are untouched; presets are styled', () => {
+test('systems: action and feedback ids are prefixed; RS6 ids are untouched', () => {
   const S = fixture(); const inst = fakeInst(S);
   const acts = Object.keys(sysActions(inst)); const fbs = Object.keys(sysFeedbacks(inst));
   for (const id of [...acts, ...fbs]) assert.match(id, /^(sys|e2|pixelhue|atem|ptz)_/, id);
   for (const id of ['recall_preset', 'take', 'cut', 'toggle_destination', 'auto_take', 'preset_pvw', 'preset_pgm', 'dest_selected']) assert.ok(!acts.includes(id) && !fbs.includes(id), `${id} stays the RS6 one`);
   for (const id of ['e2_recall_preset', 'e2_take', 'e2_cut', 'e2_cue', 'pixelhue_recall_preset', 'atem_program', 'atem_preview', 'atem_cut', 'atem_auto', 'atem_ftb', 'atem_usk_onair', 'atem_dsk_onair', 'atem_aux', 'atem_macro_run',
     'ptz_select_camera', 'ptz_move', 'ptz_zoom', 'ptz_focus', 'ptz_stop', 'ptz_preset_recall', 'ptz_preset_store', 'ptz_adjust', 'ptz_power', 'ptz_tally']) assert.ok(acts.includes(id), id);
-  const p = X.buttonPresets(S);
-  const fam = { e2: p.e2_preset_1, pixelhue: p.pixelhue_preset_1, atem: p.atem_pgm_1, ptz: p.ptz_cam_cam1 };
-  for (const [f, b] of Object.entries(fam)) { assert.ok(b, f); assert.equal(b.style.png64, L.BG[f], `${f} family background`); }
-  assert.equal(new Set(Object.values(fam).map((b) => b.style.png64)).size, 4, 'four distinct family looks');
-  for (const [id, b] of Object.entries(p)) {
-    assert.equal(b.style.size, L.TEXT_SIZE, `${id} text size`);
-    assert.ok(b.style.png64 && isPng72(b.style.png64), `${id} background`);
-    for (const s of b.steps) for (const a of [...s.down, ...s.up]) assert.ok(acts.includes(a.actionId), `${id} uses ${a.actionId}`);
-    for (const f of b.feedbacks) { assert.ok(fbs.includes(f.feedbackId), `${id} uses ${f.feedbackId}`); if (f.style.bgcolor !== undefined) assert.ok(isPng72(f.style.png64), `${id} ${f.feedbackId} lit`); }
-  }
-  // hold-to-run presets stop on release
-  for (const id of ['ptz_move_up', 'ptz_move_downLeft', 'ptz_tele', 'ptz_near']) assert.equal(p[id].steps[0].up[0].actionId, 'ptz_stop', id);
-  // the text variables they show exist
-  const defs = new Set([...X.variableDefinitions(S).map((d) => d.variableId)]);
-  for (const [id, b] of Object.entries(p)) for (const m of String(b.style.text).matchAll(/\$\(pvcc:(\w+)\)/g)) assert.ok(defs.has(m[1]), `${id}: $(pvcc:${m[1]})`);
+});
+
+test('ATEM output feedback: M/E program / preview come from mixEffects when the app lists them as buses (app 0.11.0+)', () => {
+  const S = { views: { atem: { outputs: [{ key: 'aux:0', source: 3 }], mixEffects: [{ index: 0, program: 1, preview: 2 }, { index: 1, program: 4, preview: 6 }] } } };
+  assert.equal(X.atemFeedback(S, 'output', { output: 'aux:0', source: 3 }), true);
+  assert.equal(X.atemFeedback(S, 'output', { output: 'aux:0', source: 4 }), false);
+  assert.equal(X.atemFeedback(S, 'output', { output: 'me:1:preview', source: 6 }), true);
+  assert.equal(X.atemFeedback(S, 'output', { output: 'me:1:program', source: 6 }), false);
+  assert.equal(X.atemFeedback(S, 'output', { output: 'me:0:program', source: 1 }), true);
+  assert.equal(X.atemFeedback(S, 'output', { output: 'me:5:program', source: 1 }), false);
+  assert.equal(X.atemFeedback(S, 'output', { output: 'mv:0:1', source: 1 }), false);
+  // an app that still lists the M/E buses as outputs wins
+  const old = { views: { atem: { outputs: [{ key: 'me:1:preview', source: 9 }], mixEffects: [{ index: 1, preview: 6 }] } } };
+  assert.equal(X.atemFeedback(old, 'output', { output: 'me:1:preview', source: 9 }), true);
 });

@@ -1,7 +1,7 @@
 {
   "name": "companion-module-pvllc-control-center",
-  "version": "0.13.0",
-  "description": "Companion module for the Performance Video Control Center app (Control Center buttons and pages, RS6, E2, PixelHue, ATEM and Panasonic PTZ). Layered buttons need Companion with the graphics overhaul (module-base 2.2).",
+  "version": "0.14.0",
+  "description": "Companion module for the Performance Video Control Center app: Control Center buttons, pages and deck pages, and actions and feedbacks for the systems Control Center drives. Needs Companion with module-base 2.2.",
   "main": "src/main.js",
   "license": "MIT",
   "private": true,

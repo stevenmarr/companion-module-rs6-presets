@@ -1,6 +1,6 @@
 'use strict';
-// 0.13.0: Control Center presets first, the older per-system presets after (or hidden), the deck-pages default for
-// connections made before 0.12.0, and what the module tells Control Center's COMPANION tab about the deck pages.
+// 0.13.0: Control Center presets first (0.14.0: only), the deck-pages default for connections made before 0.12.0,
+// and what the module tells Control Center's COMPANION tab about the deck pages.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
@@ -34,38 +34,25 @@ function inst(config) {
   return Object.assign(o, { config, state: null, sys: sys(), cc, deck: deck(), ptzCats: {}, catKeys: {}, holds: new Map(), log() {} });
 }
 
-test('Companion lists the CC deck sections first, then CC buttons, then the older per-system presets', () => {
+test('Companion lists the CC deck sections first, then CC buttons and pages, and nothing else (0.14.0)', () => {
   const i = inst({});
   const { structure } = G.publishPresets(i.presets());
-  const names = structure.map((s) => s.name);
-  const firstOld = names.findIndex((n) => !/^CC /.test(n));
-  assert.ok(firstOld > 0, 'there are older sections too');
-  assert.ok(names.slice(0, firstOld).every((n) => /^CC (deck|buttons|page)/.test(n)), names.slice(0, firstOld + 1).join(' | '));
+  const names = structure.map((x) => x.name);
   assert.match(names[0], /^CC deck: Stream Deck \+ XL \(whole deck/);
-  assert.ok(names.slice(firstOld).every((n) => !/^CC /.test(n)), 'no CC section after the older ones');
+  assert.ok(names.every((n) => /^CC (deck|buttons|page)/.test(n)), names.find((n) => !/^CC (deck|buttons|page)/.test(n)));
+  const firstButtons = names.findIndex((n) => !/^CC deck/.test(n));
+  assert.ok(firstButtons > 0 && names.slice(firstButtons).every((n) => !/^CC deck/.test(n)), 'deck sections come first');
 });
 
-test('"Older per-system presets: Hide" leaves only the Control Center presets (actions stay defined)', () => {
-  const shown = Object.keys(inst({ legacy_presets: 'show' }).presets());
-  const hidden = Object.keys(inst({ legacy_presets: 'hide' }).presets());
-  assert.ok(hidden.length < shown.length);
-  assert.ok(hidden.every((id) => /^cc(d|w|_btn|_pg)_/.test(id)), hidden.find((id) => !/^cc(d|w|_btn|_pg)_/.test(id)));
-  assert.ok(hidden.some((id) => id.startsWith('ccd_plusxl_')));
-  const fields = loadMain().prototype.getConfigFields.call({});
-  const f = fields.find((x) => x.id === 'legacy_presets');
-  assert.equal(f.default, 'show');
-});
-
-test('a connection with no deck_surfaces (made before 0.12.0, or moved from rs6-presets) gets + XL deck pages', () => {
+test('a connection with no deck_surfaces (made before 0.12.0, or moved from the first module id) gets + XL deck pages', () => {
   for (const cfg of [{}, { deck_surfaces: [] }, { deck_surfaces: '' }, { deck_surfaces: ['nope'] }, null]) assert.deepEqual(D.surfaceIds(cfg), ['plusxl']);
   assert.ok(Object.keys(inst({}).presets()).some((id) => id.startsWith('ccd_plusxl_k')));
   // the upgrade script writes the default so the setting shows it
-  assert.equal(UpgradeScripts.length, 1);
   const r = UpgradeScripts[0]({}, { config: { host: '127.0.0.1', port: 8080 }, actions: [], feedbacks: [] });
   assert.deepEqual(r.updatedConfig.deck_surfaces, ['plusxl']);
-  assert.equal(r.updatedConfig.legacy_presets, 'show');
   assert.equal(r.updatedConfig.host, '127.0.0.1');
-  const kept = UpgradeScripts[0]({}, { config: { deck_surfaces: ['plus', 'xl'], legacy_presets: 'hide' }, actions: [], feedbacks: [] });
+  assert.equal('legacy_presets' in r.updatedConfig, false, '0.14.0: no longer writes the older-presets setting');
+  const kept = UpgradeScripts[0]({}, { config: { deck_surfaces: ['plus', 'xl'] }, actions: [], feedbacks: [] });
   assert.equal(kept.updatedConfig, null);
   assert.equal(UpgradeScripts[0]({}, { config: null, actions: [], feedbacks: [] }).updatedConfig, null);
 });

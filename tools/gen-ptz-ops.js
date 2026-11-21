@@ -5,9 +5,9 @@
 // merged over all camera series. This is only the fallback for the action dropdowns: at runtime the module reads
 // each camera's own catalog from the app (GET /api/sys/ptz/cameras/:id/catalog) for its options and ranges.
 //
-//   node tools/gen-ptz-ops.js [path to the Control Center app repo, default ../rs6-presets]
+//   node tools/gen-ptz-ops.js [path to the Control Center app repo, default ../performance-video-control]
 const fs = require('fs'); const path = require('path');
-const app = path.resolve(process.argv[2] || path.join(__dirname, '..', '..', 'rs6-presets'));
+const app = path.resolve(process.argv[2] || path.join(__dirname, '..', '..', 'performance-video-control'));
 const C = require(path.join(app, 'lib', 'drivers', 'ptz-commands.js'));
 const m = new Map(); const all = [...Object.keys(C.DATA.series), 'Other'];
 for (const s of all) {

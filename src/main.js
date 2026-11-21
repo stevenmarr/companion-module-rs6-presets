@@ -10,6 +10,11 @@ const C = require('./ccbuttons');
 const D = require('./ccdeck');
 const MODULE_VERSION = require('../package.json').version;
 
+// Module id: pvllc-control-center. companion/manifest.json still lists legacyIds ["rs6-presets"] and the GitHub repo
+// is still named companion-module-rs6-presets. Both are internal only and never shown: Companion uses legacyIds to move
+// connections made with the module's first release (id rs6-presets, 0.10.0) onto this module, keeping their buttons.
+// Removing it would orphan those connections. JSON has no comments, so the reason lives here.
+
 const FEEDBACK_IDS = ['preset_pvw', 'preset_pgm', 'dest_selected', 'auto_take_on', 'device_connected', 'input_pgm', 'input_pvw', 'dest_memory', 'master_memory', 'input_frozen', 'input_problem', 'backup_active', 'audio_muted'];
 const TRI = { type: 'dropdown', id: 'mode', label: 'Mode', default: 'toggle', choices: [{ id: 'toggle', label: 'Toggle' }, { id: 'on', label: 'On' }, { id: 'off', label: 'Off' }] };
 const SIDE_TARGET = { type: 'dropdown', id: 'target', label: 'To', default: 'preview', choices: [{ id: 'preview', label: 'Preview' }, { id: 'program', label: 'Program (no transition)' }] };
@@ -42,14 +47,13 @@ class ControlCenterInstance extends InstanceBase {
 
   getConfigFields() {
     return [
-      { type: 'static-text', id: 'info', width: 12, label: 'About', value: 'Performance Video Control Center: every command goes through the Control Center app (RS6, E2, PixelHue, ATEM and Panasonic PTZ); this module never talks to a device. Enter the Mac running the app and its port (default 8080).' },
+      { type: 'static-text', id: 'info', width: 12, label: 'About', value: 'Performance Video Control Center: Control Center buttons, pages and deck pages in Companion. Every command goes through the Control Center app; this module never talks to a device. Enter the Mac running the app and its port (default 8080).' },
       { type: 'textinput', id: 'host', label: 'App host / IP', width: 8, default: '127.0.0.1', regex: Regex.HOSTNAME },
       { type: 'number', id: 'port', label: 'App port', width: 4, default: 8080, min: 1, max: 65535 },
       { type: 'dropdown', id: 'updates', label: 'Updates', width: 8, default: 'longpoll', choices: [{ id: 'longpoll', label: 'Long-poll (instant, app 0.2.0+; falls back to polling)' }, { id: 'poll', label: 'Poll only' }] },
       { type: 'number', id: 'poll', label: 'Poll interval (ms)', width: 4, default: 300, min: 100, max: 5000 },
-      { type: 'dropdown', id: 'systems', label: 'E2 / PixelHue / ATEM / PTZ', width: 8, default: 'on', choices: [{ id: 'on', label: 'On (app 0.8.0+, API 8)' }, { id: 'off', label: 'Off (RS6 only)' }] },
+      { type: 'dropdown', id: 'systems', label: 'E2 / PixelHue / ATEM / PTZ', width: 8, default: 'on', choices: [{ id: 'on', label: 'On (app 0.8.0+, API 8)' }, { id: 'off', label: 'Off (main system only)' }] },
       { type: 'multidropdown', id: 'deck_surfaces', label: 'Control Center deck pages for (app 0.32.0+)', width: 12, default: D.DEFAULT_SURFACES.slice(), choices: D.SURFACES.map((x) => ({ id: x.id, label: x.label })), tooltip: 'Which Stream Deck sizes get the CC deck presets: HOME, PTZ, ATEM and CONSOLE pages with the knobs and touch-strip readouts' },
-      { type: 'dropdown', id: 'legacy_presets', label: 'Older per-system presets (RS6 tiles, E2, PixelHue, ATEM, PTZ)', width: 8, default: 'show', choices: [{ id: 'show', label: 'Show, after the Control Center presets' }, { id: 'hide', label: 'Hide (placed buttons keep working)' }], tooltip: 'The presets from before Control Center deck pages. The CC deck, CC button and CC page presets are always listed first.' },
       { type: 'number', id: 'max_hold', label: 'PTZ max hold (ms)', width: 4, default: 20000, min: 1000, max: 120000, tooltip: 'A held pan/tilt/zoom/focus button stops by itself after this long, in case the release is lost' },
     ];
   }
@@ -162,7 +166,6 @@ class ControlCenterInstance extends InstanceBase {
       deckSurfaces: surfaces,
       deckState: this.deckState || (this.deckStarted ? 'loading' : 'off'),
       deckError: this.deckError || '',
-      legacyPresets: this.config && this.config.legacy_presets === 'hide' ? 'hide' : 'show',
     };
   }
 
@@ -218,7 +221,7 @@ class ControlCenterInstance extends InstanceBase {
     this.checkFeedbacks(...FEEDBACK_IDS);
   }
 
-  // definitions for RS6 (logic.js) plus E2 / PixelHue / ATEM / PTZ (sys.js), rebuilt when either structure changes
+  // definitions from the app state (logic.js) plus the multi-system API (sys.js), rebuilt when either structure changes
   redefine() {
     this.setVariableDefinitions(G.variableObject([...L.variableDefinitions(this.state), ...X.variableDefinitions(this.sys), ...C.variableDefinitions(), ...D.variableDefinitions(this.deck, D.surfaceIds(this.config))]));
     this.publishPresets();
@@ -226,14 +229,11 @@ class ControlCenterInstance extends InstanceBase {
     this.setFeedbackDefinitions(this.feedbacks());
   }
 
-  // 0.13.0: Control Center first. The CC deck pages, then the CC buttons and pages, then the older per-system presets
-  // (RS6 tiles, E2 / PixelHue / ATEM / PTZ). Companion lists sections in this order, so the CC deck pages are no
-  // longer at the bottom under dozens of older sections. Config "Older per-system presets: Hide" leaves those out
-  // (their actions and feedbacks stay, so buttons already placed keep working).
+  // 0.14.0: Control Center presets only: the CC deck pages, then the CC buttons and pages. The older per-system preset
+  // sections (and their config switch) are gone. Every action and feedback is still defined, so buttons already placed
+  // keep working.
   presets() {
-    const cc = { ...D.presets(this.deck, D.surfaceIds(this.config)), ...C.presets(this.cc) };
-    if (this.config && this.config.legacy_presets === 'hide') return cc;
-    return { ...cc, ...L.buttonPresets(this.state, this.label), ...L.relabel(X.buttonPresets(this.sys), this.label) };
+    return { ...D.presets(this.deck, D.surfaceIds(this.config)), ...C.presets(this.cc) };
   }
 
   // Layered buttons (comfortable text size, shrink-to-fit, outline) plus the classic style as a fallback.

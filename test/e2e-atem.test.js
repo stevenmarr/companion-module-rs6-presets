@@ -35,7 +35,8 @@ function loadInstance() {
 const until = async (fn, ms = 5000, what = 'condition') => { const t0 = Date.now(); let last; while (Date.now() - t0 < ms) { try { if (await fn()) return; } catch (e) { last = e; } await new Promise((r) => setTimeout(r, 30)); } throw new Error(`timed out: ${what}${last ? ` (${last.message})` : ''}`); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const APP_DIR = process.env.RS6_APP_DIR || path.join(__dirname, '..', '..', 'rs6-presets');
+const APP_DIR = require('./app-dir');
+const armSystems = require('./e2e-arm');
 const haveApp = fs.existsSync(path.join(APP_DIR, 'server.js')) && fs.existsSync(path.join(APP_DIR, 'lib', 'drivers', 'ptz-commands.js'));
 
 test('e2e ATEM 0.8.0: router, audio, keys per M/E, SuperSource (app simulator chd2me)', { skip: haveApp ? false : `Control Center app not found at ${APP_DIR}`, timeout: 60000 }, async (t) => {
@@ -45,7 +46,8 @@ test('e2e ATEM 0.8.0: router, audio, keys per M/E, SuperSource (app simulator ch
   t.after(async () => { const gone = new Promise((r) => app.once('exit', r)); app.kill(); await gone; fs.rmSync(data, { recursive: true, force: true, maxRetries: 5 }); });
   const api = new AppApi('127.0.0.1', port, 5000);
   const atem = async () => (await api.sysViews()).views.atem;
-  await until(async () => { const a = await atem(); return a && a.status.connected && a.mixEffects && a.mixEffects.length === 2; }, 20000, 'app up, ATEM simulator (2 M/E) connected');
+  let armed = false;
+  await until(async () => { if (!armed) armed = await armSystems(port, ['atem']); const a = await atem(); return a && a.status.connected && a.mixEffects && a.mixEffects.length === 2; }, 20000, 'app up, ATEM simulator (2 M/E) connected');
   const seen = []; const origFetch = global.fetch;
   global.fetch = (u, o) => { seen.push(String(u)); return origFetch(u, o); };
   t.after(() => { global.fetch = origFetch; });
@@ -100,14 +102,6 @@ test('e2e ATEM 0.8.0: router, audio, keys per M/E, SuperSource (app simulator ch
     await until(async () => (await atem()).superSources[0].boxes[0].size === 1000, 3000, 'PiP layout');
     assert.equal((await atem()).superSources[0].boxes[2].source, 7, 'recall without sources keeps the box sources');
   });
-  await t.test('button presets: router, audio, M/E 2 keys, SuperSource (ATEM gold family, uniform text size)', () => {
-    const L = require('../src/logic'); const p = require('../src/sys').buttonPresets(inst.sys);
-    for (const id of ['atem_out_aux_0_status', 'atem_route_aux_0_1', 'atem_route_me_1_program_3', 'atem_audio_1_mute', 'atem_audio_1_up', 'atem_audio_master_down', 'atem_me2_usk_0_air', 'atem_ss1_box1_on', 'atem_ss1_box1_1', 'atem_ss1_layout_quad']) {
-      assert.ok(p[id], `preset ${id}`); assert.equal(p[id].style.size, L.TEXT_SIZE, `${id} text size`);
-    }
-    assert.equal(p.atem_route_aux_0_1.style.png64, L.BG.atem, 'gold ATEM background');
-    assert.equal(p.atem_audio_1_mute.feedbacks[0].feedbackId, 'atem_audio_muted');
-    assert.equal(Object.keys(p).filter((k) => k.startsWith('atem_aux_')).length, 0, 'router presets replace the aux grid on API 9');
-  });
+
   assert.ok(seen.every((u) => u.startsWith(`http://127.0.0.1:${port}/`)), 'every request went to the app');
 });

@@ -1,17 +1,14 @@
 'use strict';
-// 0.7.0: per-camera Stream Deck presets (keys, + / + XL knobs and strip readouts), knob actions driven by the
-// Companion fork's $(this:delta), the generated-pages refresh feedback, and a contract with the app's page generator.
+// 0.7.0: knob actions driven by the Companion fork's $(this:delta), and the generated-pages refresh feedback.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const path = require('path');
 const Module = require('module');
 const X = require('../src/sys');
-const L = require('../src/logic');
 const { sysActions } = require('../src/sysdefs');
 
 const fixture = () => JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'app-sys-0.8.0.json'), 'utf8'));
-const APP = path.join(__dirname, '..', '..', 'rs6-presets');
 
 function fakeInst(S) {
   const sent = []; const logs = [];
@@ -40,28 +37,6 @@ function loadMain() {
   loadMain.cache = { ControlCenterInstance: Klass };
   return loadMain.cache;
 }
-
-test('0.7.0 deck presets: per camera keys, knobs and strip readouts with stable ids', () => {
-  const S = fixture(); const P = X.buttonPresets(S);
-  for (const c of S.views.ptz.cameras) {
-    const p = `ptz_${X.safeId ? X.safeId(c.id) : c.id}`;
-    for (const k of ['move_up', 'move_down', 'move_left', 'move_right', 'tele', 'wide', 'near', 'far', 'home', 'otaf', 'af', 'iris_auto', 'stop', 'readout']) assert.ok(P[`${p}_${k}`], `${p}_${k}`);
-    for (const k of X.KNOB_IDS) { assert.ok(P[`${p}_enc_${k}`], `${p}_enc_${k}`); assert.ok(P[`${p}_lcd_${k}`], `${p}_lcd_${k}`); }
-  }
-  assert.deepEqual(X.KNOB_IDS, ['zoom', 'focus', 'iris', 'ptspeed', 'gain', 'zoomspeed']);
-  const enc = P.ptz_cam1_enc_zoom;
-  assert.equal(enc.options.rotaryActions, true);
-  const st = enc.steps[0];
-  assert.equal(st.rotate_right[0].actionId, 'ptz_lens_delta'); assert.equal(st.rotate_right[0].options.delta, '$(this:delta)');
-  assert.equal(st.rotate_right[0].options.fallback, 1); assert.equal(st.rotate_left[0].options.fallback, -1);
-  assert.equal(st.down[0].actionId, 'ptz_stop');
-  // the hold keys stop on release, like the selected-camera ones
-  assert.equal(P.ptz_cam1_move_up.steps[0].up[0].actionId, 'ptz_stop');
-  assert.equal(P.ptz_cam1_home.style.text, 'CAM\\nHOME');
-  // every action and feedback a preset uses is defined
-  const acts = sysActions(fakeInst(S).inst);
-  for (const [id, pr] of Object.entries(P)) for (const s of pr.steps) for (const list of Object.values(s)) for (const a of list) assert.ok(acts[a.actionId], `${id}: action ${a.actionId}`);
-});
 
 test('0.7.0 knob turn: $(this:delta) as Companion hands it over, else the fallback', () => {
   assert.equal(X.deltaOf('3', 1), 3); assert.equal(X.deltaOf('-2', 1), -2); assert.equal(X.deltaOf(4, 1), 4);
@@ -109,7 +84,7 @@ test('0.7.0 / 0.8.1 cc_pages_refresh: evaluating publishes the presets again (on
   const { ControlCenterInstance } = loadMain();
   const calls = [];
   const inst = Object.create(ControlCenterInstance.prototype);
-  Object.assign(inst, { state: null, sys: fixture(), ptzCats: {}, holds: new Map(), log() {}, setPresetDefinitions: (structure, presets) => calls.push(Object.keys(presets || structure).length) });
+  Object.assign(inst, { state: null, sys: fixture(), config: {}, deck: JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures', 'app-deck-0.32.0.json'), 'utf8')), ptzCats: {}, holds: new Map(), log() {}, setPresetDefinitions: (structure, presets) => calls.push(Object.keys(presets || structure).length) });
   Object.defineProperty(inst, 'label', { value: 'pvcc' });
   const fb = inst.feedbacks().cc_pages_refresh;
   assert.equal(fb.type, 'boolean'); assert.equal(fb.callback(), false); assert.deepEqual(fb.defaultStyle, {});
@@ -120,30 +95,3 @@ test('0.7.0 / 0.8.1 cc_pages_refresh: evaluating publishes the presets again (on
   if (inst.republishTimer) clearTimeout(inst.republishTimer);
 });
 
-test('contract: every module preset the app\'s Companion page generator uses exists (app checkout next to this module)', (t) => {
-  if (!fs.existsSync(path.join(APP, 'lib', 'companion', 'index.js'))) return t.skip('rs6-presets app checkout not found');
-  const C = require(path.join(APP, 'lib', 'companion'));
-  const input = JSON.parse(fs.readFileSync(path.join(APP, 'test', 'fixtures', 'companion-input.json'), 'utf8'));
-  const presets = { ...L.buttonPresets(input.state, 'pvcc'), ...X.buttonPresets({ views: input.views }) };
-  const { files } = C.generate(input.state, input.views, { surfaces: 'all', combined: true, seed: 2 });
-  const used = new Set(); const actions = new Set(); const feedbacks = new Set();
-  for (const p of Object.values(files[0].json.pages)) for (const row of Object.values(p.controls)) for (const ctl of Object.values(row)) {
-    if (ctl.presetRef) used.add(ctl.presetRef.presetId);
-    for (const e of [...ctl.feedbacks, ...Object.values(ctl.steps).flatMap((s) => Object.values(s.action_sets).flat())]) {
-      if (e.connectionId === 'internal') continue; (e.type === 'action' ? actions : feedbacks).add(e.definitionId);
-    }
-  }
-  assert.ok(used.size > 150, `${used.size} presets used`);
-  const missing = [...used].filter((id) => !presets[id]);
-  assert.deepEqual(missing, [], 'presets the generated pages link to');
-  const { inst } = fakeInst({ views: input.views });
-  const defs = sysActions(inst);
-  for (const a of actions) assert.ok(defs[a], `action ${a}`);
-  const { ControlCenterInstance } = loadMain();
-  const fi = Object.assign(Object.create(ControlCenterInstance.prototype), { state: input.state, sys: { views: input.views }, ptzCats: {}, holds: new Map(), log() {} });
-  Object.defineProperty(fi, 'label', { value: 'pvcc' });
-  const fdefs = fi.feedbacks();
-  for (const f of feedbacks) assert.ok(fdefs[f], `feedback ${f}`);
-  // knob presets that sit on encoder cells are rotary
-  for (const id of used) if (/_enc_/.test(id)) assert.equal(presets[id].options.rotaryActions, true, id);
-});

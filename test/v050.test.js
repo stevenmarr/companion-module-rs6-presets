@@ -1,6 +1,6 @@
 'use strict';
 // 0.5.0: module vs app audit. Version warning, tile coverage, the recall/selection fix, and a contract test that
-// runs this module against the real RS6 Presets app (sibling checkout, mock mode) when it is available.
+// runs this module against the real Control Center app (sibling checkout, mock mode) when it is available.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
@@ -64,7 +64,7 @@ test('version check: warns (log once + status) when the app is older or newer th
   } finally { await inst.destroy(); srv.close(); }
 });
 
-test('tiles: variables, dropdown and button presets cover the app tile count (24..96), and used tiles above it', () => {
+test('tiles: variables and the preset dropdown cover the app tile count (24..96), and used tiles above it', () => {
   const presets = [{ number: 1, name: 'A' }, { number: 50, name: 'B' }];
   for (const [tc, n] of [[undefined, 50], [24, 50], [48, 50], [72, 72], [96, 96], [50, 50], [500, 96]]) {
     const st = { tileCount: tc, presets };
@@ -79,10 +79,6 @@ test('tiles: variables, dropdown and button presets cover the app tile count (24
   assert.ok(ids.length < 400, `kept small: ${ids.length} variables`);
   const v = L.variableValues(st);
   assert.equal(v.preset_2_name, '2 (empty)'); assert.equal(v.preset_50_name, 'B'); assert.equal(v.tile_count, '96');
-  const p = L.buttonPresets(st);
-  assert.equal(p.preset_96.category, 'Preset tiles 73-96'); assert.equal(p.preset_1.category, 'Preset tiles 1-24');
-  assert.equal(p.preset_2.name, '2 (empty tile)');
-  assert.deepEqual(p.preset_96.steps[0].down[0], { actionId: 'recall_preset', options: { preset: 96 } });
   assert.equal(L.presetChoices(st).find((c) => c.id === 2).label, '2 (empty)');
   assert.notEqual(L.presetSignature({ tileCount: 48, presets }), L.presetSignature({ tileCount: 96, presets }), 'a tile count change rebuilds definitions');
 });
@@ -95,9 +91,9 @@ test('backup feedback uses the app 0.4.0+ "active" flag', () => {
 });
 
 // ---------- contract test against the real app ----------
-const APP_DIR = process.env.RS6_APP_DIR || path.join(__dirname, '..', '..', 'rs6-presets');
+const APP_DIR = require('./app-dir');
 const haveApp = fs.existsSync(path.join(APP_DIR, 'server.js')) && fs.existsSync(path.join(APP_DIR, 'lib', 'shows.js'));
-test('contract: this module against the real RS6 Presets app 0.5.0 (mock device)', { skip: haveApp ? false : `app not found at ${APP_DIR}` }, async (t) => {
+test('contract: this module against the real Control Center app 0.5.0 (mock device)', { skip: haveApp ? false : `app not found at ${APP_DIR}` }, async (t) => {
   const port = 21000 + Math.floor(Math.random() * 4000);
   const data = fs.mkdtempSync(path.join(os.tmpdir(), 'rs6c-'));
   const app = spawn(process.execPath, [path.join(APP_DIR, 'server.js'), '--mock', '--port', String(port), '--host', '127.0.0.1', '--data', data], { stdio: 'ignore', env: { ...process.env, RS6_QUIET: '1' } });

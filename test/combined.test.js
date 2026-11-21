@@ -40,14 +40,6 @@ test('memory dropdowns and name variables come from the imported memories', () =
   assert.notEqual(L.presetSignature(s), L.presetSignature(s2));
 });
 
-test('button presets: Master memory buttons with tally, refresh and logo', () => {
-  const p = L.buttonPresets(fixture());
-  assert.deepEqual(p.master_mem_3.steps[0].down[0], { actionId: 'load_master_memory', options: { memory: 3, target: 'preview' } });
-  assert.deepEqual(p.master_mem_3.feedbacks.map((f) => f.options.side), ['pvw', 'pgm']);
-  assert.ok(p.refresh_memories && p.logo.style.png64.length > 1000);
-  assert.ok(Buffer.from(p.logo.style.png64, 'base64').subarray(1, 4).toString() === 'PNG');
-});
-
 test('AppApi memory routes', async () => {
   const seen = [];
   const srv = http.createServer((req, res) => { let b = ''; req.on('data', (c) => (b += c)); req.on('end', () => { seen.push(`${req.method} ${req.url} ${b}`); res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('{"ok":true}'); }); });
@@ -105,17 +97,11 @@ test('instance: preset recall/feedback dropdowns list combined presets; memory a
   } finally { await inst.destroy(); await new Promise((r) => { srv.closeAllConnections(); srv.close(r); }); }
 });
 
-test('0.3.1 buttons: preset name (live variable, number as fallback), Master name, TAKE shows its targets, connection label', () => {
+test('0.3.1 variables: preset name (number as fallback), Master name, TAKE targets', () => {
   const s = fixture();
   s.presets.push({ number: 12, name: '  ', destinations: ['S1'], memories: { S1: 1 }, master: null, mvMemories: {}, tally: { pvw: 'none', pgm: 'none' } });
   s.transitionTargets = ['S1', 'A1'];
-  const p = L.buttonPresets(s);
-  assert.equal(p.preset_10.style.text, '$(pvcc:preset_10_name)'); assert.equal(p.preset_10.style.size, L.TEXT_SIZE);
   const v = L.variableValues(s);
   assert.equal(v.preset_10_name, 'Panel Master + MV'); assert.equal(v.preset_12_name, '12');
-  assert.equal(p.master_mem_4.style.text, '$(pvcc:master_mem_4_name)');
-  assert.equal(v.selection, 'S1,A1'); assert.equal(p.take.style.text, 'TAKE\\n$(pvcc:selection)');
-  const r = L.buttonPresets(s, 'rs6_show');
-  assert.equal(r.preset_10.style.text, '$(rs6_show:preset_10_name)'); assert.equal(r.take.style.text, 'TAKE\\n$(rs6_show:selection)');
-  assert.ok(!JSON.stringify(r).includes('$(pvcc:'));
+  assert.equal(v.selection, 'S1,A1');
 });

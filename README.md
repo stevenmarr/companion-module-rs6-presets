@@ -1,363 +1,88 @@
 # Performance Video Control Center (Companion module)
 
-A Bitfocus **Companion** module for the **Performance Video Control Center** app
-(formerly RS6 Presets). It controls an Analog Way Aquilon RS6 (Barco E2-style destination presets), a Barco E2,
-a PixelHue, a Blackmagic ATEM and Panasonic PTZ cameras, **all through the app's HTTP API** (default port 8080).
-The module never connects to a device directly. Since 0.11.0 the module id is `pvllc-control-center`
-(shortname `pvcc`). The old id `rs6-presets` is listed in the manifest's `legacyIds`, so Companion moves existing
-`rs6-presets` connections over to this module.
+A Bitfocus **Companion** module for the **Performance Video Control Center** app. It puts Control Center on your
+Stream Decks: the buttons and pages you build in Control Center, and the live deck pages Control Center draws (HOME,
+PTZ, ATEM, CONSOLE) with the + / + XL knobs and touch strips. **Every command goes through Control Center's HTTP API**
+(default port 8080); the module never connects to a device.
 
-**0.7.3 and later need Companion with the layered button editor** (module-base 2.2, the graphics overhaul on
-`feat/lcars-gui`). Stock Companion 3.x will not load this build. Import the `.tgz` on the Connections
-page of that Companion.
-
-Built on `@companion-module/base` ~2.2 (node22 runtime) in plain JavaScript, with no TypeScript build.
+Module id `pvllc-control-center`, shortname `pvcc`, npm name `companion-module-pvllc-control-center`. It needs
+Companion with the layered button editor (module-base 2.2, the PV Companion fork on `feat/lcars-gui`, which ships the
+module built in). Plain JavaScript on `@companion-module/base` ~2.2 (node22 runtime), no build step.
 
 ![icon](companion/icon.png)
 
-## New in 0.13.0 (Control Center app 0.33.0 recommended)
+## New in 0.14.0: Control Center only
 
-- **Control Center presets come first.** Presets now list **CC deck: ...** (the live HOME / PTZ / ATEM / CONSOLE deck
-  pages) and **CC: ...** (the BUTTONS / PAGES library) before the older per-system and RS6 presets, which used to bury
-  them. New config **Older per-system presets** (Show / Hide) hides the old sections entirely.
-- **Deck pages are on for existing connections.** An upgrade script sets **Control Center deck pages for** to Stream
-  Deck + XL on connections made before 0.12.0 (where the field was missing or empty), so they publish deck pages too.
-- **The module tells Control Center how many deck pages it published.** Control Center's COMPANION tab shows
-  "N CC button presets · N deck presets" and says how to switch deck pages on when the count is 0. The log also says
-  "Control Center deck pages: N presets for ...". The first deck fetch now waits up to 15 s (was 5 s).
-- **Control Center pages in PV Companion.** With Control Center 0.33.0 and the PV Companion fork, Pages → Control Center
-  pages places any Control Center page as an editable copy and saves edited copies to User pages (stored in Control
-  Center).
-
-## New in 0.12.0 (needs Control Center app 0.32.0 for the deck pages)
-
-- **Control Center deck pages.** The pages Control Center draws on a USB Stream Deck (HOME, the PTZ paint / preset /
-  lens pages, the ATEM switcher page, CONSOLE) are now in Companion. Until now the module only had the BUTTONS / PAGES
-  library and its older per-system presets, because those pages are built at run time and were never in the library.
-  Presets → **CC deck: <deck size> (whole deck, follows HOME and page keys)** mirrors one Control Center deck: HOME,
-  system and page keys move it like a USB deck. **CC deck: <deck size> · <page> [ptz.0]** keeps one page.
-  Control Center's COMPANION tab also has each one as a `.companionconfig` page file (DECK PAGES).
-- **Touch-strip displays for the knobs.** On a Stream Deck + / + XL each knob gets a strip cell showing its label and
-  live value (R GAIN +12 / B GAIN -3 with the active side marked, iris, detail, gamma, ATEM rate, T-bar ...), placed above
-  the matching knob in the page presets. **CC deck: touch-strip displays and knobs** has every PTZ dial on its own,
-  to put anywhere. Variables: `cc_strip_<deck>_<n>`, `cc_dial_<dial>`, `cc_deck_<deck>_page`.
-- New: actions `cc_deck_key`, `cc_deck_dial`, `cc_dial_widget`; feedbacks `cc_deck_look`, `cc_dial_look`; config
-  **Control Center deck pages for** (default Stream Deck + XL). Existing ids (`cc_button_run`, `cc_button_look`, all
-  system ids) are unchanged.
-- CC button presets are published as simple presets, so `cc_button_look` stays on the button (the layered variant
-  dropped it, so edits in Control Center did not show on a placed preset).
-
-## New in 0.11.1
-
-- Feedback `cc_button_look` declares `affectedProperties` (`text`, `color`, `bgcolor`), so Companion 5 no longer warns
-  "advanced feedback definitions are missing an array for affectedProperties" and offers only those style overrides.
-
-## New in 0.11.0
-
-- **Renamed to "Performance Video Control Center".** Module id `pvllc-control-center` (was `rs6-presets`),
-  shortname `pvcc` (was `rs6presets`), npm name `companion-module-pvllc-control-center`. The manifest lists
-  `rs6-presets` in `legacyIds`, so Companion migrates old connections to the new id.
-- New connections get the default label `pvcc`, so preset texts read `$(pvcc:...)`. A connection that keeps its
-  old `rs6presets` label still works: preset texts always follow the connection's own label.
-- Action, feedback and variable ids are unchanged (`cc_button_run`, `cc_button_look`, `cc_buttons_rev`, ...).
-- Release assets are now `pvllc-control-center.tgz` / `.zip`. The install script falls back to the old asset name
-  for `--version v0.10.0` and earlier, and installs to `~/companion-modules/pvllc-control-center/`.
-- Pairs with Control Center 0.31.1, whose COMPANION tab accepts both ids.
-
-## New in 0.10.0
-
-- **Control Center buttons and pages in Companion** (Control Center app 0.31.0, API 9, feature `companionButtons`).
-  The buttons you build on the app's **BUTTONS** tab and the pages on its **PAGES** tab show up here:
-  - **Presets.** A *CC buttons* category with one preset per button, and one *CC page: <name> (<surface>)*
-    category per page, in key order, then the + / + XL touch strip, then the knobs. Drag them onto any page, or use
-    the fork's page designs (Stream Deck, XL, +, + XL) and page templates to lay them out.
-  - **Action `cc_button_run`** (button, event, delta). Companion sends the button and event to the app
-    (`POST /api/companion/buttons/<id>/run`), and the app runs that button's actions, so the button does the same
-    thing on a Companion surface as in the app. Knob presets turn with delta −1 / +1.
-  - **Feedback `cc_button_look`** gives the button's text and colours from the app.
-  - **Variables** `cc_buttons_rev`, `cc_button_count` and `cc_page_count`.
-- The module checks the app's buttons revision every 3 s. An edit in the app, or **SYNC TO COMPANION** on the app's
-  **COMPANION** tab, republishes the presets and dropdowns. The module reports its version and revision to that tab.
-- Against an app older than 0.31.0 nothing changes: the module checks `/api/version` once a minute and makes no other
-  new requests.
-- The app's COMPANION tab can also download a page as a `.companionconfig` that uses this module's action and feedback.
-  Import it on Companion's Buttons page (Import / Export).
-- Version 0.10.0 skips 0.9.0, which is the unreleased PTZ deck work on the `ptz-pages` branch.
-
-## New in 0.8.1
-
-- **Loads on Companion with module-base 2.** 0.7.3 and 0.8.0 called `runEntrypoint()`, which `@companion-module/base`
-  2.x no longer has, so Companion stopped them at start-up (`runEntrypoint is not a function`). `src/main.js` now
-  exports the class (and its `UpgradeScripts`) the way base 2 expects. E2 / PixelHue / ATEM / PTZ feedback updates
-  now name their feedback ids, because base 2 refuses a bare `checkFeedbacks()`. `cc_pages_refresh` refreshes from
-  its callback, because base 2 dropped `subscribe`.
-- **Text styling.** Every line of a label is its own text element (font, weight, underline / strikethrough,
-  outline), styled by what the key does: source, take, hold, mode, step or readout. Each kind of line has one size
-  on every key of a type (a percent of the key, not of the element), so the text is the same size across a page.
-  The family colours are unchanged. See `companion/HELP.md` → *Button looks*. Action, feedback and preset ids are
-  unchanged. Drag a preset again, or re-import a generated page, to pick up the new look.
-
-## New in 0.8.0
-
-- **ATEM router, audio, keys per M/E and SuperSource** (Control Center app 0.10.0, API 9). New actions:
-  `atem_route_output`, `atem_audio_mute`, `atem_audio_fader_nudge`, `atem_audio_master_nudge`, `atem_ss_box_source`,
-  `atem_ss_box_enable` and `atem_ss_layout_recall`. `atem_usk_onair` and `atem_usk_tie` take an M/E option; saved
-  buttons without one stay on M/E 1.
-- **New feedbacks:** `atem_output_is`, `atem_audio_muted` and `atem_ss_box`. `atem_usk` now has an M/E option.
-- **New variables:** `atem_out_<output>`, `atem_audio_<id>_fader` / `_mix`, `atem_audio_master_fader` and
-  `atem_ssN_boxM`.
-- **New presets** in the ATEM gold family: router (output × source, plus a status key per output), audio mute and
-  ±1 dB, M/E 2+ keys, SuperSource boxes and layouts. Against app 0.10.0 the router presets replace the old
-  aux × source grid. The `atem_aux` action and the `atem_aux_is` feedback are unchanged.
-- **Version check:** the module expects API 9. App 0.8.x–0.9.x (API 8) still runs every system, and a log line asks
-  you to update the app for the new ATEM controls. The module sends every command to the app; it never talks to the
-  switcher.
-
-## New in 0.7.3
-
-- **Buttons are layered, so the type fits.** Each preset is a background, the family art, and a text element inset off the bezel. Text Size is 46% / 34% / 28% / 24% of that element for 1 / 2 / 3 / 4+ lines — not the 100% that `auto` became — with Shrink to fit on, bold weight, and a soft outline (black on light text, white on the amber keys that use black text). Long names shrink; short ones stay the size you picked. Feedbacks restyle those same elements (lit art, text colour, outline). A host that cannot draw layers still receives the old style. Action, feedback and preset ids are unchanged.
-- **Requires the graphics overhaul.** `@companion-module/base` is ~2.2. Import this `.tgz` into the Companion that has layered buttons. Stock Companion 3.x will refuse the module. Buttons already on a deck keep the look they were dragged with; drag the preset again (or re-import a generated page) to pick up the new type.
-
-## New in 0.7.2
-
-- **Master memory recalls select that master's screens.** Pressing a Master memory button loads it and then sets the TAKE / CUT destination group to the screens stored for that master on a preset (or on the board). The newest preset wins if two disagree. A master with no stored screens leaves the current group alone. Preset recall is unchanged.
-
-## New in 0.7.1
-
-- **RS6 backup buttons name the source.** Each input and background backup key shows the source it protects, the backup source that slot switches to (`LIVE_9` becomes that input's label, `STILL_1` is `Still 1`, `NATIVE_2` is `Native 2`), and the live state (`PRIMARY`, `BKP 1`, `BKP 2`, plus `AUTO`). Group backups are buttons too, with the group name, the same state, and the member list.
-- **Text shrinks to fit.** Button text size is `auto` instead of a fixed 14. Companion draws that as shrink-to-fit, wrapping on spaces, so a long name no longer runs off the key. A fixed size never shrinks, and on Companion 5 it is scaled up (`14` with no top bar becomes about 23% of the key) which is what was clipping.
-- **Not a Companion-base upgrade.** Font, weight and "start at this size, then shrink" are layered text elements. Those exist in `@companion-module/base` 2.1 and Companion's graphics overhaul, and that base is a breaking API (Companion 3.4 would not load the module). This module still speaks Companion 3.4 through 5.x, so it stays on base 1.10 and uses the `auto` size every one of those versions already draws.
-
-## New in 0.6.0 (for Control Center app 0.8.0, API 8)
-
-- **One path to every device.** New actions, feedbacks, variables and button presets for E2 (`e2_…`), PixelHue
-  (`pixelhue_…`), ATEM (`atem_…`) and Panasonic PTZ (`ptz_…`), plus `sys_set_active`. All existing RS6 action,
-  feedback and variable ids are unchanged. See `companion/HELP.md` for the full list.
-- **Compatibility check.** The module expects API 8. It starts the multi-system long-poll
-  (`GET /api/sys?since=<rev>&timeout=<ms>&views=all`) only when the app reports API 8 and lists the
-  `sysLongpoll`, `sysViews` and `companionGateway` features in `GET /api/version`. With an app at API 5–7 the RS6
-  buttons keep working, the status stays OK and the log says to update the app.
-- **PTZ hold-to-run** with stop on release: press = move/zoom/focus, release = `ptz_stop`. While held the module
-  sends `POST /api/sys/ptz/cmd/keepalive` every 0.5 s (the app sends nothing to the camera for it, it only re-arms
-  its 1.5 s dead-man). A lost release stops after **PTZ max hold** (config, default 20 s); a lost connection stops
-  within the app's dead-man. Destroying or reconfiguring the connection sends a stop for every held camera.
-- **Full camera command set.** `ptz_exec`, `ptz_toggle`, `ptz_set`, `ptz_step` and `ptz_adjust` reach all 71
-  commands of the app's PTZ catalog (the bitfocus companion-module-panasonic-ptz aw_ptz / aw_cam set plus AW-UE150
-  spec additions; `src/ptz-ops.js` is generated from it by `tools/gen-ptz-ops.js`). At runtime the module reads each
-  camera's own catalog (`GET /api/sys/ptz/cameras/:id/catalog`) for its options and ranges.
-- **Button looks.** The 0.6.0 styling pass (72×72 tech-look backgrounds; text was a fixed size 14, which 0.7.1 changes to `auto`) now has a family per
-  system: E2 lime, PixelHue rose, ATEM gold, PTZ indigo, each with Preview / Program / selected lit states.
-  `python3 tools/make-button-styles.py` regenerates `src/styles.js`; `python3 tools/render-preview.py OUT.png`
-  renders the preview sheet.
-
-## Install on a Mac (one line)
-
-```bash
-curl -fsSL https://github.com/stevenmarr/companion-module-rs6-presets/releases/latest/download/install-companion-module.sh | bash
-```
-
-The script ([install-companion-module.sh](install-companion-module.sh), also attached to every release):
-- downloads the release's module package `pvllc-control-center.tgz` (built with
-  `companion-module-build`)
-- checks it and saves it as `~/companion-modules/pvllc-control-center/pvllc-control-center-<version>.tgz`
-- lists the versions Companion already has, including old `rs6-presets` ones
-- opens Companion's Modules page and shows the file in Finder
-
-It is safe to run again, never uses sudo, and doesn't touch Companion's own files. To pass options,
-use `| bash -s -- --dev`:
-
-| Option | Effect |
-|---|---|
-| `--version v0.3.1` | Install that release instead of the latest. |
-| `--file <.tgz or release .zip>` | Use a local file instead of downloading. |
-| `--dev` | Also unpack to `~/companion-modules/dev/pvllc-control-center` for the Developer modules path. Automatic on Companion 3.x. |
-| `--restart` | Quit and reopen Companion. |
-| `--no-open` | Don't open Companion or Finder. |
-
-Then, in Companion 4.x or 5.x (this is Companion's supported way to add a module that isn't in its
-store; see the Modules page in the Companion user guide):
-1. **Modules › Import module package**, then choose the `.tgz` the script printed. In the file
-   dialog, press Cmd+Shift+G and paste the path. Don't unpack the `.tgz`.
-2. **New connection:** Connections › **+ Add connection**, search **Control Center** (Performance Video; module id pvllc-control-center),
-   pick the version you imported, then set **App host/IP** (`127.0.0.1` if the app runs on the same
-   Mac) and **App port** `8080`.
-   **Existing connection:** open it, click the **pencil** next to the module version, pick the new
-   version and **Save**. The connection restarts; Companion itself doesn't need a restart.
-3. Drag buttons from **Buttons › Presets › Performance Video Control Center**. Buttons you already have keep
-   working: the module id only changed once (0.11.0), and the old id is a legacy id. Buttons dragged from an older version keep their old text;
-   drag them again only if you want the new text.
-
-## New in 0.5.0 (for app 0.5.0)
-
-**Upgrading keeps your connection and buttons.** The module id is still `rs6-presets` (the same id in every
-release), so Companion treats 0.5.0 as a new version of the same module. Import the `.tgz`, then on the
-existing connection click the **pencil** next to the version and pick **0.5.0**. Until you do that, the
-connection stays on the version it was created with. Importing alone doesn't switch it.
-
-- **Covers 24 to 96 tiles.** The app now has a tile-count setting (24/48/72/96, default 48). The recall
-  dropdown, the `preset_<N>_name`/`preset_<N>_summary` variables and the button presets cover every tile
-  up to that count, plus any used tile above it. Empty tiles show `N (empty)`. The button presets are grouped
-  in pages of 24 (`Preset tiles 1-24`, `25-48`, ...), matching the app's pager.
-- **Version check.** The module reads `appVersion`/`apiVersion` from the app (`GET /api/version` also
-  exists). If the app is older or newer than the module expects (API 5), the connection shows a
-  **warning** status and the log says which one to update. It is logged once, not on every poll.
-- **Recall no longer fights the app.** 0.3.2 sent its own `POST /api/selection` after a recall, which
-  raced the app (since app 0.3.1 the app selects the preset's screens itself) and could name destinations
-  the app no longer had. Against app 0.3.1+ the module now leaves the selection to the app. Against older
-  apps it still sets the selection, but only to destinations that exist.
-- **New variables:** `app_version`, `app_api_version`, `show_name` (the app's current show file) and `tile_count`.
-- Backup feedback uses the app's `active` flag when the app provides it.
-- A contract test runs this module against the real app (mock device) to check every field it reads.
-
-| Module | Works with app | Notes |
-|---|---|---|
-| 0.5.0 | 0.5.0 (API 5) | Warns against older or newer apps but still works with 0.2.0+. |
-| 0.4.0 | 0.4.0 | Tiles 1-24 only. No version check. |
-| 0.3.2 | 0.3.x | Extra selection POST after recall. |
-| 0.3.1 and older | 0.3.x | Variables only for existing presets. Buttons for a moved tile say "No preset N". |
-
-## New in 0.4.0 (for app 0.4.0)
-
-- **Buttons follow the tile.** The app can now swap or move preset tiles (drag, MOVE mode, or
-  `POST /api/presets/swap`). The preset numbers swap, so "Recall preset 3", `$(rs6presets:preset_3_name)`
-  and the preset-3 tally feedbacks always mean *whatever is in tile 3*. A Stream Deck page laid out like the
-  app's grid stays in step with it, with no re-programming. `preset_<N>_name` and `preset_<N>_summary` now
-  exist for every tile from 1 to max(24, highest number). A tile emptied by a move shows `N (empty)`
-  instead of a stale name.
-- **`backup_group_<G>_name`**: the backup group's name as set on the device, for groups that exist.
-- Older apps work as before.
-
-## New in 0.3.2
-
-- **Recalling a preset selects that preset's destinations.** TAKE and CUT, and the destination buttons, follow the destination group assigned on the preset in the app (its screens, plus the Master's screens). If the app's selection is still the previous group after the recall, the module sets it.
-
-## New in 0.3.1
-
-- **Preset buttons show the preset's name**, live from `$(rs6presets:preset_<N>_name)`. The number
-  is shown only for a preset without a name. Text is auto-sized, so a long name wraps on a 72×72
-  button. Master memory buttons show the memory name the same way (`master_mem_<N>_name`).
-- The variables in button text use your connection's label. If you renamed the connection from
-  `rs6presets`, newly generated buttons use the new label (the button list is rebuilt whenever presets or memories change, or when the connection restarts).
-- **TAKE and CUT buttons show their targets** on a second line (`$(rs6presets:selection)`, for
-  example `S1 S2`). With app 0.3.1 that is exactly the set TAKE and CUT will act on.
-- With app 0.3.1, PVW/PGM tally stays correct after a TAKE on the RS6. The fix is in the app; see
-  its README.
-
-## New in 0.3.0: combined presets and imported memories
-
-App 0.3.0 imports the RS6's own memories (Screen/Aux, Master, Multiviewer) and lets you build
-**combined presets** on its front screen (a different memory per screen, optionally a Master and
-multiviewer memories). The module follows along:
-
-- **Preset dropdowns.** *Recall preset to Preview*, *Preset on Preview* and *Preset on Program* now
-  use a dropdown that lists every app preset with its contents, e.g. `10 Panel Master + MV (M:3 S4:30 MV1:2)`.
-  You can still type a number (custom values are allowed), so 0.2.0 buttons keep working.
-- **New actions:** *Load Screen memory to a destination* (PVW/PGM), *Load Master memory* (PVW/PGM),
-  *Load Multiviewer memory*, *Refresh memories from the RS6*. Each memory dropdown is built from the
-  memories the app imported, with their names.
-- **Memory feedbacks** (*Destination last Screen memory is X*, *Last Master memory is X*) use the same
-  named dropdowns.
-- **New variables:** `screen_mem_<N>_name`, `master_mem_<N>_name` (for every named or loaded memory),
-  `mv_mem_<N>_name` (only when the app's *memory probe* is on, because multiviewer memory names are not
-  in the AWJ guide), `preset_<N>_summary` (e.g. `M:3 S4:30 MV1:2`) and `memories_imported` (time of
-  the last import).
-- **New button presets:** *Master memories* (one per named Master: loads it to Preview, with PVW/PGM
-  tally), *Refresh memories*, and a Performance Video logo button.
-- Dropdowns, variables and buttons are rebuilt when a memory is renamed on the device or a preset changes.
-
-Against app 0.2.0 everything above degrades quietly: dropdowns fall back to plain numbers and the
-memory actions return the app's 404.
+- **Presets are Control Center presets only:** **CC deck: ...** (the live deck pages, knobs and touch strips) and
+  **CC buttons / CC page: ...** (the BUTTONS / PAGES library). The older per-system preset sections and their
+  setting are gone.
+- **Nothing breaks.** Every action, feedback and variable id is unchanged, so buttons you already placed keep
+  working. An upgrade script drops the removed setting from existing connections.
+- Names, descriptions and help say Control Center throughout.
 
 ## What you get
 
 | Kind | Items |
 |---|---|
-| **Config** | App host/IP · app port (8080) · Updates: **Long-poll** (default) or Poll only · poll interval (300 ms) |
-| **Actions** | Recall preset to Preview (dropdown of combined presets, **0.3.0**) · **Load Screen / Master / Multiviewer memory** and **Refresh memories** (**0.3.0**) · TAKE · CUT · Toggle destination (S1…, A1…) · Auto take (toggle/on/off) · **Input freeze** (toggle/on/off) · **Backup: select primary / backup 1 / backup 2** for an input, background set (`S1/2`) or backup group · **Backup: automatic/manual mode** · **Audio channel mute** (input rx / output tx; toggle/on/off) |
-| **Feedbacks** | Preset on Preview (green) and Preset on Program (red), each with an optional "partial" match · Destination selected (amber) · Auto take ON · App connected to the RS6 · **Input on Program (red)** and **Input on Preview (green)** from the device, with an input dropdown built from the device's input labels and optionally limited to one destination · **Destination last Screen memory is X** (PGM or PVW) · **Last Master memory is X** · **Input frozen** (blue) · **Input unavailable / disabled** · **Backup active** (any slot, or a specific one) · **Audio channel muted** (red) |
-| **Variables** | `last_preset_number`, `last_preset_name`, `program_presets`, `selection`, `auto_take`, `device_connected`, `preset_<N>_name`. **New in 0.2.0:** `input_<N>_label`; `<S1>_pgm_memory_number`, `<S1>_pgm_memory_name`, `<S1>_pvw_memory_number` and `<S1>_pvw_memory_name` for every destination; `master_pgm_number`, `master_pgm_name`, `master_pvw_number` and `master_pvw_name`; `<S1>_pgm_layer1` (label of the Program layer-1 source); `live_mode`. **New in 0.3.0:** `screen_mem_<N>_name`, `master_mem_<N>_name`, `mv_mem_<N>_name`, `preset_<N>_summary`, `memories_imported`. **New in 0.4.0:** `backup_group_<G>_name`; preset variables exist for every tile 1..max(24, highest). **New in 0.7.1:** `bk_in_<N>_name`, `bk_in_<N>_src1`, `bk_in_<N>_src2`, `bk_in_<N>_state` (and `bk_bg_<S>_<set>_…` for a background set); `bk_grp_<G>_state`, `bk_grp_<G>_members` |
-| **Presets** | One button per app preset (recall plus PVW/PGM tally), one per destination (toggle plus selected feedback), TAKE, CUT, AUTO TAKE, and "last recalled" and "last Master" displays. **New:** *Input tally* (one per input: label, PVW green, PGM red, yellow text when unavailable or disabled); *Input freeze* (one per input: toggle, blue when frozen); *Backups* (PRIMARY / BKP 1 / BKP 2 for each input with backups, the source name and the live state); *Backup groups* and *Background backups* (same three slots). *Audio inputs mute* and *Audio outputs mute* (one per channel). **0.3.0:** *Master memories*, *Refresh memories*, logo button. **0.7.3:** layered text (comfortable size, shrink to fit, bold, outline). Presets regenerate when presets, inputs, channels, backup sets or labels change. |
+| **Config** | Control Center host / IP and port (8080) · Updates: long-poll (default) or poll only · poll interval (300 ms) · E2 / PixelHue / ATEM / PTZ on / off · **Control Center deck pages for** (Stream Deck sizes, default + XL) · PTZ max hold (20 s) |
+| **Presets** | **CC deck: <deck> (whole deck, follows HOME and page keys)**, **CC deck: <deck> · <page>**, **CC deck: touch-strip displays and knobs**, **CC buttons**, **CC page: <name> (<surface>)** |
+| **Control Center actions** | `cc_button_run` (run a CC button: press / release / hold / turn / push / touch, knob delta), `cc_deck_key`, `cc_deck_dial`, `cc_dial_widget` |
+| **Control Center feedbacks** | `cc_button_look`, `cc_deck_look`, `cc_dial_look` (text and colours from Control Center), `cc_pages_refresh` (internal) |
+| **System actions and feedbacks** | Everything Control Center drives, for your own buttons: Analog Way Aquilon RS6 (preset recall, memories, TAKE / CUT, destinations, auto take, freeze, backups, audio mute), E2 / PixelHue (`e2_…`, `pixelhue_…`), ATEM (`atem_…`) and Panasonic PTZ (`ptz_…`, hold-to-run with stop on release, knob actions). See `companion/HELP.md`. |
+| **Variables** | `cc_buttons_rev`, `cc_button_count`, `cc_page_count`, `cc_strip_<deck>_<n>`, `cc_dial_<dial>`, `cc_deck_<deck>_page`, `app_version`, `show_name`, plus each system's status variables |
 
 ### How it stays up to date
 
-The module talks **only to the Control Center app's HTTP API**. It never connects to the Aquilon.
+- **CC buttons and pages:** the module checks Control Center's buttons revision every 3 s. An edit in Control Center,
+  or **SYNC TO COMPANION** on its COMPANION tab, republishes the presets and dropdowns. The module reports its version,
+  revision and preset counts to that tab.
+- **Deck pages:** long-poll on `GET /api/companion/deck`; a new value updates feedbacks and variables, a new page set
+  republishes the presets.
+- **System state:** long-poll on `GET /api/state?since=<rev>` and `GET /api/sys?since=<rev>&views=all`, falling back
+  to polling every *poll interval*.
 
-- **Long-poll (default).** The module sends `GET /api/state?since=<rev>&timeout=20000`, and the app
-  holds the request open until something changes. With app 0.2.0's live AWJ subscriptions, a change
-  made on the RC400T or the Web RCS reaches Companion feedback within a few tens of milliseconds:
-  tally, last memory, freeze, backups, mutes and labels.
-- **Fallback.** If the app doesn't return a `rev` (an app older than 0.2.0), the module logs it once
-  and polls `GET /api/state` every *poll interval*. *Poll only* forces this mode. After a network
-  error, the module waits one poll interval and retries.
+## Install
 
-The live features need the app (then called RS6 Presets) **0.2.0 or later**, connected to the RS6 with live state on.
-Against an older app, the new feedbacks are simply false and the new variables are empty.
+**PV Companion** has this module built in; nothing to install.
 
-## Alternative: the Developer modules path
+**Stock Companion 4.x / 5.x on a Mac** (one line):
 
-Use this on Companion 3.x, which has no package import, or for development. You need Companion 3.4 or newer and the Control Center app running somewhere on the
-network.
+```bash
+curl -fsSL https://github.com/stevenmarr/companion-module-rs6-presets/releases/latest/download/install-companion-module.sh | bash
+```
 
-1. Make a folder for dev modules, for example `~/companion-dev-modules`.
-2. Put the module inside it, using **either**:
-   - **Pre-built (no Node or npm needed):** copy `dist/pvllc-control-center/` from this zip to
-     `~/companion-dev-modules/pvllc-control-center/`. It holds a bundled `main.js`, `package.json` and `companion/manifest.json`.
-   - **From source:** copy this whole folder to `~/companion-dev-modules/companion-module-pvllc-control-center/`, then run
-     ```bash
-     cd ~/companion-dev-modules/companion-module-pvllc-control-center
-     npm install
-     ```
-3. Open the **Companion launcher** window (the small window with the "Launch GUI" button), click the
-   **cog** (on Companion 4.1 and later this opens a Settings window), and set **Developer modules path** to `~/companion-dev-modules`. Companion
-   restarts its module host and picks the module up. It also reloads when files there change.
-4. In the Companion web UI, go to **Connections › Add connection**, search for **"Control Center"**
-   (manufacturer Performance Video), and add it.
-5. Set **App host/IP** to the Mac running the Control Center app (`127.0.0.1` if it's the same machine) and
-   **App port** to `8080`.
-6. Drag buttons from **Presets › Performance Video Control Center**: Presets, Destinations and Transitions.
+The script ([install-companion-module.sh](install-companion-module.sh), also attached to every release) downloads
+`pvllc-control-center.tgz`, checks it, saves it under `~/companion-modules/pvllc-control-center/` and opens
+Companion's Modules page. It never uses sudo. Options (`| bash -s -- --dev`): `--version vX.Y.Z`, `--file <.tgz>`,
+`--dev`, `--restart`, `--no-open`.
 
-On a headless or Pi install, pass `--extra-module-path /path/to/companion-dev-modules` to the
-Companion binary instead of using the launcher. Check the docs for your Companion version, since the
-flag name has changed between releases.
+Then in Companion:
+1. **Modules › Import module package**, choose the `.tgz` the script printed (Cmd+Shift+G to paste the path).
+2. **New connection:** Connections › **+ Add connection**, search **Control Center** (Performance Video), set the
+   host / IP of the Mac running Control Center (`127.0.0.1` on the same Mac) and port `8080`.
+   **Existing connection:** click the **pencil** next to the module version, pick the new version, **Save**.
+3. Drag buttons from **Buttons › Presets › Performance Video Control Center**, or download pages from Control
+   Center's COMPANION tab and import them.
+
+**Developer modules path** (development): put this folder (after `npm install`) in a dev-modules folder and point
+Companion's **Developer modules path** at it.
+
+## Module id and repository name
+
+The module id is `pvllc-control-center`. `companion/manifest.json` still lists `legacyIds: ["rs6-presets"]` and the
+GitHub repository still has its first name, `companion-module-rs6-presets`. Both are internal only: Companion uses the
+legacy id to move connections made with the module's first release (0.10.0) onto this module, keeping their buttons.
+Do not remove it. The reason is also written in `src/main.js` (JSON has no comments).
 
 ## Develop
 
 ```bash
-npm install
-npm test              # unit + wiring tests, and end-to-end runs against the sibling app checkout in --mock mode
-npm run package       # companion-module-build -> pkg/ and pkg.tgz
+npm ci
+npm test              # unit, wiring and upgrade tests; end-to-end runs when a Control Center checkout is found
+npm run package       # companion-module-build -> pvllc-control-center-<version>.tgz
 ```
 
-## Verified vs inferred
-
-- **Verified (by tests):**
-  - the module's logic, and its wiring under a stubbed `@companion-module/base`
-  - long-poll, the poll fallback, abort on destroy, and every new action route (against a fake app)
-  - an end-to-end run against the real app in `--mock` mode (`test/fixtures/app-state-0.2.0.json`
-    was captured from it). A freeze made through the app reached the module's feedback in about 65 ms.
-  - 0.3.0: combined-preset dropdowns, memory dropdowns/variables, Master memory buttons and the new
-    memory routes, against `test/fixtures/app-state-0.3.0.json` (captured from app 0.3.0 `--mock`).
-  - `companion-module-build` completes and produces `dist/pvllc-control-center`
-  - 0.6.0: `test/e2e-systems.test.js` runs the module against the real Control Center app 0.8.0 in `--mock` mode:
-    E2 (selection, recall, take, auto take, cue), PixelHue (selection, recall, cut), ATEM (buses, cut, auto, keys,
-    aux, macros, FTB) and PTZ (select, hold with keep-alives past the dead-man, stop on release, max hold, iris,
-    gain, WB, R gain / B pedestal, presets with names, tally, power, OSD menu). It checks that every request went
-    to the app. `test/fixtures/app-sys-0.8.0.json` was captured from that app.
-- **Not verified:**
-  - **The module has not been loaded into a running Companion instance.**
-  - It has not run against a real RS6 or the AW Simulator.
-- **Device-side caveats:** these come from the app, so see "Verified vs inferred" in the app README.
-  - The **freeze write is inferred**: AWJ §6.1 documents only a read of `freeze`.
-  - "Backup active" means the device reports a selected backup slot other than `NONE` (§6.5).
-  - Input tally counts `LIVE_<n>` layer and background sources. In AWJ mode it doesn't know whether
-    a layer is closed.
-- **Memory names and validity come from the app** (0.3.0). Screen and Master memory names are
-  documented (AWJ §3.7). Whether a slot is *valid/empty* and multiviewer memory names are **not** in the
-  AWJ guide; the app reads them only with its opt-in *memory probe* (inferred paths). Without it, the
-  app treats a slot as valid when it has a name or the device reported it loaded.
-- The module icon (`companion/icon.png`) and the logo button are the Performance Video LLC play mark;
-  the Companion 3 manifest has no icon field, so the icon is referenced from HELP.md.
-- Preset tally is the app's tally. In 0.2.0 it follows the device's last-loaded Screen memory per
-  destination (AWJ §3.11) and TBAR side (§3.8), so recalls and takes from the RC400T or Web RCS show up.
+The end-to-end tests start the Control Center app in `--mock` mode from `RS6_APP_DIR` (or a sibling checkout) and
+skip when it is not there. Every other test is hermetic: no network beyond 127.0.0.1 fakes, no child processes.
 
 MIT licensed. See `LICENSE`.

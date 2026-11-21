@@ -63,9 +63,8 @@ test('module instance polls the app, exposes variables/feedbacks/presets and sen
     await new Promise((r) => setTimeout(r, 250));
     const c = inst.calls;
     assert.equal(c.vars.last_preset_name, 'Panel'); assert.equal(c.vars.last_preset_number, 3);
-    assert.ok(c.presets.preset_3 && c.presets.take && c.presets.dest_A1);
-    assert.equal(c.presets.preset_3.type, 'alternatives');
-    assert.equal(c.presets.preset_3.variants[0].type, 'layered');
+    // 0.14.0: only Control Center presets are published (none without the CC routes); the actions stay defined
+    assert.ok(!Object.keys(c.presets).some((id) => !/^cc(d|w|_btn|_pg)_/.test(id)), Object.keys(c.presets).join(','));
     assert.ok(c.status.some(([s]) => s === 'ok'));
     assert.equal(c.feedbacks.preset_pvw.callback({ options: { preset: 3, partial: false } }), true);
     assert.equal(c.feedbacks.preset_pgm.callback({ options: { preset: 3, partial: false } }), false);
