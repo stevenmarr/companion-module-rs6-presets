@@ -56,8 +56,11 @@ function faceOf(model, surface, pin) {
 // 0.15.0: with Control Center 0.35.0 a slot also has "img", the id of the picture Control Center draws there (see
 // ccart.js). art.get(id) is that picture as base64 PNG once fetched: the button then shows exactly Control Center's
 // key (no text of ours on top). Until it arrives, or with an older Control Center, the text look below is used.
-function pictured(look, id, art) {
-  const png = id && art && typeof art.get === 'function' ? art.get(id) : null;
+// overhaul P1 (0.16.0): slot names the place on the deck (surface, page, part, position). A new value is a new picture
+// id; until its PNG arrives the slot keeps the last picture it showed (art.frame) instead of falling back to the plain
+// text look for a moment: that fallback was the flash of plain text when iris or gain changed.
+function pictured(look, id, art, slot) {
+  const png = id && art && typeof art.frame === 'function' && slot ? art.frame(slot, id) : id && art && typeof art.get === 'function' ? art.get(id) : null;
   return png ? { text: '', png64: png, pngalignment: 'center:center', color: look.color, bgcolor: STRIP_BG } : look;
 }
 
@@ -67,22 +70,24 @@ function slotLook(model, o, art) {
   const face = faceOf(model, o.surface, String(o.pin || ''));
   if (!face) return null;
   const blank = model && model.art && model.art.blank;
+  // the page id is part of the slot, so a page change never shows the old page's picture (only a value change holds)
+  const slot = (part) => `${o.surface}|${face.id || o.pin || ''}|${part}|${part === 'key' ? `${o.row}/${o.col}` : o.index}`;
   if (o.part === 'key') {
     const k = (face.keys || []).find((x) => x.row === Number(o.row) && x.col === Number(o.col));
     if (!k) return pictured({ text: '', color: KNOB_FG, bgcolor: 0x222226 }, blank, art);
-    return pictured({ text: joinText(k.lines), color: hex(k.color, 0xffffff), bgcolor: hex(k.bgcolor, 0x000000) }, k.img, art);
+    return pictured({ text: joinText(k.lines), color: hex(k.color, 0xffffff), bgcolor: hex(k.bgcolor, 0x000000) }, k.img, art, slot('key'));
   }
   const d = (face.dials || []).find((x) => x.index === Number(o.index));
   if (!d) return { text: '', color: KNOB_FG, bgcolor: STRIP_BG };
-  if (o.part === 'knob') return pictured({ text: joinText(d.knob), color: KNOB_FG, bgcolor: STRIP_BG }, d.knobImg, art);
-  return pictured({ text: joinText(d.lines), color: hex(d.color, 0xffffff), bgcolor: hex(d.bgcolor, STRIP_BG) }, d.img, art);
+  if (o.part === 'knob') return pictured({ text: joinText(d.knob), color: KNOB_FG, bgcolor: STRIP_BG }, d.knobImg, art, slot('knob'));
+  return pictured({ text: joinText(d.lines), color: hex(d.color, 0xffffff), bgcolor: hex(d.bgcolor, STRIP_BG) }, d.img, art, slot('strip'));
 }
 
 function widgetLook(model, widget, part, art) {
   const w = model && model.widgets && model.widgets[widget];
   if (!w) return null;
-  if (part === 'knob') return pictured({ text: joinText(w.knob), color: KNOB_FG, bgcolor: STRIP_BG }, w.knobImg, art);
-  return pictured({ text: joinText(w.lines), color: hex(w.color, 0xffffff), bgcolor: hex(w.bgcolor, STRIP_BG) }, w.img, art);
+  if (part === 'knob') return pictured({ text: joinText(w.knob), color: KNOB_FG, bgcolor: STRIP_BG }, w.knobImg, art, `widget|${widget}|knob`);
+  return pictured({ text: joinText(w.lines), color: hex(w.color, 0xffffff), bgcolor: hex(w.bgcolor, STRIP_BG) }, w.img, art, `widget|${widget}|strip`);
 }
 
 // A preset's own style: the current look (picture if held), no top bar, so the picture fills the button.
@@ -235,7 +240,7 @@ function actions(inst) {
         { type: 'dropdown', id: 'event', label: 'Event', default: 'press', choices: KEY_EVENTS },
         pinOpt,
       ],
-      callback: (a) => inst.run(`CC deck key ${a.options.surface} ${a.options.row}/${a.options.col}`, () => inst.api.ccDeckKey(a.options.surface, { row: Number(a.options.row), col: Number(a.options.col), event: a.options.event || 'press', pin: a.options.pin || '' }).then(done)),
+      callback: (a) => inst.run(`CC deck key ${a.options.surface} ${a.options.row}/${a.options.col}`, () => inst.api.ccDeckKey(a.options.surface, { row: Number(a.options.row), col: Number(a.options.col), event: a.options.event || 'press', pin: a.options.pin || '' }).then(done), { refetch: false }),
     },
     cc_deck_dial: {
       name: 'Control Center deck: knob / touch strip',
@@ -253,7 +258,7 @@ function actions(inst) {
         const event = a.options.event || 'rotate';
         const body = { index: Number(a.options.index), event, pin: a.options.pin || '' };
         if (event === 'rotate') body.ticks = deltaOf(d) || 1;
-        return inst.run(`CC deck knob ${a.options.surface} ${a.options.index}`, () => inst.api.ccDeckDial(a.options.surface, body).then(done));
+        return inst.run(`CC deck knob ${a.options.surface} ${a.options.index}`, () => inst.api.ccDeckDial(a.options.surface, body).then(done), { refetch: false });
       },
     },
     cc_dial_widget: {

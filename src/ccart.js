@@ -40,6 +40,7 @@ class ArtCache {
     this.queue = []; // resolvers waiting for a fetch slot
     this.now = now;
     this.images = new Map(); // id -> base64
+    this.lastFrames = new Map(); // deck slot -> the last base64 it showed (bounded by the number of slots)
     this.failed = new Map(); // id -> time of the failure
     this.inflight = new Map(); // id -> Promise
     this.ctrl = new AbortController();
@@ -47,6 +48,14 @@ class ArtCache {
   }
 
   get(id) { return (id && this.images.get(id)) || null; }
+
+  // overhaul P1 (0.16.0): the picture for a deck slot. The new id's picture when it is here (and remembered as the
+  // slot's last frame), else the slot's last frame, so a value change never shows the text look in between.
+  frame(slot, id) {
+    const png = this.get(id);
+    if (png) { this.lastFrames.set(slot, png); return png; }
+    return this.lastFrames.get(slot) || null;
+  }
 
   _acquire() {
     if (this.active < this.concurrency) { this.active++; return Promise.resolve(); }
@@ -62,7 +71,7 @@ class ArtCache {
   clear() {
     this.ctrl.abort();
     this.ctrl = new AbortController();
-    this.images.clear(); this.failed.clear(); this.inflight.clear();
+    this.images.clear(); this.failed.clear(); this.inflight.clear(); this.lastFrames.clear();
   }
 
   // The instance is going away: abort what is running and never fetch again (nothing outlives destroy()).

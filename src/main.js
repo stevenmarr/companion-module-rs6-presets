@@ -121,7 +121,7 @@ class ControlCenterInstance extends InstanceBase {
           // tell the app's COMPANION tab which module version is here and which revision it has (on change, else every 30 s)
           if (changed || !this.ccHelloAt || Date.now() - this.ccHelloAt > 30000) {
             this.ccHelloAt = Date.now();
-            this.api.ccHello({ moduleVersion: MODULE_VERSION, label: this.label || '', rev: this.ccRev, presets: Object.keys(C.presets(this.cc)).length, ...this.deckHello() }).catch(() => {});
+            this.api.ccHello({ moduleVersion: MODULE_VERSION, label: this.label || '', rev: this.ccRev, presets: Object.keys(C.presets(this.cc)).length, ...this.deckHello() }).then((h) => { if (h && Array.isArray(h.warnings)) this.ccWarnStatus(h.warnings); }, () => {});
           }
         } catch (e) {
           if (signal.aborted) break;
@@ -398,11 +398,40 @@ class ControlCenterInstance extends InstanceBase {
     if (this.api) await Promise.all(ids.map((id) => this.api.ptz('stop', { cam: id }).catch(() => {})));
   }
 
-  async run(label, fn) {
+  // overhaul P1 (0.16.0): a refused press is no longer silent. Control Center 0.37.0 answers { ok: false, noop: true,
+  // reason } for a key with no function or no handler; that and an error go to the log as a warning and to the
+  // connection status for a few seconds. refetch: false for deck actions, whose own long-poll redraws the deck (the
+  // extra GET /api/state after every press only doubled the traffic).
+  async run(label, fn, { refetch = true } = {}) {
     if (!this.api) return;
-    try { await fn(); }
-    catch (e) { this.log('error', `${label} failed: ${e.message}`); }
+    try {
+      const r = await fn();
+      if (r && typeof r === 'object' && r.ok === false) this.refused(label, r.reason || r.error || 'refused by Control Center');
+    } catch (e) { this.log('error', `${label} failed: ${e.message}`); this.refused(label, e.message); }
+    if (!refetch) return;
     try { this.applyState(await this.api.state()); } catch { /* next update will retry */ }
+  }
+
+  refused(label, why) {
+    this.lastRefusal = { label, why: String(why || '').slice(0, 160), at: Date.now() };
+    this.log('warn', `${label}: ${this.lastRefusal.why}`);
+    try { this.updateStatus(InstanceStatus.UnknownWarning, `Last press refused: ${this.lastRefusal.why}`); } catch { /* status is cosmetic */ }
+    clearTimeout(this.refusalTimer);
+    this.refusalTimer = setTimeout(() => { this.lastRefusal = null; this.ccWarnStatus(); }, 8000);
+  }
+
+  // overhaul P1: Control Center's hello answer lists what blocks buttons now (panel LOCK, a PTZ paint lock, a second
+  // Control Center connection, an old imported module). Shown as the connection status; the log gets each once.
+  ccWarnStatus(list) {
+    if (Array.isArray(list)) {
+      const fresh = list.filter((w) => !(this.ccWarnings || []).includes(w));
+      for (const w of fresh) this.log('warn', `Control Center: ${w}`);
+      this.ccWarnings = list;
+    }
+    if (this.lastRefusal) return;
+    const w = this.ccWarnings || [];
+    try { if (w.length) this.updateStatus(InstanceStatus.UnknownWarning, w[0]); else if (this.ccWarnedStatus) this.updateStatus(InstanceStatus.Ok); } catch { /* cosmetic */ }
+    this.ccWarnedStatus = w.length > 0;
   }
 
   inputChoices() { return L.inputChoices(this.state); }
