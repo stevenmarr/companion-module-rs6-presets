@@ -104,7 +104,7 @@ test('manifest and package: Control Center naming, 0.14.0, the legacy id kept fo
   const m = json('companion/manifest.json'); const p = json('package.json');
   assert.equal(m.id, 'pvllc-control-center');
   assert.deepEqual(m.legacyIds, ['rs6-presets'], 'moves connections made with the first release; keep it');
-  assert.equal(m.version, p.version); assert.equal(p.version, '0.15.0');
+  assert.equal(m.version, p.version); assert.equal(p.version, '0.16.0');
   assert.equal(m.name, 'Performance Video Control Center');
   for (const t of [m.description, p.description, ...(m.keywords || []), ...(m.products || [])]) { assert.doesNotMatch(t, RS6_PRESETS, t); assert.doesNotMatch(t, OLDER, t); }
   assert.match(read('src/main.js'), /legacyIds \["rs6-presets"\]/, 'main.js says why the legacy id stays');
